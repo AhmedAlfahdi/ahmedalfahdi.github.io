@@ -1,21 +1,50 @@
 # Personal Website
 
-A modern personal website featuring interactive 3D models and markdown rendering, built with Astro and Three.js, hosted on GitHub Pages.
+A modern, feature-rich personal website with interactive 3D models, Obsidian notes integration, and beautiful markdown rendering. Built with Astro and Three.js, optimized for GitHub Pages.
 
-## Features
+## ✨ Key Features
 
-- ⚡ Lightning-fast static site generation with Astro
-- 🎨 Interactive 3D models using Three.js
-- 📝 Markdown and MDX support for easy content authoring
-- 📱 Fully responsive design
-- 🚀 Optimized for GitHub Pages deployment
+### 🎨 Interactive 3D Models
+- Real-time WebGL rendering with Three.js
+- Support for multiple formats: GLTF, GLB, OBJ
+- Interactive controls (rotate, zoom, background toggle)
+- Embedded models in markdown files
+- Performance optimized with frustum culling and memory management
+- Frame-rate independent animations (smooth at any FPS)
 
-## Tech Stack
+### 📝 Obsidian Notes Integration
+- Full Obsidian vault compatibility
+- Automatic wikilink conversion `[[Note]]` → working links
+- Mermaid diagram support (flowcharts, sequence, class diagrams)
+- LaTeX math rendering with KaTeX
+- Interactive diagram controls (zoom, pan, fullscreen)
+- Interactive math equation enlargement
+- GitHub-flavored markdown
 
-- **Astro** - Modern static site generator
+### 🎯 Performance Optimizations
+- Intersection Observer for lazy loading
+- Frustum culling (only renders visible objects)
+- Automatic memory cleanup (prevents leaks)
+- GPU-accelerated animations
+- Optimized renderer settings
+- Smooth 60 FPS on all devices
+
+### 🎨 UI Features
+- Light/Dark background toggle for 3D objects
+- Responsive design (mobile-friendly)
+- Modern gradient styling
+- Interactive control panels
+- Smooth animations and transitions
+
+## 🛠 Tech Stack
+
+- **Astro** - Modern static site generator with island architecture
 - **Three.js** - WebGL 3D graphics library
-- **Markdown/MDX** - Content authoring
-- **GitHub Pages** - Free hosting
+- **Markdown/MDX** - Content authoring with components
+- **Mermaid.js** - Diagram and flowchart rendering
+- **KaTeX** - Fast LaTeX math rendering
+- **Remark/Rehype** - Markdown processing plugins
+- **GitHub Pages** - Free hosting and CI/CD
 
 ## Getting Started
 
@@ -44,28 +73,42 @@ npm run dev
 
 4. Open your browser and visit `http://localhost:4321`
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 /
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml      # GitHub Actions deployment
+│       └── deploy.yml           # GitHub Actions deployment
+├── public/
+│   └── models/                  # 3D model files (.glb, .gltf, .obj)
 ├── src/
 │   ├── components/
-│   │   └── ThreeScene.astro # 3D model component
+│   │   ├── ThreeScene.astro     # Basic 3D shapes component
+│   │   ├── Model3D.astro        # Custom 3D model loader
+│   │   ├── Mermaid.astro        # Mermaid diagram component
+│   │   └── MathZoom.astro       # Interactive math zoom
 │   ├── layouts/
-│   │   └── BaseLayout.astro # Base page layout
-│   └── pages/
-│       ├── index.astro      # Home page
-│       ├── about.md         # About page
-│       ├── 3d-models.astro  # 3D models gallery
-│       ├── blog.astro       # Blog listing
-│       └── blog/
-│           ├── getting-started-threejs.md
-│           └── building-with-astro.md
-├── astro.config.mjs         # Astro configuration
+│   │   └── BaseLayout.astro     # Base page layout
+│   ├── pages/
+│   │   ├── index.astro          # Home page
+│   │   ├── about.md             # About page
+│   │   ├── 3d-models.astro      # 3D models gallery
+│   │   ├── notes.astro          # Notes index
+│   │   ├── notes/               # Obsidian notes
+│   │   │   ├── obsidian-demo.mdx
+│   │   │   ├── reverse-engineering-0x09.mdx
+│   │   │   └── 3d-model-example.mdx
+│   │   ├── blog.astro           # Blog listing
+│   │   └── blog/
+│   │       ├── getting-started-threejs.md
+│   │       └── building-with-astro.md
+│   └── utils/
+│       └── remark-wikilinks.mjs # Wikilink converter plugin
+├── astro.config.mjs             # Astro configuration
 ├── package.json
+├── 3D-MODELS-GUIDE.md          # Guide for 3D models
+├── OBSIDIAN-GUIDE.md           # Guide for Obsidian integration
 └── README.md
 ```
 
@@ -98,15 +141,45 @@ git push origin main
 
 The GitHub Action will automatically build and deploy your site!
 
-## Customization
+## 🎨 Customization
 
-### Adding New 3D Models
+### Adding Custom 3D Models
 
-Edit `src/components/ThreeScene.astro` to add new geometry types or customize the existing models.
+1. Place your model files (.glb, .gltf, .obj) in `public/models/`
+2. Embed in any MDX file:
+
+```mdx
+---
+layout: ../../layouts/BaseLayout.astro
+title: My Model
+---
+
+import Model3D from '../../components/Model3D.astro';
+
+# My Custom Model
+
+<Model3D 
+  src="/models/your-model.glb"
+  height="600px"
+  scale={2}
+  autoRotate={true}
+/>
+```
+
+See `3D-MODELS-GUIDE.md` for full documentation.
+
+### Adding Obsidian Notes
+
+1. Copy your `.md` or `.mdx` files to `src/pages/notes/`
+2. Wikilinks `[[Note Name]]` work automatically!
+3. Use Mermaid diagrams and LaTeX math directly
+4. Update the notes array in `src/pages/notes.astro`
+
+See `OBSIDIAN-GUIDE.md` for full documentation.
 
 ### Adding Blog Posts
 
-Create new markdown files in `src/pages/blog/` with frontmatter:
+Create markdown files in `src/pages/blog/`:
 
 ```markdown
 ---
@@ -120,7 +193,9 @@ description: Post description
 
 ### Styling
 
-Global styles are in `src/layouts/BaseLayout.astro`. Component-specific styles are in each `.astro` file's `<style>` tag.
+- Global styles: `src/layouts/BaseLayout.astro`
+- Component styles: Each `.astro` file's `<style>` tag
+- Modify gradients, colors, and animations as needed
 
 ## Available Scripts
 
@@ -128,22 +203,74 @@ Global styles are in `src/layouts/BaseLayout.astro`. Component-specific styles a
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build locally
 
-## Browser Support
+## 🌟 Highlights
 
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
+### 3D Model Features
+- ✅ Drag to rotate, scroll to zoom
+- ✅ Light/Dark background toggle
+- ✅ Auto-rotate with double-click toggle
+- ✅ Reset view button
+- ✅ Performance optimized (frustum culling, memory cleanup)
+- ✅ Smooth animations (frame-rate independent)
 
-Requires WebGL support for 3D models.
+### Obsidian Features
+- ✅ Automatic wikilink conversion
+- ✅ Mermaid diagrams (with zoom, pan, fullscreen)
+- ✅ LaTeX math (with interactive zoom)
+- ✅ Code syntax highlighting
+- ✅ Tables, task lists, callouts
+- ✅ GitHub-flavored markdown
 
-## License
+### Performance
+- ✅ GPU-accelerated rendering
+- ✅ Lazy loading with Intersection Observer
+- ✅ Automatic memory management
+- ✅ Only renders visible objects
+- ✅ 60 FPS animations
+- ✅ Optimized for mobile
+
+## 🌐 Browser Support
+
+- ✅ Chrome 90+ (recommended)
+- ✅ Firefox 88+
+- ✅ Safari 14+
+- ✅ Edge 90+
+- ✅ Mobile browsers (iOS 14+, Android 9+)
+
+**Requirements:** WebGL support for 3D models
+
+## 📚 Documentation
+
+- `3D-MODELS-GUIDE.md` - Complete guide for 3D models
+- `OBSIDIAN-GUIDE.md` - Guide for Obsidian integration
+- Inline comments throughout the codebase
+
+## 🤝 Contributing
+
+Feel free to fork this repository and customize it for your own use! If you add interesting features, PRs are welcome.
+
+## 📄 License
 
 MIT License - feel free to use this template for your own website!
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
 - Built with [Astro](https://astro.build/)
 - 3D graphics powered by [Three.js](https://threejs.org/)
+- Diagrams with [Mermaid.js](https://mermaid.js.org/)
+- Math rendering with [KaTeX](https://katex.org/)
 - Hosted on [GitHub Pages](https://pages.github.com/)
 
+## 🎯 Future Enhancements
+
+Potential features to add:
+- [ ] Dark mode for entire site
+- [ ] Search functionality for notes
+- [ ] Tags and categories
+- [ ] RSS feed for blog
+- [ ] Comment system integration
+- [ ] Analytics integration
+
+---
+
+**Made with ❤️ using Astro and Three.js**
