@@ -74,14 +74,14 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     pointLight.position.set(5, 5, 5);
     scene.add(pointLight);
     
-    // Create geometry based on type
+    // Create geometry based on type (reduced complexity for performance)
     let geometry;
     switch (sceneType) {
       case 'sphere':
-        geometry = new THREE.SphereGeometry(1.5, 32, 32);
+        geometry = new THREE.SphereGeometry(1.5, 24, 24); // Reduced from 32x32
         break;
       case 'torus':
-        geometry = new THREE.TorusGeometry(1.2, 0.4, 16, 100);
+        geometry = new THREE.TorusGeometry(1.2, 0.4, 12, 48); // Reduced from 16x100
         break;
       default:
         geometry = new THREE.BoxGeometry(2, 2, 2);
@@ -97,14 +97,6 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     const mesh = new THREE.Mesh(geometry, material);
     mesh.matrixAutoUpdate = true; // Enable automatic matrix updates
     scene.add(mesh);
-    
-    // Add wireframe
-    const wireframe = new THREE.WireframeGeometry(geometry);
-    const line = new THREE.LineSegments(wireframe);
-    line.material.color = new THREE.Color(0x00ff88);
-    line.material.opacity = 0.3;
-    line.material.transparent = true;
-    scene.add(line);
     
     // Mouse interaction variables
     let isDragging = false;
@@ -131,8 +123,6 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
         
         mesh.rotation.x += rotationVelocity.x;
         mesh.rotation.y += rotationVelocity.y;
-        line.rotation.x += rotationVelocity.x;
-        line.rotation.y += rotationVelocity.y;
         
         previousMousePosition = { x: e.clientX, y: e.clientY };
       }
@@ -191,11 +181,22 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     
     observer.observe(container);
     
+    // Frame rate limiting
+    const targetFPS = 60;
+    const frameInterval = 1000 / targetFPS;
+    let lastFrameTime = 0;
+    
     // Animation
-    function animate() {
+    function animate(currentTime = 0) {
       if (!isVisible) return;
       
       animationId = requestAnimationFrame(animate);
+      
+      // Throttle to target FPS
+      const elapsed = currentTime - lastFrameTime;
+      if (elapsed < frameInterval) return;
+      
+      lastFrameTime = currentTime - (elapsed % frameInterval);
       
       // Get delta time for frame-rate independent animation
       const delta = clock.getDelta();
@@ -205,8 +206,6 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
         const rotationSpeed = 1.0; // radians per second
         mesh.rotation.x += rotationSpeed * delta * 0.3;
         mesh.rotation.y += rotationSpeed * delta * 0.6;
-        line.rotation.x += rotationSpeed * delta * 0.3;
-        line.rotation.y += rotationSpeed * delta * 0.6;
       }
       
       renderer.render(scene, camera);
@@ -236,11 +235,9 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     const cleanup = () => {
       // Dispose geometries
       geometry.dispose();
-      wireframe.dispose();
       
       // Dispose materials
       material.dispose();
-      (line.material as THREE.Material).dispose();
       
       // Dispose renderer
       renderer.dispose();

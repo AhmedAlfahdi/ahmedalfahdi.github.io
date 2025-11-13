@@ -101,8 +101,8 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap; // Better shadow quality/performance balance
+    // Shadows disabled for performance
+    renderer.shadowMap.enabled = false;
     
     // Enable frustum culling
     camera.matrixWorldNeedsUpdate = true;
@@ -110,17 +110,12 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
     // Clock for frame-rate independent animation
     const clock = new THREE.Clock();
     
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    // Lighting - simplified for performance
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
     
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(5, 5, 5);
-    directionalLight.castShadow = true;
-    scene.add(directionalLight);
-    
-    const pointLight = new THREE.PointLight(0xffffff, 0.5);
-    pointLight.position.set(-5, 5, -5);
+    const pointLight = new THREE.PointLight(0xffffff, 0.6);
+    pointLight.position.set(5, 5, 5);
     scene.add(pointLight);
     
     // Load model
@@ -254,11 +249,22 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
     
     observer.observe(container);
     
+    // Frame rate limiting
+    const targetFPS = 60;
+    const frameInterval = 1000 / targetFPS;
+    let lastFrameTime = 0;
+    
     // Animation loop
-    function animate() {
+    function animate(currentTime = 0) {
       if (!isVisible) return;
       
       animationId = requestAnimationFrame(animate);
+      
+      // Throttle to target FPS
+      const elapsed = currentTime - lastFrameTime;
+      if (elapsed < frameInterval) return;
+      
+      lastFrameTime = currentTime - (elapsed % frameInterval);
       
       // Get delta time for frame-rate independent animation
       const delta = clock.getDelta();

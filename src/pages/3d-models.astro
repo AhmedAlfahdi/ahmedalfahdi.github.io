@@ -18,7 +18,7 @@ import ThreeScene from '../components/ThreeScene.astro';
 
     <div class="model-section">
       <h2>Rotating Cube</h2>
-      <p>A classic 3D cube with wireframe overlay and dynamic lighting.</p>
+      <p>A classic 3D cube with dynamic lighting and smooth Phong shading.</p>
       <ThreeScene sceneType="cube" height="400px" />
     </div>
 
@@ -41,11 +41,11 @@ import ThreeScene from '../components/ThreeScene.astro';
         that makes WebGL easier to use. The models feature:
       </p>
       <ul>
-        <li>Real-time rendering at 60 FPS</li>
+        <li>Real-time rendering capped at 60 FPS for consistent performance</li>
         <li>Dynamic lighting with ambient and point lights</li>
-        <li>Wireframe overlays for visual interest</li>
-        <li>Smooth rotation animations</li>
+        <li>Smooth rotation animations using frame-rate independent delta time</li>
         <li>Responsive canvas sizing</li>
+        <li>Aggressive performance optimizations for smooth experience</li>
       </ul>
     </div>
   </div>

@@ -252,20 +252,24 @@ Adjust the `rotation` prop (in radians):
 
 ### Performance Optimizations
 
-The components include built-in optimizations:
-- ✅ **Frustum Culling** - Only renders visible objects
+The components include aggressive built-in optimizations for smooth performance:
+- ✅ **Frame Rate Capping** - Locks rendering to 60 FPS to prevent GPU spikes
+- ✅ **Frustum Culling** - Only renders objects visible to the camera
 - ✅ **Memory Management** - Automatic cleanup to prevent memory leaks
-- ✅ **Frame-Rate Independence** - Smooth animation at any FPS
-- ✅ **Intersection Observer** - Pauses off-screen animations
-- ✅ **Optimized Renderer** - Disabled unnecessary buffers (stencil)
-- ✅ **Shadow Quality Balance** - PCFShadowMap for best performance
+- ✅ **Frame-Rate Independence** - Smooth animation using delta time
+- ✅ **Intersection Observer** - Pauses off-screen animations completely
+- ✅ **Optimized Renderer** - Disabled unnecessary buffers (stencil, shadows)
+- ✅ **Simplified Lighting** - Reduced number of lights for better performance
+- ✅ **Optimized Geometry** - Reduced polygon counts for built-in shapes
+- ✅ **Pixel Ratio Limiting** - Caps at 2x for retina displays
 
 ### Additional Performance Tips
 
-1. Reduce model file size (keep under 5MB)
-2. Lower texture resolution (max 2048×2048)
-3. Reduce polygon count (aim for <100k polygons)
-4. Use compressed formats (GLB preferred over OBJ)
+1. **Keep models small** - Under 1MB for best performance
+2. **Optimize textures** - Max 2048×2048 pixels, use compression
+3. **Reduce polygon count** - Aim for <50k polygons for web
+4. **Use compressed formats** - GLB is best (smaller than GLTF/OBJ)
+5. **Avoid multiple models** - Load models on separate pages when possible
 
 ## Advanced: Multiple Models on One Page
 

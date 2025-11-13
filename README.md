@@ -9,7 +9,7 @@ A modern, feature-rich personal website with interactive 3D models, Obsidian not
 - Support for multiple formats: GLTF, GLB, OBJ
 - Interactive controls (rotate, zoom, background toggle)
 - Embedded models in markdown files
-- Performance optimized with frustum culling and memory management
+- Aggressive performance optimizations (60 FPS cap, frustum culling, memory management)
 - Frame-rate independent animations (smooth at any FPS)
 
 ### 📝 Obsidian Notes Integration
@@ -22,12 +22,14 @@ A modern, feature-rich personal website with interactive 3D models, Obsidian not
 - GitHub-flavored markdown
 
 ### 🎯 Performance Optimizations
-- Intersection Observer for lazy loading
-- Frustum culling (only renders visible objects)
-- Automatic memory cleanup (prevents leaks)
-- GPU-accelerated animations
-- Optimized renderer settings
-- Smooth 60 FPS on all devices
+- **Frame rate capping** - Locked to 60 FPS to prevent GPU spikes
+- **Intersection Observer** - Lazy loading, pauses off-screen animations
+- **Frustum culling** - Only renders objects visible to the camera
+- **Memory management** - Automatic cleanup prevents memory leaks
+- **Optimized renderer** - Shadows & unnecessary buffers disabled
+- **Simplified lighting** - Reduced light count for better performance
+- **Optimized geometry** - Lower polygon counts for built-in shapes
+- **Frame-rate independence** - Smooth animations using delta time
 
 ### 🎨 UI Features
 - Light/Dark background toggle for 3D objects
