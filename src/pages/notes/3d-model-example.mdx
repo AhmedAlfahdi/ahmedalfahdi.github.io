@@ -1,0 +1,118 @@
+---
+layout: ../../layouts/BaseLayout.astro
+title: Embedding 3D Models
+description: How to embed custom 3D models in your markdown files
+---
+
+import Model3D from '../../components/Model3D.astro';
+
+# Embedding 3D Models in Markdown
+
+This page demonstrates how to embed your own 3D models in markdown files.
+
+## Basic Usage
+
+Simply use the `<Model3D>` component with the path to your model file:
+
+```mdx
+<Model3D src="/models/your-model.glb" />
+```
+
+## Interactive Controls
+
+🖱️ **Controls:**
+- **Click & Drag** - Rotate the model
+- **Scroll** - Zoom in/out
+- **Double-click** - Toggle auto-rotation
+- **Background Button** - Toggle between light/dark backgrounds (top-right corner)
+
+## Custom Configuration
+
+### Adjust Size and Position
+
+```mdx
+<Model3D 
+  src="/models/your-model.glb" 
+  height="600px"
+  scale={2}
+  position={[0, -1, 0]}
+/>
+```
+
+### Control Rotation
+
+```mdx
+<Model3D 
+  src="/models/your-model.glb"
+  rotation={[0, Math.PI / 4, 0]}
+  autoRotate={false}
+/>
+```
+
+### Custom Background
+
+```mdx
+<!-- Transparent background -->
+<Model3D src="/models/your-model.glb" background="transparent" />
+
+<!-- Custom color -->
+<Model3D src="/models/your-model.glb" background="#ff6b6b" />
+```
+
+## Component Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `src` | string | required | Path to model file |
+| `height` | string | `"500px"` | Container height |
+| `scale` | number | `1` | Model scale multiplier |
+| `position` | [x,y,z] | `[0,0,0]` | Model position offset |
+| `rotation` | [x,y,z] | `[0,0,0]` | Initial rotation (radians) |
+| `autoRotate` | boolean | `true` | Auto-rotate model |
+| `background` | string | `"default"` | Background color or "transparent" |
+
+## Supported Formats
+
+**Recommended: GLTF/GLB**
+- Includes textures, materials, animations
+- Best compression
+- Industry standard
+
+**Also Supported: OBJ**
+- Basic geometry only
+- No textures/materials
+- Simpler format
+
+## Finding 3D Models
+
+Download free models from:
+- [Sketchfab](https://sketchfab.com/) - Largest collection
+- [Poly Pizza](https://poly.pizza/) - Low-poly models
+- [Quaternius](http://quaternius.com/) - Free game assets
+- [KenShape](https://kenney.nl/assets) - Free game assets
+
+## Example: Multiple Models
+
+You can embed multiple models on one page:
+
+```mdx
+<Model3D src="/models/model1.glb" height="400px" />
+<Model3D src="/models/model2.glb" height="400px" />
+```
+
+## Performance Tips
+
+1. ✅ Keep models under 5MB
+2. ✅ Use GLB format for compression
+3. ✅ Optimize textures (max 2048×2048)
+4. ✅ Reduce polygon count
+5. ✅ Automatic performance optimizations (frustum culling, memory management)
+
+---
+
+**Ready to add your models?**
+
+1. Place `.glb` or `.gltf` files in `/public/models/`
+2. Reference them with `<Model3D src="/models/filename.glb" />`
+3. Customize with props as needed!
+

@@ -1,0 +1,233 @@
+---
+// This component adds click-to-zoom functionality to all math equations
+---
+
+<div id="math-zoom-modal" class="math-modal">
+  <div class="math-modal-backdrop"></div>
+  <div class="math-modal-content">
+    <button class="math-modal-close" title="Close (Esc)">×</button>
+    <div class="math-modal-equation"></div>
+  </div>
+</div>
+
+<script>
+  function initMathZoom() {
+    const modal = document.getElementById('math-zoom-modal');
+    const backdrop = modal?.querySelector('.math-modal-backdrop');
+    const content = modal?.querySelector('.math-modal-content');
+    const closeBtn = modal?.querySelector('.math-modal-close');
+    const equationContainer = modal?.querySelector('.math-modal-equation');
+    
+    if (!modal || !backdrop || !content || !closeBtn || !equationContainer) return;
+    
+    // Function to show modal
+    function showModal(equation: HTMLElement) {
+      const clone = equation.cloneNode(true) as HTMLElement;
+      
+      // Reset container styles
+      equationContainer.innerHTML = '';
+      equationContainer.style.transform = '';
+      
+      // Add the cloned equation
+      equationContainer.appendChild(clone);
+      
+      // Adjust modal content width based on equation size
+      const equationWidth = clone.scrollWidth;
+      if (equationWidth > 600) {
+        content.style.maxWidth = '95vw';
+      } else {
+        content.style.maxWidth = '90vw';
+      }
+      
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    // Function to hide modal
+    function hideModal() {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    
+    // Add click handlers to all math equations
+    function attachHandlers() {
+      // Block math (display equations)
+      document.querySelectorAll('.katex-display').forEach((eq) => {
+        if (eq.hasAttribute('data-zoom-enabled')) return;
+        eq.setAttribute('data-zoom-enabled', 'true');
+        eq.classList.add('math-zoomable');
+        
+        eq.addEventListener('click', () => {
+          showModal(eq as HTMLElement);
+        });
+      });
+      
+      // Inline math
+      document.querySelectorAll('.katex:not(.katex-display)').forEach((eq) => {
+        const parent = eq.parentElement;
+        if (!parent || parent.hasAttribute('data-zoom-enabled')) return;
+        parent.setAttribute('data-zoom-enabled', 'true');
+        parent.classList.add('math-zoomable');
+        
+        parent.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showModal(eq as HTMLElement);
+        });
+      });
+    }
+    
+    // Close modal handlers
+    closeBtn.addEventListener('click', hideModal);
+    backdrop.addEventListener('click', hideModal);
+    
+    // ESC key to close
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) {
+        hideModal();
+      }
+    });
+    
+    // Initial attachment
+    attachHandlers();
+    
+    // Re-attach after a delay (for dynamically loaded content)
+    setTimeout(attachHandlers, 500);
+    setTimeout(attachHandlers, 1000);
+  }
+  
+  // Run on load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMathZoom);
+  } else {
+    initMathZoom();
+  }
+</script>
+
+<style is:global>
+  .math-zoomable {
+    cursor: zoom-in;
+    transition: background-color 0.2s;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    position: relative;
+  }
+  
+  .math-zoomable:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+  }
+  
+  .math-zoomable::after {
+    content: '🔍';
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 0.8em;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+  
+  .math-zoomable:hover::after {
+    opacity: 0.5;
+  }
+  
+  .math-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .math-modal.active {
+    display: flex;
+  }
+  
+  .math-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+  }
+  
+  .math-modal-content {
+    position: relative;
+    background: white;
+    color: #333;
+    padding: 4rem;
+    border-radius: 12px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: modalZoom 0.3s ease-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  @keyframes modalZoom {
+    from {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  .math-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    line-height: 1;
+    z-index: 10;
+  }
+  
+  .math-modal-close:hover {
+    background: #c0392b;
+    transform: rotate(90deg);
+  }
+  
+  .math-modal-equation {
+    display: block;
+    width: 100%;
+    text-align: center;
+    overflow-x: auto;
+  }
+  
+  .math-modal-equation .katex-display {
+    margin: 0;
+    font-size: 2em !important;
+  }
+  
+  .math-modal-equation .katex {
+    font-size: 2em !important;
+  }
+  
+  .math-modal-equation .katex .base {
+    display: inline-block;
+    white-space: nowrap;
+  }
+</style>
+

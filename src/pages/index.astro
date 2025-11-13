@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ThreeScene from '../components/ThreeScene.astro';
+---
+
+<BaseLayout title="Home - My Personal Website">
+  <div class="container">
+    <h1>Welcome to My Personal Website</h1>
+    
+    <p>
+      This is a demo website built with Astro, featuring interactive 3D models 
+      powered by Three.js and beautiful markdown rendering. All hosted on GitHub Pages!
+    </p>
+
+    <h2>Interactive 3D Cube</h2>
+    <div class="interaction-hint">
+      🖱️ <strong>Try it:</strong> Click and drag to rotate • Scroll to zoom • Double-click to toggle auto-rotation • Click button to toggle background
+    </div>
+    <ThreeScene sceneType="cube" />
+
+    <h2>About This Site</h2>
+    <p>
+      This site demonstrates the power of modern web technologies:
+    </p>
+    <ul style="margin-left: 2rem; margin-bottom: 1rem;">
+      <li><strong>Astro</strong> - Fast, content-focused static site generator</li>
+      <li><strong>Three.js</strong> - WebGL 3D graphics library</li>
+      <li><strong>Markdown/MDX</strong> - Easy content authoring</li>
+      <li><strong>GitHub Pages</strong> - Free hosting</li>
+    </ul>
+
+    <h2>Features</h2>
+    <ul style="margin-left: 2rem;">
+      <li>🎨 Interactive 3D models with real-time rendering</li>
+      <li>📝 Markdown content with syntax highlighting</li>
+      <li>⚡ Lightning-fast performance with Astro</li>
+      <li>📱 Fully responsive design</li>
+      <li>🚀 Optimized for production</li>
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  ul {
+    color: #555;
+    line-height: 1.8;
+  }
+  
+  strong {
+    color: #2c3e50;
+  }
+
+  .interaction-hint {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    text-align: center;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .interaction-hint strong {
+    color: white;
+    font-weight: 600;
+  }
+</style>
+

@@ -1,0 +1,212 @@
+---
+layout: ../../layouts/BaseLayout.astro
+title: Obsidian Features Demo
+description: A demonstration of Obsidian-compatible features
+---
+
+import Mermaid from '../../components/Mermaid.astro';
+
+# Obsidian Features Demo
+
+This page demonstrates various Obsidian features that work on this website.
+
+## Mermaid Diagrams
+
+<Mermaid chart={`
+graph TD
+    A[Start] --> B{Is it working?}
+    B -->|Yes| C[Awesome!]
+    B -->|No| D[Check setup]
+    D --> E[Install dependencies]
+    E --> A
+    C --> F[Build amazing things]
+`} />
+
+### Flowchart Example
+
+<Mermaid chart={`
+flowchart LR
+    A[Obsidian Notes] --> B[Export to Markdown]
+    B --> C[Add to Website]
+    C --> D[Automatic Rendering]
+    D --> E[Beautiful Output]
+`} />
+
+### Sequence Diagram
+
+<Mermaid chart={`
+sequenceDiagram
+    participant U as User
+    participant B as Browser
+    participant S as Server
+    U->>B: Visit website
+    B->>S: Request page
+    S->>B: Send HTML/JS
+    B->>U: Render 3D models
+    U->>B: Interact with models
+`} />
+
+### Class Diagram
+
+<Mermaid chart={`
+classDiagram
+    class Website {
+        +String title
+        +Array pages
+        +render()
+        +deploy()
+    }
+    class ThreeScene {
+        +String type
+        +Camera camera
+        +Renderer renderer
+        +animate()
+    }
+    class MarkdownPage {
+        +String content
+        +Object frontmatter
+        +renderMermaid()
+    }
+    Website --> ThreeScene
+    Website --> MarkdownPage
+`} />
+
+---
+
+## Math Equations
+
+Inline math: The quadratic formula is $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$
+
+Block math:
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+$$
+
+More examples:
+
+$$
+E = mc^2
+$$
+
+$$
+\nabla \times \vec{E} = -\frac{\partial \vec{B}}{\partial t}
+$$
+
+---
+
+## Tables
+
+| Feature | Supported | Notes |
+|---------|-----------|-------|
+| Mermaid Diagrams | ✅ | Flowcharts, sequences, etc. |
+| Math (LaTeX) | ✅ | Inline and block equations |
+| Code Blocks | ✅ | With syntax highlighting |
+| Tables | ✅ | GitHub-flavored markdown |
+| Task Lists | ✅ | Interactive checkboxes |
+| Callouts | ✅ | Via blockquotes |
+| 3D Models | ✅ | Three.js integration |
+
+---
+
+## Code Blocks
+
+JavaScript example:
+
+```javascript
+function fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+console.log(fibonacci(10)); // 55
+```
+
+Python example:
+
+```python
+def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        for j in range(0, n-i-1):
+            if arr[j] > arr[j+1]:
+                arr[j], arr[j+1] = arr[j+1], arr[j]
+    return arr
+```
+
+---
+
+## Callouts / Blockquotes
+
+> **💡 Note:** This is an Obsidian-style callout. You can use these for important information, tips, warnings, and more!
+
+> **⚠️ Warning:** Make sure to install all dependencies before running the dev server.
+
+> **✅ Success:** All Obsidian features are now working on your website!
+
+---
+
+## Task Lists
+
+- [x] Set up Astro project
+- [x] Add Three.js for 3D models
+- [x] Configure Mermaid diagrams
+- [x] Add math equation support
+- [ ] Add more Obsidian notes
+- [ ] Deploy to GitHub Pages
+- [ ] Share with the world!
+
+---
+
+## Links and References
+
+Internal navigation:
+- [Home page](/)
+- [About](/about)
+- [3D Models Gallery](/3d-models)
+
+External links:
+- [Obsidian](https://obsidian.md)
+- [Mermaid JS](https://mermaid.js.org)
+- [Three.js](https://threejs.org)
+
+---
+
+## Images
+
+You can add images from your Obsidian vault:
+
+```markdown
+![Alt text](/path/to/image.png)
+```
+
+---
+
+## Combining Features
+
+Here's a workflow diagram with a math formula:
+
+<Mermaid chart={`
+graph LR
+    A[Write Notes] --> B[Add Math: $E=mc^2$]
+    B --> C[Add Diagrams]
+    C --> D[Export & Deploy]
+`} />
+
+The formula $\sum_{i=1}^{n} i = \frac{n(n+1)}{2}$ demonstrates inline math alongside diagrams.
+
+---
+
+## Tips for Obsidian Users
+
+1. **Export your notes**: Copy `.md` files from your Obsidian vault
+2. **Add frontmatter**: Include title, description, and layout
+3. **Convert wiki-links**: Change `[[Note]]` to `[Note](/notes/note)`
+4. **Mermaid diagrams**: Use the `<Mermaid>` component for diagrams
+5. **Math**: LaTeX math works automatically with `$` and `$$`
+6. **Images**: Store in `/public` folder and reference with `/image.png`
+
+---
+
+**Last updated:** November 13, 2025
+

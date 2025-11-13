@@ -1,0 +1,246 @@
+---
+layout: ../../layouts/BaseLayout.astro
+title: Assembly Multiplication & Division (0x09)
+description: Deep dive into MUL, IMUL, and DIV operations in x86 assembly
+---
+
+import Mermaid from '../../components/Mermaid.astro';
+import Model3D from '../../components/Model3D.astro';
+
+# Assembly Multiplication & Division (0x09)
+
+## Key Topics Covered:
+
+- Quick recap of sign extension and its importance in addition and subtraction
+- Explanation of the mul mnemonic and how to use it with different registers (8-bit, 16-bit, 32-bit)
+- Structure of the mul mnemonic and the importance of knowing where to place values
+- Inability to use immediate values with MUL
+- Explanation of the MUL mnemonic and how to use it with different registers
+- Performing signed multiplication with one or two sources
+- Multiple examples, including negative numbers using two's complement
+- Explanation of the div mnemonic and how to use it
+- Structure of the div mnemonic and the importance of knowing where to place values
+- How the result is displayed in registers as quotient and remainder
+- Impact of source size on the operation
+
+## Downloaded Material
+
+- Arithmetic_Reverse Engineering_0x09_0.47MB.pdf
+- asm09_Reverse Engineering_0x09_0.01MB.zip
+
+<Model3D src="/models/Axe.glb" />
+
+## Notes
+
+### Multiplication Types
+
+<Mermaid chart={`
+graph TD
+    A[Multiplication Operations] --> B[Unsigned - MUL]
+    A --> C[Signed - IMUL]
+    B --> D[Positive numbers only]
+    C --> E[Positive & Negative numbers]
+`} />
+
+1. **Unsigned** (positive numbers only)
+2. **Signed** (positive and negative numbers)
+
+---
+
+## Unsigned Multiplication
+
+We use `MUL` for positive numbers. The format requires only one input. This follows the implicit multiplication format. Implicit multiplicand is always AL (8-bit), AX (16-bit), EAX (32-bit), or RAX (64-bit).
+
+| Operand Size | Multiplicand (implicit)      | Multiplier (explicit operand) | Result stored in                   | Result size          |
+| ------------ | ---------------------------- | ----------------------------- | ---------------------------------- | -------------------- |
+| 8-bit        | AL (Accumulator Lower 8-bit) | 8-bit operand                 | AX (Accumulator 16-bit)            | 16-bit (double size) |
+| 16-bit       | AX (Accumulator 16-bit)      | 16-bit operand                | DX:AX (DX high 16-bit, AX low)     | 32-bit               |
+| 32-bit       | EAX (Accumulator 32-bit)     | 32-bit operand                | EDX:EAX (EDX high 32-bit, EAX low) | 64-bit               |
+| 64-bit       | RAX (Accumulator 64-bit)     | 64-bit operand                | RDX:RAX (RDX high 64-bit, RAX low) | 128-bit              |
+
+> **💡 Hint:** The format `DX:AX` shows that the MSB (Most Significant Byte) is stored in `DX` and LSB is stored in `AX`
+
+---
+
+### Example 1 (8-bit):
+
+```asm
+mov al, 10      ; Load AL with 10 (decimal) note that this is the implicit number
+mov bl, 25      ; Load BL with 25 (decimal)
+mul bl          ; Multiply AL by BL (10 * 25 = 250)
+                ; Result stored in AX (16-bit): AL = lower byte, AH = higher byte
+; AX = 00FAh (hex for 250 decimal)
+```
+
+This example is for 8-bit. The number `10` is 8-bit and number `25` is 8-bit. The multiplication result will be 16-bit, and therefore it must be stored in the `AX` register which is a 16-bit register.
+
+**Verification:**
+
+$$
+\text{hex}(0x00FA) = 250_{10}
+$$
+
+```asm
+Register Dump # 0
+EAX = 00000000 EBX = 00000000 ECX = 00000000 EDX = 00000000
+ESI = 00874088 EDI = 0087C650 EBP = 0019FF20 ESP = 0019FF00
+EIP = 001D89FA FLAGS = 0246          ZF    PF
+
+Register Dump # 1
+EAX = 000000FA EBX = 00000019 ECX = 00000000 EDX = 00000000
+ESI = 00874088 EDI = 0087C650 EBP = 0019FF20 ESP = 0019FF00
+EIP = 001D8A07 FLAGS = 0246          ZF    PF
+```
+
+---
+
+### Example 2 (16-bit):
+
+```asm
+mov ax, 0x3344  ; Load AX with 3344h
+mov bx, 0x1122  ; Load BX with 1122h
+mul bx          ; Multiply AX by BX
+                ; Result stored in DX:AX (32-bit)
+; DX:AX = 036E5308h (since 0x3344 * 0x1122 = 0x036E5308)
+```
+
+```asm
+Register Dump # 0
+EAX = 00000000 EBX = 00000000 ECX = 00000000 EDX = 00000000
+ESI = 007E4088 EDI = 007EC650 EBP = 0019FF20 ESP = 0019FF00
+EIP = 00B289FA FLAGS = 0246          ZF    PF
+
+Register Dump # 1
+EAX = 00005308 EBX = 00001122 ECX = 00000000 EDX = 0000036E
+ESI = 007E4088 EDI = 007EC650 EBP = 0019FF20 ESP = 0019FF00
+EIP = 00B28A0C FLAGS = 0A47 OF       ZF    PF CF
+```
+
+
+
+---
+
+### Example 3 (32-bit):
+
+```asm
+mov eax, 12345h ; Load EAX with 0x12345
+mov ebx, 1000h  ; Load EBX with 0x1000
+mul ebx         ; Multiply EAX by EBX
+                ; Result stored in EDX:EAX (64-bit)
+; EDX:EAX = 0000000012345000h
+```
+
+```asm
+Register Dump # 0
+EAX = 00000000 EBX = 00000000 ECX = 00000000 EDX = 00000000
+ESI = 006140A0 EDI = 0061C670 EBP = 0019FF20 ESP = 0019FF00
+EIP = 007D89FA FLAGS = 0246          ZF    PF
+
+Register Dump # 1
+EAX = 12345000 EBX = 00001000 ECX = 00000000 EDX = 00000000
+ESI = 006140A0 EDI = 0061C670 EBP = 0019FF20 ESP = 0019FF00
+EIP = 007D8A0D FLAGS = 0246          ZF    PF
+```
+
+---
+
+### Example 4 (64-bit):
+
+```asm
+mov rax, 0x123456789ABCDEF0    ; Load RAX with a 64-bit value
+mov rbx, 0x100000000           ; Load RBX with another 64-bit value
+mul rbx                        ; Multiply RAX by RBX (unsigned)
+; Result is stored in RDX:RAX (128-bit)
+```
+
+> **⚠️ Error:** When trying to compile this using `build_x86` it gives a fatal error. That is because the compiler (assembler) needs to be `x64`. Also, the `dump-regs` function is written for `x86` only.
+
+---
+
+## Signed Multiplication (IMUL)
+
+Comparison between signed and unsigned:
+
+| Instruction | Operand Type | Result Sign                        | Comments                     |
+| ----------- | ------------ | ---------------------------------- | ---------------------------- |
+| `mul`       | Unsigned     | Always ≥ 0 (non-negative)          | Product treated as unsigned  |
+| `imul`      | Signed       | Can be negative, zero, or positive | Product with signed operands |
+
+### IMUL Forms:
+
+- The **single-operand form** multiplies the accumulator by the supplied operand and stores the full result in a register pair (e.g., EDX:EAX for 32-bit).
+- The **two-operand form** is like `dest = dest * src`.
+- The **three-operand form** is `dest = src * immediate`.
+- `imul` treats operands as **signed integers**, so the result can be negative or positive depending on inputs.
+- Flags (overflow, carry) are set according to whether the full result fits in the destination operand.
+
+---
+
+### Single-operand form
+
+```asm
+; 8-bit example, multiply AL by BL, result in AX (16 bits)
+mov al, -4
+mov bl, 4
+imul bl   ; AX = AL * BL = -4 * 4 = -16 (0xFFF0)
+
+; 16-bit example, multiply AX by BX, result in DX:AX
+mov ax, -3000
+mov bx, 3
+imul bx   ; DX:AX = AX * BX (32-bit signed product)
+```
+
+---
+
+### Two-operand form
+
+```asm
+; Multiply EBX by ECX, store the signed 32-bit result in EAX
+mov ebx, -10
+mov ecx, 20
+imul eax, ebx       ; stored at EAX = EBX * 20  (EAX = -10 * 20 = -200)
+
+imul ecx, ebx       ; stored at ECX = ECX * EBX (ECX = 20 * -10 = -200)
+```
+
+---
+
+### Three-operand form
+
+Multiply a register/memory operand by an immediate constant, store the product in a register.
+
+```asm
+imul ecx, ebx, 1234   ; ecx = ebx * 1234 (signed multiply)
+
+imul eax, eax, -22    ; eax = eax * -22
+```
+
+---
+
+## Visual Summary
+
+<Mermaid chart={`
+graph LR
+    A[MUL/IMUL Operations] --> B[8-bit]
+    A --> C[16-bit]
+    A --> D[32-bit]
+    A --> E[64-bit]
+    
+    B --> B1[AL × operand → AX]
+    C --> C1[AX × operand → DX:AX]
+    D --> D1[EAX × operand → EDX:EAX]
+    E --> E1[RAX × operand → RDX:RAX]
+    
+    style A fill:#667eea
+    style B1 fill:#3498db
+    style C1 fill:#3498db
+    style D1 fill:#3498db
+    style E1 fill:#3498db
+`} />
+
+---
+
+**Tags:** #assembly #x86 #multiplication #reverse-engineering
+
+**Last updated:** July 23, 2025
+

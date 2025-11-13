@@ -1,0 +1,201 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const notes = [
+  {
+    title: "Embedding 3D Models",
+    slug: "3d-model-example",
+    excerpt: "Learn how to embed custom 3D models (.gltf, .glb, .obj) in your markdown files",
+    date: "2025-11-13",
+    tags: ["3d", "models", "tutorial"]
+  },
+  {
+    title: "Assembly Multiplication & Division (0x09)",
+    slug: "reverse-engineering-0x09",
+    excerpt: "Deep dive into MUL, IMUL, and DIV operations in x86 assembly with examples",
+    date: "2025-07-23",
+    tags: ["assembly", "x86", "reverse-engineering"]
+  },
+  {
+    title: "Wikilink Support Test",
+    slug: "wikilink-test",
+    excerpt: "Testing automatic Obsidian-style wikilink conversion",
+    date: "2025-11-13",
+    tags: ["obsidian", "wikilinks", "test"]
+  },
+  {
+    title: "Obsidian Features Demo",
+    slug: "obsidian-demo",
+    excerpt: "Demonstration of Mermaid diagrams, math equations, tables, and more",
+    date: "2025-11-13",
+    tags: ["obsidian", "mermaid", "math"]
+  }
+];
+---
+
+<BaseLayout title="Notes">
+  <div class="container">
+    <h1>📝 My Notes</h1>
+    <p>A collection of notes from my Obsidian vault, featuring diagrams, equations, and interactive content.</p>
+
+    <div class="notes-info">
+      <h2>What You'll Find Here</h2>
+      <ul>
+        <li>🎨 Mermaid diagrams (flowcharts, sequence diagrams, class diagrams)</li>
+        <li>📐 Mathematical equations (LaTeX support)</li>
+        <li>📊 Tables and data visualization</li>
+        <li>✅ Task lists and project tracking</li>
+        <li>💡 Knowledge base articles</li>
+        <li>🔗 Interconnected notes</li>
+      </ul>
+    </div>
+
+    <div class="notes-grid">
+      {notes.map(note => (
+        <article class="note-card">
+          <h2><a href={`/notes/${note.slug}`}>{note.title}</a></h2>
+          <time>{note.date}</time>
+          <p>{note.excerpt}</p>
+          <div class="tags">
+            {note.tags.map(tag => (
+              <span class="tag">#{tag}</span>
+            ))}
+          </div>
+          <a href={`/notes/${note.slug}`} class="read-more">Read note →</a>
+        </article>
+      ))}
+    </div>
+
+    <div class="add-notes">
+      <h2>Adding Your Own Notes</h2>
+      <p>To add notes from your Obsidian vault:</p>
+      <ol>
+        <li>Copy your <code>.md</code> files to <code>src/pages/notes/</code></li>
+        <li>Add frontmatter with layout, title, and description</li>
+        <li>Convert wiki-links <code>[[Note]]</code> to markdown links <code>[Note](/notes/note)</code></li>
+        <li>Use the <code>&lt;Mermaid&gt;</code> component for diagrams</li>
+        <li>Math equations work automatically with <code>$</code> delimiters</li>
+      </ol>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .notes-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+  }
+
+  .notes-info h2 {
+    color: white;
+    margin-top: 0;
+  }
+
+  .notes-info ul {
+    color: white;
+    line-height: 1.8;
+  }
+
+  .notes-info ul li::before {
+    color: white;
+  }
+
+  .notes-grid {
+    display: grid;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .note-card {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .note-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .note-card h2 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .note-card h2 a {
+    color: #2c3e50;
+    text-decoration: none;
+  }
+
+  .note-card h2 a:hover {
+    color: #667eea;
+  }
+
+  .note-card time {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+  }
+
+  .note-card p {
+    margin-top: 1rem;
+  }
+
+  .tags {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    background: #667eea;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+  }
+
+  .read-more {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block;
+    margin-top: 1rem;
+  }
+
+  .read-more:hover {
+    text-decoration: underline;
+  }
+
+  .add-notes {
+    background: #e8f4f8;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-top: 3rem;
+    border-left: 4px solid #3498db;
+  }
+
+  .add-notes h2 {
+    margin-top: 0;
+    color: #2980b9;
+  }
+
+  .add-notes ol {
+    margin-left: 2rem;
+    color: #555;
+    line-height: 1.8;
+  }
+
+  .add-notes code {
+    background: #fff;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    color: #e74c3c;
+  }
+</style>
+

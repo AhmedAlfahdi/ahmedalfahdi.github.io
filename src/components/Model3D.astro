@@ -1,0 +1,392 @@
+---
+interface Props {
+  src: string;
+  height?: string;
+  scale?: number;
+  position?: [number, number, number];
+  rotation?: [number, number, number];
+  autoRotate?: boolean;
+  background?: string;
+}
+
+const { 
+  src, 
+  height = '500px', 
+  scale = 1,
+  position = [0, 0, 0],
+  rotation = [0, 0, 0],
+  autoRotate = true,
+  background = 'default'
+} = Astro.props;
+
+const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<div class="model3d-wrapper" id={containerId}>
+  <button class="bg-toggle-btn" title="Toggle Background">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+      <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
+    </svg>
+  </button>
+  <div 
+    class="model3d-container" 
+    style={`height: ${height}`}
+    data-src={src}
+    data-scale={scale}
+    data-position={JSON.stringify(position)}
+    data-rotation={JSON.stringify(rotation)}
+    data-auto-rotate={autoRotate}
+    data-background={background}
+  >
+    <div class="loading-indicator">Loading 3D model...</div>
+  </div>
+</div>
+
+<script>
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+  import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+  
+  document.querySelectorAll('.model3d-wrapper').forEach(async (wrapperEl: Element) => {
+    const wrapper = wrapperEl as HTMLElement;
+    const container = wrapper.querySelector('.model3d-container') as HTMLElement;
+    
+    // Skip if already initialized
+    if (container.querySelector('canvas')) return;
+    
+    // Get configuration from data attributes
+    const src = container.dataset.src!;
+    const scale = parseFloat(container.dataset.scale || '1');
+    const position = JSON.parse(container.dataset.position || '[0,0,0]');
+    const rotation = JSON.parse(container.dataset.rotation || '[0,0,0]');
+    const autoRotate = container.dataset.autoRotate === 'true';
+    const bgColor = container.dataset.background || 'default';
+    
+    const loadingIndicator = container.querySelector('.loading-indicator') as HTMLElement;
+    
+    // Scene setup
+    const scene = new THREE.Scene();
+    const isDark = document.documentElement.classList.contains('dark');
+    
+    // Background toggle state (0: light, 1: dark)
+    let bgMode = 0;
+    const bgColors = bgColor === 'transparent' ? [null, null] : [0xf0f0f0, 0x1a1a2e]; // light, dark
+    
+    // Set initial background
+    if (bgColor === 'transparent') {
+      scene.background = null;
+    } else if (bgColor === 'default') {
+      scene.background = new THREE.Color(bgColors[0] as number);
+    } else {
+      scene.background = new THREE.Color(bgColor);
+    }
+    
+    // Camera
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      container.clientWidth / container.clientHeight,
+      0.1,
+      1000
+    );
+    camera.position.set(0, 0, 5);
+    
+    // Renderer with optimizations
+    const renderer = new THREE.WebGLRenderer({ 
+      antialias: true,
+      alpha: bgColor === 'transparent',
+      powerPreference: 'high-performance',
+      stencil: false, // Disable stencil buffer if not needed
+      depth: true
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap; // Better shadow quality/performance balance
+    
+    // Enable frustum culling
+    camera.matrixWorldNeedsUpdate = true;
+    
+    // Clock for frame-rate independent animation
+    const clock = new THREE.Clock();
+    
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 5, 5);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight);
+    
+    const pointLight = new THREE.PointLight(0xffffff, 0.5);
+    pointLight.position.set(-5, 5, -5);
+    scene.add(pointLight);
+    
+    // Load model
+    let model: THREE.Object3D;
+    const fileExtension = src.split('.').pop()?.toLowerCase();
+    
+    try {
+      if (fileExtension === 'gltf' || fileExtension === 'glb') {
+        const loader = new GLTFLoader();
+        const gltf = await loader.loadAsync(src);
+        model = gltf.scene;
+      } else if (fileExtension === 'obj') {
+        const loader = new OBJLoader();
+        model = await loader.loadAsync(src);
+      } else {
+        throw new Error(`Unsupported file format: ${fileExtension}`);
+      }
+      
+      // Apply transformations
+      model.scale.set(scale, scale, scale);
+      model.position.set(position[0], position[1], position[2]);
+      model.rotation.set(rotation[0], rotation[1], rotation[2]);
+      
+      // Enable frustum culling for all meshes
+      model.traverse((child) => {
+        if ((child as any).isMesh) {
+          (child as any).frustumCulled = true; // Only render what's visible
+          (child as any).matrixAutoUpdate = true;
+        }
+      });
+      
+      // Center the model
+      const box = new THREE.Box3().setFromObject(model);
+      const center = box.getCenter(new THREE.Vector3());
+      model.position.x -= center.x;
+      model.position.y -= center.y;
+      model.position.z -= center.z;
+      
+      // Adjust camera based on model size
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      camera.position.z = maxDim * 2;
+      
+      scene.add(model);
+      
+      // Hide loading indicator and show canvas
+      loadingIndicator.style.display = 'none';
+      container.appendChild(renderer.domElement);
+      
+    } catch (error) {
+      console.error('Error loading 3D model:', error);
+      loadingIndicator.textContent = `Error loading model: ${error.message}`;
+      loadingIndicator.style.color = '#e74c3c';
+      return;
+    }
+    
+    // Mouse interaction
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+    let modelRotation = { x: 0, y: 0 };
+    
+    container.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+      container.style.cursor = 'grabbing';
+    });
+    
+    container.addEventListener('mousemove', (e) => {
+      if (isDragging && model) {
+        const deltaX = e.clientX - previousMousePosition.x;
+        const deltaY = e.clientY - previousMousePosition.y;
+        
+        modelRotation.y += deltaX * 0.01;
+        modelRotation.x += deltaY * 0.01;
+        
+        model.rotation.y = modelRotation.y;
+        model.rotation.x = modelRotation.x;
+        
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+      }
+    });
+    
+    container.addEventListener('mouseup', () => {
+      isDragging = false;
+      container.style.cursor = 'grab';
+    });
+    
+    container.addEventListener('mouseleave', () => {
+      isDragging = false;
+      container.style.cursor = 'grab';
+    });
+    
+    // Zoom with mouse wheel
+    container.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomSpeed = 0.1;
+      camera.position.z += e.deltaY * zoomSpeed * 0.01;
+      camera.position.z = Math.max(1, Math.min(20, camera.position.z));
+    }, { passive: false });
+    
+    container.style.cursor = 'grab';
+    
+    // Background toggle button
+    const bgToggleBtn = wrapper.querySelector('.bg-toggle-btn') as HTMLElement;
+    if (bgToggleBtn && bgColor !== 'transparent') {
+      bgToggleBtn.addEventListener('click', () => {
+        bgMode = (bgMode + 1) % bgColors.length;
+        if (bgColors[bgMode] !== null) {
+          scene.background = new THREE.Color(bgColors[bgMode] as number);
+        } else {
+          scene.background = null;
+        }
+      });
+    }
+    
+    // Intersection Observer for performance
+    let isVisible = true;
+    let animationId = null;
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        isVisible = entry.isIntersecting;
+        if (!isVisible && animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        } else if (isVisible && !animationId) {
+          animate();
+        }
+      });
+    }, { threshold: 0.1 });
+    
+    observer.observe(container);
+    
+    // Animation loop
+    function animate() {
+      if (!isVisible) return;
+      
+      animationId = requestAnimationFrame(animate);
+      
+      // Get delta time for frame-rate independent animation
+      const delta = clock.getDelta();
+      
+      // Auto-rotate (frame-rate independent)
+      if (autoRotate && !isDragging && model) {
+        const rotationSpeed = 0.5; // radians per second
+        model.rotation.y += rotationSpeed * delta;
+      }
+      
+      renderer.render(scene, camera);
+    }
+    
+    animate();
+    
+    // Handle resize
+    let resizeTimeout;
+    const resizeHandler = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      }, 100);
+    };
+    
+    window.addEventListener('resize', resizeHandler);
+    
+    // Cleanup function to prevent memory leaks
+    const cleanup = () => {
+      // Dispose model
+      if (model) {
+        model.traverse((child) => {
+          if ((child as any).isMesh) {
+            if ((child as any).geometry) {
+              (child as any).geometry.dispose();
+            }
+            if ((child as any).material) {
+              const materials = Array.isArray((child as any).material) 
+                ? (child as any).material 
+                : [(child as any).material];
+              materials.forEach((mat: any) => {
+                if (mat.map) mat.map.dispose();
+                if (mat.lightMap) mat.lightMap.dispose();
+                if (mat.bumpMap) mat.bumpMap.dispose();
+                if (mat.normalMap) mat.normalMap.dispose();
+                if (mat.specularMap) mat.specularMap.dispose();
+                if (mat.envMap) mat.envMap.dispose();
+                mat.dispose();
+              });
+            }
+          }
+        });
+      }
+      
+      // Dispose renderer
+      renderer.dispose();
+      
+      // Remove event listeners
+      window.removeEventListener('resize', resizeHandler);
+      observer.disconnect();
+    };
+    
+    // Store cleanup for potential future use
+    (container as any).__cleanup = cleanup;
+  });
+</script>
+
+<style>
+  .model3d-wrapper {
+    position: relative;
+    margin: 2rem 0;
+  }
+  
+  .bg-toggle-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: #24292f;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .bg-toggle-btn:hover {
+    background: white;
+    border-color: #24292f;
+    transform: scale(1.05);
+  }
+  
+  .bg-toggle-btn:active {
+    transform: scale(0.95);
+  }
+
+  .model3d-container {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a2e;
+  }
+
+  .model3d-container canvas {
+    display: block;
+  }
+  
+  .loading-indicator {
+    color: white;
+    font-size: 1rem;
+    text-align: center;
+    padding: 2rem;
+  }
+</style>
+

@@ -1,0 +1,102 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ThreeScene from '../components/ThreeScene.astro';
+---
+
+<BaseLayout title="3D Models Gallery">
+  <div class="container">
+    <h1>3D Models Gallery</h1>
+    
+    <div class="interaction-hint">
+      🎮 <strong>Interactive Controls:</strong> Click & drag to rotate • Scroll to zoom • Double-click to pause/resume rotation • Button (top-right) toggles background
+    </div>
+    
+    <p>
+      Explore interactive 3D models rendered in real-time using Three.js. 
+      These models run entirely in your browser using WebGL.
+    </p>
+
+    <div class="model-section">
+      <h2>Rotating Cube</h2>
+      <p>A classic 3D cube with wireframe overlay and dynamic lighting.</p>
+      <ThreeScene sceneType="cube" height="400px" />
+    </div>
+
+    <div class="model-section">
+      <h2>Spinning Sphere</h2>
+      <p>A smooth sphere demonstrating Phong shading and reflective materials.</p>
+      <ThreeScene sceneType="sphere" height="400px" />
+    </div>
+
+    <div class="model-section">
+      <h2>Torus Geometry</h2>
+      <p>A torus (donut shape) showcasing complex geometry rendering.</p>
+      <ThreeScene sceneType="torus" height="400px" />
+    </div>
+
+    <div class="info-box">
+      <h2>About These Models</h2>
+      <p>
+        All 3D models are rendered using Three.js, a powerful JavaScript library 
+        that makes WebGL easier to use. The models feature:
+      </p>
+      <ul>
+        <li>Real-time rendering at 60 FPS</li>
+        <li>Dynamic lighting with ambient and point lights</li>
+        <li>Wireframe overlays for visual interest</li>
+        <li>Smooth rotation animations</li>
+        <li>Responsive canvas sizing</li>
+      </ul>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .model-section {
+    margin: 3rem 0;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+
+  .model-section h2 {
+    margin-top: 0;
+    color: #2c3e50;
+  }
+
+  .info-box {
+    background: #e8f4f8;
+    padding: 2rem;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+    margin-top: 3rem;
+  }
+
+  .info-box h2 {
+    margin-top: 0;
+    color: #2980b9;
+  }
+
+  .info-box ul {
+    margin-left: 2rem;
+    color: #555;
+    line-height: 1.8;
+  }
+
+  .interaction-hint {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin: 1rem 0 2rem 0;
+    text-align: center;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .interaction-hint strong {
+    color: white;
+    font-weight: 600;
+  }
+</style>
+

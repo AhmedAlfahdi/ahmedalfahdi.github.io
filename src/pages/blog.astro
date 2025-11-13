@@ -1,0 +1,91 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const posts = [
+  {
+    title: "Getting Started with Three.js",
+    slug: "getting-started-threejs",
+    excerpt: "Learn how to create your first 3D scene with Three.js",
+    date: "2025-11-10"
+  },
+  {
+    title: "Building with Astro",
+    slug: "building-with-astro",
+    excerpt: "Why Astro is perfect for content-focused websites",
+    date: "2025-11-05"
+  }
+];
+---
+
+<BaseLayout title="Blog">
+  <div class="container">
+    <h1>Blog</h1>
+    <p>Thoughts, tutorials, and experiences in web development and 3D graphics.</p>
+
+    <div class="posts-grid">
+      {posts.map(post => (
+        <article class="post-card">
+          <h2><a href={`/blog/${post.slug}`}>{post.title}</a></h2>
+          <time>{post.date}</time>
+          <p>{post.excerpt}</p>
+          <a href={`/blog/${post.slug}`} class="read-more">Read more →</a>
+        </article>
+      ))}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .posts-grid {
+    display: grid;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .post-card {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .post-card h2 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .post-card h2 a {
+    color: #2c3e50;
+    text-decoration: none;
+  }
+
+  .post-card h2 a:hover {
+    color: #3498db;
+  }
+
+  .post-card time {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+  }
+
+  .post-card p {
+    margin-top: 1rem;
+  }
+
+  .read-more {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .read-more:hover {
+    text-decoration: underline;
+  }
+</style>
+
