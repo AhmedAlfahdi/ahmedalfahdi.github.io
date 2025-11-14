@@ -6,6 +6,8 @@ description: Deep dive into MUL, IMUL, and DIV operations in x86 assembly
 
 import Mermaid from '../../components/Mermaid.astro';
 import Model3D from '../../components/Model3D.astro';
+import PDFViewer from '../../components/PDFViewer.astro';
+
 
 # Assembly Multiplication & Division (0x09)
 
@@ -47,6 +49,7 @@ graph TD
 
 ---
 
+<Model3D src="/models/space.glb" />
 ## Unsigned Multiplication
 
 We use `MUL` for positive numbers. The format requires only one input. This follows the implicit multiplication format. Implicit multiplicand is always AL (8-bit), AX (16-bit), EAX (32-bit), or RAX (64-bit).
@@ -237,6 +240,9 @@ graph LR
     style D1 fill:#3498db
     style E1 fill:#3498db
 `} />
+
+
+<PDFViewer src="/pdfs/20000096503.pdf" title="Assembly Reference" height="600px" />
 
 ---
 

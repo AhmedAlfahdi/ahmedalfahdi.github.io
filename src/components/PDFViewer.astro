@@ -1,0 +1,186 @@
+---
+interface Props {
+  src: string;
+  title?: string;
+  height?: string;
+  width?: string;
+  showDownload?: boolean;
+}
+
+const { 
+  src, 
+  title = 'PDF Document', 
+  height = '600px',
+  width = '100%',
+  showDownload = true 
+} = Astro.props;
+
+const pdfId = `pdf-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<div class="pdf-viewer-wrapper">
+  <div class="pdf-header">
+    <h4 class="pdf-title">📄 {title}</h4>
+    {showDownload && (
+      <a href={src} download class="pdf-download-btn" title="Download PDF">
+        ⬇️ Download
+      </a>
+    )}
+  </div>
+  
+  <div id={pdfId} class="pdf-container" style={`height: ${height}; width: ${width};`}>
+    <!-- Native browser PDF viewer -->
+    <object
+      data={src}
+      type="application/pdf"
+      width="100%"
+      height="100%"
+    >
+      <!-- Fallback for browsers that don't support PDF embedding -->
+      <div class="pdf-fallback">
+        <p>Your browser doesn't support embedded PDFs.</p>
+        <a href={src} target="_blank" class="pdf-open-btn">
+          Open PDF in new tab →
+        </a>
+      </div>
+    </object>
+  </div>
+
+  <div class="pdf-controls">
+    <button class="pdf-control-btn" onclick={`window.open('${src}', '_blank')`}>
+      🔗 Open in New Tab
+    </button>
+    <button class="pdf-control-btn" onclick={`window.print()`}>
+      🖨️ Print
+    </button>
+  </div>
+</div>
+
+<style>
+  .pdf-viewer-wrapper {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin: 2rem 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .pdf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #ddd;
+  }
+
+  .pdf-title {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.2rem;
+  }
+
+  .pdf-download-btn {
+    background: #3498db;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+  }
+
+  .pdf-download-btn:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  .pdf-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 2px solid #ddd;
+  }
+
+  .pdf-container object {
+    display: block;
+  }
+
+  .pdf-fallback {
+    padding: 3rem;
+    text-align: center;
+    background: white;
+  }
+
+  .pdf-fallback p {
+    color: #666;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+  }
+
+  .pdf-open-btn {
+    display: inline-block;
+    background: #e74c3c;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .pdf-open-btn:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  .pdf-controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .pdf-control-btn {
+    background: #95a5a6;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+  }
+
+  .pdf-control-btn:hover {
+    background: #7f8c8d;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+
+  @media (max-width: 768px) {
+    .pdf-viewer-wrapper {
+      padding: 1rem;
+    }
+
+    .pdf-header {
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .pdf-controls {
+      flex-direction: column;
+    }
+
+    .pdf-control-btn {
+      width: 100%;
+    }
+  }
+</style>
+
