@@ -1,6 +1,6 @@
 ---
 interface Props {
-  sceneType?: 'cube' | 'sphere' | 'torus';
+  sceneType?: 'cube' | 'sphere' | 'torus' | 'cylinder' | 'cone' | 'octahedron' | 'tetrahedron' | 'dodecahedron' | 'icosahedron' | 'water' | 'methane' | 'ammonia' | 'co2' | 'benzene' | 'ethanol';
   height?: string;
 }
 
@@ -15,11 +15,23 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
     </svg>
   </button>
+  <div class="fps-counter">FPS: <span class="fps-value">--</span></div>
   <div class="three-container" style={`height: ${height}`} data-scene-type={sceneType}></div>
 </div>
 
 <script>
   import * as THREE from 'three';
+
+  // Check WebGL support
+  function isWebGLAvailable() {
+    try {
+      const canvas = document.createElement('canvas');
+      return !!(window.WebGLRenderingContext && 
+        (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+    } catch (e) {
+      return false;
+    }
+  }
 
   // Find all three wrappers and initialize them
   document.querySelectorAll('.three-wrapper').forEach((wrapperEl: Element) => {
@@ -29,6 +41,17 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     
     // Skip if already initialized
     if (container.querySelector('canvas')) return;
+    
+    // Check WebGL support
+    if (!isWebGLAvailable()) {
+      const errorMsg = document.createElement('div');
+      errorMsg.textContent = 'WebGL is not supported in your browser. Please use a modern browser to view 3D scenes.';
+      errorMsg.style.color = '#e74c3c';
+      errorMsg.style.padding = '2rem';
+      errorMsg.style.textAlign = 'center';
+      container.appendChild(errorMsg);
+      return;
+    }
     
     // Scene setup
     const scene = new THREE.Scene();
@@ -47,98 +70,322 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     );
     camera.position.z = 5;
     
-    // Renderer setup with performance optimizations
+    // Renderer - simple
     const renderer = new THREE.WebGLRenderer({ 
       antialias: true,
-      alpha: false,
-      powerPreference: 'high-performance',
-      stencil: false, // Disable stencil buffer if not needed
-      depth: true
+      powerPreference: 'high-performance'
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    
-    // Enable frustum culling (default but explicit)
-    camera.matrixWorldNeedsUpdate = true;
     
     container.appendChild(renderer.domElement);
     
-    // Clock for frame-rate independent animation
-    const clock = new THREE.Clock();
+    // Removed THREE.Clock - using manual delta time calculation for better performance
     
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    // Enhanced Lighting for better visibility
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
     
-    const pointLight = new THREE.PointLight(0xffffff, 1);
-    pointLight.position.set(5, 5, 5);
-    scene.add(pointLight);
+    // Main light from top-right
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    mainLight.position.set(5, 5, 5);
+    scene.add(mainLight);
     
-    // Create geometry based on type (reduced complexity for performance)
-    let geometry;
-    switch (sceneType) {
-      case 'sphere':
-        geometry = new THREE.SphereGeometry(1.5, 24, 24); // Reduced from 32x32
-        break;
-      case 'torus':
-        geometry = new THREE.TorusGeometry(1.2, 0.4, 12, 48); // Reduced from 16x100
-        break;
-      default:
-        geometry = new THREE.BoxGeometry(2, 2, 2);
+    // Fill light from left
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    fillLight.position.set(-5, 3, 2);
+    scene.add(fillLight);
+    
+    // Back light for depth
+    const backLight = new THREE.DirectionalLight(0xffffff, 0.4);
+    backLight.position.set(0, 2, -5);
+    scene.add(backLight);
+    
+    // Molecular structure helper functions
+    const moleculeTypes = ['water', 'methane', 'ammonia', 'co2', 'benzene', 'ethanol'];
+    const isMolecule = moleculeTypes.includes(sceneType);
+    
+    function createAtom(color: number, size: number) {
+      const geometry = new THREE.SphereGeometry(size, 32, 32);
+      const material = new THREE.MeshPhongMaterial({ 
+        color, 
+        shininess: 100,
+        specular: 0x555555
+      });
+      return new THREE.Mesh(geometry, material);
     }
     
-    const material = new THREE.MeshPhongMaterial({
-      color: 0x3498db,
-      shininess: 100,
-      specular: 0x111111,
-      flatShading: false // Smooth shading for better performance
-    });
+    function createBond(start: THREE.Vector3, end: THREE.Vector3, color: number = 0xcccccc) {
+      const direction = new THREE.Vector3().subVectors(end, start);
+      const length = direction.length();
+      const geometry = new THREE.CylinderGeometry(0.08, 0.08, length, 8);
+      const material = new THREE.MeshPhongMaterial({ color });
+      const bond = new THREE.Mesh(geometry, material);
+      
+      bond.position.copy(start).add(direction.multiplyScalar(0.5));
+      bond.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        direction.normalize()
+      );
+      
+      return bond;
+    }
     
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.matrixAutoUpdate = true; // Enable automatic matrix updates
-    scene.add(mesh);
+    let mesh: THREE.Object3D;
+    let geometry: THREE.BufferGeometry | undefined;
+    let edges: THREE.EdgesGeometry | undefined;
+    let lineMaterial: THREE.LineBasicMaterial | undefined;
+    let wireframe: THREE.LineSegments | undefined;
     
-    // Mouse interaction variables
+    if (isMolecule) {
+      // Create molecular structure
+      const molecule = new THREE.Group();
+      
+      // Atom colors (CPK coloring convention)
+      const colors = {
+        H: 0xffffff,  // Hydrogen - white
+        C: 0x909090,  // Carbon - gray
+        O: 0xff0000,  // Oxygen - red
+        N: 0x3050f8,  // Nitrogen - blue
+      };
+      
+      switch (sceneType) {
+        case 'water': // H2O
+          const O = createAtom(colors.O, 0.4);
+          const H1 = createAtom(colors.H, 0.25);
+          const H2 = createAtom(colors.H, 0.25);
+          
+          H1.position.set(-0.6, 0.4, 0);
+          H2.position.set(0.6, 0.4, 0);
+          
+          molecule.add(O, H1, H2);
+          molecule.add(createBond(O.position, H1.position));
+          molecule.add(createBond(O.position, H2.position));
+          break;
+          
+        case 'methane': // CH4
+          const C_meth = createAtom(colors.C, 0.35);
+          const H_meth = [
+            createAtom(colors.H, 0.25),
+            createAtom(colors.H, 0.25),
+            createAtom(colors.H, 0.25),
+            createAtom(colors.H, 0.25)
+          ];
+          
+          // Tetrahedral geometry
+          H_meth[0].position.set(0.6, 0.6, 0.6);
+          H_meth[1].position.set(-0.6, -0.6, 0.6);
+          H_meth[2].position.set(-0.6, 0.6, -0.6);
+          H_meth[3].position.set(0.6, -0.6, -0.6);
+          
+          molecule.add(C_meth);
+          H_meth.forEach(h => {
+            molecule.add(h);
+            molecule.add(createBond(C_meth.position, h.position));
+          });
+          break;
+          
+        case 'ammonia': // NH3
+          const N = createAtom(colors.N, 0.35);
+          const H_am = [
+            createAtom(colors.H, 0.25),
+            createAtom(colors.H, 0.25),
+            createAtom(colors.H, 0.25)
+          ];
+          
+          // Trigonal pyramidal
+          H_am[0].position.set(0, 0.6, 0.5);
+          H_am[1].position.set(0.5, 0.6, -0.25);
+          H_am[2].position.set(-0.5, 0.6, -0.25);
+          
+          molecule.add(N);
+          H_am.forEach(h => {
+            molecule.add(h);
+            molecule.add(createBond(N.position, h.position));
+          });
+          break;
+          
+        case 'co2': // CO2
+          const C_co2 = createAtom(colors.C, 0.35);
+          const O1_co2 = createAtom(colors.O, 0.4);
+          const O2_co2 = createAtom(colors.O, 0.4);
+          
+          O1_co2.position.set(-0.8, 0, 0);
+          O2_co2.position.set(0.8, 0, 0);
+          
+          molecule.add(C_co2, O1_co2, O2_co2);
+          molecule.add(createBond(C_co2.position, O1_co2.position));
+          molecule.add(createBond(C_co2.position, O2_co2.position));
+          break;
+          
+        case 'benzene': // C6H6
+          const angleStep = (Math.PI * 2) / 6;
+          const radius = 0.7;
+          
+          for (let i = 0; i < 6; i++) {
+            const angle = i * angleStep;
+            const C = createAtom(colors.C, 0.3);
+            const H = createAtom(colors.H, 0.22);
+            
+            C.position.set(
+              Math.cos(angle) * radius,
+              Math.sin(angle) * radius,
+              0
+            );
+            
+            H.position.set(
+              Math.cos(angle) * (radius + 0.5),
+              Math.sin(angle) * (radius + 0.5),
+              0
+            );
+            
+            molecule.add(C, H);
+            molecule.add(createBond(C.position, H.position));
+            
+            // Bond to next carbon
+            const nextAngle = ((i + 1) % 6) * angleStep;
+            const nextC = new THREE.Vector3(
+              Math.cos(nextAngle) * radius,
+              Math.sin(nextAngle) * radius,
+              0
+            );
+            molecule.add(createBond(C.position, nextC));
+          }
+          break;
+          
+        case 'ethanol': // C2H5OH
+          const C1_eth = createAtom(colors.C, 0.35);
+          const C2_eth = createAtom(colors.C, 0.35);
+          const O_eth = createAtom(colors.O, 0.4);
+          const H_eth = [
+            createAtom(colors.H, 0.25),
+            createAtom(colors.H, 0.25),
+            createAtom(colors.H, 0.25),
+            createAtom(colors.H, 0.25),
+            createAtom(colors.H, 0.25),
+            createAtom(colors.H, 0.25)
+          ];
+          
+          C1_eth.position.set(-0.5, 0, 0);
+          C2_eth.position.set(0.5, 0, 0);
+          O_eth.position.set(1.2, 0.3, 0);
+          
+          H_eth[0].position.set(-0.5, 0.5, 0.4);
+          H_eth[1].position.set(-0.5, 0.5, -0.4);
+          H_eth[2].position.set(-0.9, -0.4, 0);
+          H_eth[3].position.set(0.5, -0.5, 0.4);
+          H_eth[4].position.set(0.5, -0.5, -0.4);
+          H_eth[5].position.set(1.6, 0, 0.3);
+          
+          molecule.add(C1_eth, C2_eth, O_eth);
+          H_eth.forEach(h => molecule.add(h));
+          
+          molecule.add(createBond(C1_eth.position, C2_eth.position));
+          molecule.add(createBond(C2_eth.position, O_eth.position));
+          molecule.add(createBond(C1_eth.position, H_eth[0].position));
+          molecule.add(createBond(C1_eth.position, H_eth[1].position));
+          molecule.add(createBond(C1_eth.position, H_eth[2].position));
+          molecule.add(createBond(C2_eth.position, H_eth[3].position));
+          molecule.add(createBond(C2_eth.position, H_eth[4].position));
+          molecule.add(createBond(O_eth.position, H_eth[5].position));
+          break;
+      }
+      
+      mesh = molecule;
+      scene.add(mesh);
+      
+    } else {
+      // Create geometry based on type (optimized for performance)
+      switch (sceneType) {
+        case 'sphere':
+          geometry = new THREE.SphereGeometry(1.5, 32, 32);
+          break;
+        case 'torus':
+          geometry = new THREE.TorusGeometry(1.2, 0.4, 16, 64);
+          break;
+        case 'cylinder':
+          geometry = new THREE.CylinderGeometry(1, 1, 2.5, 32);
+          break;
+        case 'cone':
+          geometry = new THREE.ConeGeometry(1.2, 2.5, 32);
+          break;
+        case 'octahedron':
+          geometry = new THREE.OctahedronGeometry(1.5);
+          break;
+        case 'tetrahedron':
+          geometry = new THREE.TetrahedronGeometry(1.5);
+          break;
+        case 'dodecahedron':
+          geometry = new THREE.DodecahedronGeometry(1.3);
+          break;
+        case 'icosahedron':
+          geometry = new THREE.IcosahedronGeometry(1.5);
+          break;
+        default:
+          geometry = new THREE.BoxGeometry(2, 2, 2);
+      }
+      
+      // Enhanced material for better visibility
+      const material = new THREE.MeshPhongMaterial({
+        color: 0x4a90e2,
+        shininess: 150,
+        specular: 0x888888,
+        flatShading: false,
+        emissive: 0x0a2540,
+        emissiveIntensity: 0.15
+      });
+      
+      const geometryMesh = new THREE.Mesh(geometry, material);
+      
+      // Add edges for better definition
+      edges = new THREE.EdgesGeometry(geometry);
+      lineMaterial = new THREE.LineBasicMaterial({ 
+        color: 0x1a1a1a, 
+        linewidth: 1,
+        transparent: true,
+        opacity: 0.3
+      });
+      wireframe = new THREE.LineSegments(edges, lineMaterial);
+      geometryMesh.add(wireframe);
+      
+      mesh = geometryMesh;
+      scene.add(mesh);
+    }
+    
+    // Mouse interaction - simple
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
-    let rotationVelocity = { x: 0, y: 0 };
     let autoRotate = true;
     
-    // Mouse down event
-    container.addEventListener('mousedown', (e) => {
+    const onMouseDown = (e: MouseEvent) => {
       isDragging = true;
       autoRotate = false;
       previousMousePosition = { x: e.clientX, y: e.clientY };
       container.style.cursor = 'grabbing';
-    });
+    };
     
-    // Mouse move event
-    container.addEventListener('mousemove', (e) => {
-      if (isDragging) {
-        const deltaX = e.clientX - previousMousePosition.x;
-        const deltaY = e.clientY - previousMousePosition.y;
-        
-        rotationVelocity.x = deltaY * 0.01;
-        rotationVelocity.y = deltaX * 0.01;
-        
-        mesh.rotation.x += rotationVelocity.x;
-        mesh.rotation.y += rotationVelocity.y;
-        
-        previousMousePosition = { x: e.clientX, y: e.clientY };
-      }
-    });
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      
+      const deltaX = e.clientX - previousMousePosition.x;
+      const deltaY = e.clientY - previousMousePosition.y;
+      
+      mesh.rotation.x += deltaY * 0.005;
+      mesh.rotation.y += deltaX * 0.005;
+      
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    };
     
     // Mouse up event
-    container.addEventListener('mouseup', () => {
+    const onMouseUp = () => {
       isDragging = false;
       container.style.cursor = 'grab';
-    });
+    };
     
-    // Mouse leave event
-    container.addEventListener('mouseleave', () => {
-      isDragging = false;
-      container.style.cursor = 'grab';
-    });
+    container.addEventListener('mousedown', onMouseDown);
+    container.addEventListener('mousemove', onMouseMove, { passive: true });
+    container.addEventListener('mouseup', onMouseUp);
+    container.addEventListener('mouseleave', onMouseUp);
     
     // Double click to reset auto-rotation
     container.addEventListener('dblclick', () => {
@@ -146,12 +393,13 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     });
     
     // Mouse wheel for zoom
-    container.addEventListener('wheel', (e) => {
+    const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const zoomSpeed = 0.001;
-      camera.position.z += e.deltaY * zoomSpeed;
+      camera.position.z += e.deltaY * 0.001;
       camera.position.z = Math.max(2, Math.min(10, camera.position.z));
-    }, { passive: false });
+    };
+    
+    container.addEventListener('wheel', onWheel, { passive: false });
     
     // Set initial cursor
     container.style.cursor = 'grab';
@@ -163,52 +411,34 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       scene.background = new THREE.Color(bgColors[bgMode]);
     });
     
-    // Pause when not visible (Intersection Observer)
-    let isVisible = true;
-    let animationId = null;
+    // FPS counter - simple
+    const fpsCounter = wrapper.querySelector('.fps-value') as HTMLElement;
+    let fpsFrames = 0;
+    let fpsLastTime = performance.now();
     
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        isVisible = entry.isIntersecting;
-        if (!isVisible && animationId) {
-          cancelAnimationFrame(animationId);
-          animationId = null;
-        } else if (isVisible && !animationId) {
-          animate();
-        }
-      });
-    }, { threshold: 0.1 });
+    function updateFPS() {
+      fpsFrames++;
+      const currentTime = performance.now();
+      
+      if (currentTime >= fpsLastTime + 1000) {
+        const fps = Math.round((fpsFrames * 1000) / (currentTime - fpsLastTime));
+        fpsCounter.textContent = fps.toString();
+        fpsFrames = 0;
+        fpsLastTime = currentTime;
+      }
+    }
     
-    observer.observe(container);
-    
-    // Frame rate limiting
-    const targetFPS = 60;
-    const frameInterval = 1000 / targetFPS;
-    let lastFrameTime = 0;
-    
-    // Animation
-    function animate(currentTime = 0) {
-      if (!isVisible) return;
+    // Animation - simple
+    function animate() {
+      requestAnimationFrame(animate);
       
-      animationId = requestAnimationFrame(animate);
-      
-      // Throttle to target FPS
-      const elapsed = currentTime - lastFrameTime;
-      if (elapsed < frameInterval) return;
-      
-      lastFrameTime = currentTime - (elapsed % frameInterval);
-      
-      // Get delta time for frame-rate independent animation
-      const delta = clock.getDelta();
-      
-      // Auto-rotate when not dragging (frame-rate independent)
       if (autoRotate && !isDragging) {
-        const rotationSpeed = 1.0; // radians per second
-        mesh.rotation.x += rotationSpeed * delta * 0.3;
-        mesh.rotation.y += rotationSpeed * delta * 0.6;
+        mesh.rotation.x += 0.003;
+        mesh.rotation.y += 0.006;
       }
       
       renderer.render(scene, camera);
+      updateFPS();
     }
     
     animate();
@@ -234,21 +464,43 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     // Cleanup function to prevent memory leaks
     const cleanup = () => {
       // Dispose geometries
-      geometry.dispose();
+      if (geometry) geometry.dispose();
+      if (edges) edges.dispose();
       
       // Dispose materials
-      material.dispose();
+      if (lineMaterial) lineMaterial.dispose();
+      
+      // Dispose molecule geometries and materials
+      if (isMolecule && mesh) {
+        mesh.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.geometry?.dispose();
+            if (child.material instanceof THREE.Material) {
+              child.material.dispose();
+            }
+          }
+        });
+      }
       
       // Dispose renderer
       renderer.dispose();
       
       // Remove event listeners
       window.removeEventListener('resize', resizeHandler);
-      observer.disconnect();
+      container.removeEventListener('mousedown', onMouseDown);
+      container.removeEventListener('mousemove', onMouseMove, { passive: true } as any);
+      container.removeEventListener('mouseup', onMouseUp);
+      container.removeEventListener('mouseleave', onMouseUp);
+      container.removeEventListener('wheel', onWheel);
     };
     
     // Store cleanup for potential future use
-    (container as any).__cleanup = cleanup;
+    Object.defineProperty(container, '__cleanup', {
+      value: cleanup,
+      writable: false,
+      enumerable: false,
+      configurable: true
+    });
   });
 </script>
 
@@ -284,6 +536,29 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
   
   .bg-toggle-btn:active {
     transform: scale(0.95);
+  }
+  
+  .fps-counter {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.7);
+    color: #00ff00;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    font-weight: bold;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+  }
+  
+  .fps-value {
+    color: #00ff00;
+    min-width: 2ch;
+    display: inline-block;
+    text-align: right;
   }
 
   .three-container {

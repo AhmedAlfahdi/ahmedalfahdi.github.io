@@ -29,6 +29,7 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
     </svg>
   </button>
+  <div class="fps-counter">FPS: <span class="fps-value">--</span></div>
   <div 
     class="model3d-container" 
     style={`height: ${height}`}
@@ -48,12 +49,31 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
   import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
   import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
   
+  // Check WebGL support
+  function isWebGLAvailable() {
+    try {
+      const canvas = document.createElement('canvas');
+      return !!(window.WebGLRenderingContext && 
+        (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+    } catch (e) {
+      return false;
+    }
+  }
+  
   document.querySelectorAll('.model3d-wrapper').forEach(async (wrapperEl: Element) => {
     const wrapper = wrapperEl as HTMLElement;
     const container = wrapper.querySelector('.model3d-container') as HTMLElement;
+    const loadingIndicator = container.querySelector('.loading-indicator') as HTMLElement;
     
     // Skip if already initialized
     if (container.querySelector('canvas')) return;
+    
+    // Check WebGL support
+    if (!isWebGLAvailable()) {
+      loadingIndicator.textContent = 'WebGL is not supported in your browser. Please use a modern browser to view 3D models.';
+      loadingIndicator.style.color = '#e74c3c';
+      return;
+    }
     
     // Get configuration from data attributes
     const src = container.dataset.src!;
@@ -62,8 +82,6 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
     const rotation = JSON.parse(container.dataset.rotation || '[0,0,0]');
     const autoRotate = container.dataset.autoRotate === 'true';
     const bgColor = container.dataset.background || 'default';
-    
-    const loadingIndicator = container.querySelector('.loading-indicator') as HTMLElement;
     
     // Scene setup
     const scene = new THREE.Scene();
@@ -91,32 +109,24 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
     );
     camera.position.set(0, 0, 5);
     
-    // Renderer with optimizations
+    // Renderer - simple and clean
     const renderer = new THREE.WebGLRenderer({ 
       antialias: true,
       alpha: bgColor === 'transparent',
-      powerPreference: 'high-performance',
-      stencil: false, // Disable stencil buffer if not needed
-      depth: true
+      powerPreference: 'high-performance'
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    // Shadows disabled for performance
     renderer.shadowMap.enabled = false;
     
-    // Enable frustum culling
-    camera.matrixWorldNeedsUpdate = true;
-    
-    // Clock for frame-rate independent animation
-    const clock = new THREE.Clock();
-    
-    // Lighting - simplified for performance
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    // Lighting - optimized for performance
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambientLight);
     
-    const pointLight = new THREE.PointLight(0xffffff, 0.6);
-    pointLight.position.set(5, 5, 5);
-    scene.add(pointLight);
+    // Use DirectionalLight instead of PointLight for better performance
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    directionalLight.position.set(5, 5, 5);
+    scene.add(directionalLight);
     
     // Load model
     let model: THREE.Object3D;
@@ -139,11 +149,20 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       model.position.set(position[0], position[1], position[2]);
       model.rotation.set(rotation[0], rotation[1], rotation[2]);
       
-      // Enable frustum culling for all meshes
+      // Optimize materials for performance
       model.traverse((child) => {
-        if ((child as any).isMesh) {
-          (child as any).frustumCulled = true; // Only render what's visible
-          (child as any).matrixAutoUpdate = true;
+        if (child instanceof THREE.Mesh) {
+          child.frustumCulled = true;
+          
+          // Keep matrixAutoUpdate enabled - it's optimized in Three.js core
+          // Disabling it causes more problems than it solves
+          child.matrixAutoUpdate = true;
+          
+          // Optimize material if it's a standard/physical material
+          if (child.material) {
+            const mat = child.material;
+            if ('envMapIntensity' in mat) mat.envMapIntensity = 0.5;
+          }
         }
       });
       
@@ -172,49 +191,47 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       return;
     }
     
-    // Mouse interaction
+    // Mouse interaction - simple
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
-    let modelRotation = { x: 0, y: 0 };
     
-    container.addEventListener('mousedown', (e) => {
+    const onMouseDown = (e: MouseEvent) => {
       isDragging = true;
       previousMousePosition = { x: e.clientX, y: e.clientY };
       container.style.cursor = 'grabbing';
-    });
+    };
     
-    container.addEventListener('mousemove', (e) => {
-      if (isDragging && model) {
-        const deltaX = e.clientX - previousMousePosition.x;
-        const deltaY = e.clientY - previousMousePosition.y;
-        
-        modelRotation.y += deltaX * 0.01;
-        modelRotation.x += deltaY * 0.01;
-        
-        model.rotation.y = modelRotation.y;
-        model.rotation.x = modelRotation.x;
-        
-        previousMousePosition = { x: e.clientX, y: e.clientY };
-      }
-    });
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !model) return;
+      
+      const deltaX = e.clientX - previousMousePosition.x;
+      const deltaY = e.clientY - previousMousePosition.y;
+      
+      model.rotation.y += deltaX * 0.005;
+      model.rotation.x += deltaY * 0.005;
+      
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    };
     
-    container.addEventListener('mouseup', () => {
+    container.addEventListener('mousedown', onMouseDown);
+    container.addEventListener('mousemove', onMouseMove, { passive: true });
+    
+    const onMouseUp = () => {
       isDragging = false;
       container.style.cursor = 'grab';
-    });
+    };
     
-    container.addEventListener('mouseleave', () => {
-      isDragging = false;
-      container.style.cursor = 'grab';
-    });
+    container.addEventListener('mouseup', onMouseUp);
+    container.addEventListener('mouseleave', onMouseUp);
     
     // Zoom with mouse wheel
-    container.addEventListener('wheel', (e) => {
+    const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const zoomSpeed = 0.1;
-      camera.position.z += e.deltaY * zoomSpeed * 0.01;
+      camera.position.z += e.deltaY * 0.001;
       camera.position.z = Math.max(1, Math.min(20, camera.position.z));
-    }, { passive: false });
+    };
+    
+    container.addEventListener('wheel', onWheel, { passive: false });
     
     container.style.cursor = 'grab';
     
@@ -231,51 +248,33 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       });
     }
     
-    // Intersection Observer for performance
-    let isVisible = true;
-    let animationId = null;
+    // FPS counter - simple
+    const fpsCounter = wrapper.querySelector('.fps-value') as HTMLElement;
+    let fpsFrames = 0;
+    let fpsLastTime = performance.now();
     
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        isVisible = entry.isIntersecting;
-        if (!isVisible && animationId) {
-          cancelAnimationFrame(animationId);
-          animationId = null;
-        } else if (isVisible && !animationId) {
-          animate();
-        }
-      });
-    }, { threshold: 0.1 });
+    function updateFPS() {
+      fpsFrames++;
+      const currentTime = performance.now();
+      
+      if (currentTime >= fpsLastTime + 1000) {
+        const fps = Math.round((fpsFrames * 1000) / (currentTime - fpsLastTime));
+        fpsCounter.textContent = fps.toString();
+        fpsFrames = 0;
+        fpsLastTime = currentTime;
+      }
+    }
     
-    observer.observe(container);
-    
-    // Frame rate limiting
-    const targetFPS = 60;
-    const frameInterval = 1000 / targetFPS;
-    let lastFrameTime = 0;
-    
-    // Animation loop
-    function animate(currentTime = 0) {
-      if (!isVisible) return;
+    // Animation loop - simple
+    function animate() {
+      requestAnimationFrame(animate);
       
-      animationId = requestAnimationFrame(animate);
-      
-      // Throttle to target FPS
-      const elapsed = currentTime - lastFrameTime;
-      if (elapsed < frameInterval) return;
-      
-      lastFrameTime = currentTime - (elapsed % frameInterval);
-      
-      // Get delta time for frame-rate independent animation
-      const delta = clock.getDelta();
-      
-      // Auto-rotate (frame-rate independent)
       if (autoRotate && !isDragging && model) {
-        const rotationSpeed = 0.5; // radians per second
-        model.rotation.y += rotationSpeed * delta;
+        model.rotation.y += 0.005;
       }
       
       renderer.render(scene, camera);
+      updateFPS();
     }
     
     animate();
@@ -303,21 +302,22 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       // Dispose model
       if (model) {
         model.traverse((child) => {
-          if ((child as any).isMesh) {
-            if ((child as any).geometry) {
-              (child as any).geometry.dispose();
+          if (child instanceof THREE.Mesh) {
+            if (child.geometry) {
+              child.geometry.dispose();
             }
-            if ((child as any).material) {
-              const materials = Array.isArray((child as any).material) 
-                ? (child as any).material 
-                : [(child as any).material];
-              materials.forEach((mat: any) => {
-                if (mat.map) mat.map.dispose();
-                if (mat.lightMap) mat.lightMap.dispose();
-                if (mat.bumpMap) mat.bumpMap.dispose();
-                if (mat.normalMap) mat.normalMap.dispose();
-                if (mat.specularMap) mat.specularMap.dispose();
-                if (mat.envMap) mat.envMap.dispose();
+            if (child.material) {
+              const materials = Array.isArray(child.material) 
+                ? child.material 
+                : [child.material];
+              materials.forEach((mat) => {
+                // Dispose textures
+                if ('map' in mat && mat.map) mat.map.dispose();
+                if ('lightMap' in mat && mat.lightMap) mat.lightMap.dispose();
+                if ('bumpMap' in mat && mat.bumpMap) mat.bumpMap.dispose();
+                if ('normalMap' in mat && mat.normalMap) mat.normalMap.dispose();
+                if ('specularMap' in mat && mat.specularMap) mat.specularMap.dispose();
+                if ('envMap' in mat && mat.envMap) mat.envMap.dispose();
                 mat.dispose();
               });
             }
@@ -330,11 +330,20 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       
       // Remove event listeners
       window.removeEventListener('resize', resizeHandler);
-      observer.disconnect();
+      container.removeEventListener('mousedown', onMouseDown);
+      container.removeEventListener('mousemove', onMouseMove, { passive: true } as any);
+      container.removeEventListener('mouseup', onMouseUp);
+      container.removeEventListener('mouseleave', onMouseUp);
+      container.removeEventListener('wheel', onWheel);
     };
     
     // Store cleanup for potential future use
-    (container as any).__cleanup = cleanup;
+    Object.defineProperty(container, '__cleanup', {
+      value: cleanup,
+      writable: false,
+      enumerable: false,
+      configurable: true
+    });
   });
 </script>
 
@@ -370,6 +379,29 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
   
   .bg-toggle-btn:active {
     transform: scale(0.95);
+  }
+  
+  .fps-counter {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.7);
+    color: #00ff00;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    font-weight: bold;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+  }
+  
+  .fps-value {
+    color: #00ff00;
+    min-width: 2ch;
+    display: inline-block;
+    text-align: right;
   }
 
   .model3d-container {

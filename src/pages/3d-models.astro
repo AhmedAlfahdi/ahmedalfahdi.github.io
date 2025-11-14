@@ -34,6 +34,83 @@ import ThreeScene from '../components/ThreeScene.astro';
       <ThreeScene sceneType="torus" height="400px" />
     </div>
 
+    <div class="model-section">
+      <h2>Cylinder</h2>
+      <p>A cylinder shape commonly used in engineering for shafts, pipes, and mechanical components.</p>
+      <ThreeScene sceneType="cylinder" height="400px" />
+    </div>
+
+    <div class="model-section">
+      <h2>Cone</h2>
+      <p>A conical geometry often seen in hoppers, nozzles, and aerodynamic structures.</p>
+      <ThreeScene sceneType="cone" height="400px" />
+    </div>
+
+    <div class="model-section">
+      <h2>Octahedron</h2>
+      <p>An eight-faced polyhedron used in crystallography, finite element analysis, and structural engineering.</p>
+      <ThreeScene sceneType="octahedron" height="400px" />
+    </div>
+
+    <div class="model-section">
+      <h2>Tetrahedron</h2>
+      <p>A four-faced polyhedron fundamental to structural trusses and mesh generation in engineering simulations.</p>
+      <ThreeScene sceneType="tetrahedron" height="400px" />
+    </div>
+
+    <div class="model-section">
+      <h2>Dodecahedron</h2>
+      <p>A twelve-faced polyhedron demonstrating complex geometric relationships and symmetry principles.</p>
+      <ThreeScene sceneType="dodecahedron" height="400px" />
+    </div>
+
+    <div class="model-section">
+      <h2>Icosahedron</h2>
+      <p>A twenty-faced polyhedron used for spherical approximations in geodesic domes and structural design.</p>
+      <ThreeScene sceneType="icosahedron" height="400px" />
+    </div>
+
+    <div class="section-divider">
+      <h2>⚗️ Chemical Molecules</h2>
+      <p>Interactive molecular structures using CPK coloring (Hydrogen: white, Carbon: gray, Oxygen: red, Nitrogen: blue)</p>
+    </div>
+
+    <div class="model-section">
+      <h2>Water (H₂O)</h2>
+      <p>The most essential molecule for life. Features a bent molecular geometry with a 104.5° bond angle.</p>
+      <ThreeScene sceneType="water" height="400px" />
+    </div>
+
+    <div class="model-section">
+      <h2>Methane (CH₄)</h2>
+      <p>A simple hydrocarbon with tetrahedral geometry. The primary component of natural gas.</p>
+      <ThreeScene sceneType="methane" height="400px" />
+    </div>
+
+    <div class="model-section">
+      <h2>Ammonia (NH₃)</h2>
+      <p>A trigonal pyramidal molecule widely used in fertilizers and industrial chemistry.</p>
+      <ThreeScene sceneType="ammonia" height="400px" />
+    </div>
+
+    <div class="model-section">
+      <h2>Carbon Dioxide (CO₂)</h2>
+      <p>A linear molecule essential to photosynthesis and a major greenhouse gas.</p>
+      <ThreeScene sceneType="co2" height="400px" />
+    </div>
+
+    <div class="model-section">
+      <h2>Benzene (C₆H₆)</h2>
+      <p>An aromatic hydrocarbon with a hexagonal ring structure, fundamental to organic chemistry.</p>
+      <ThreeScene sceneType="benzene" height="400px" />
+    </div>
+
+    <div class="model-section">
+      <h2>Ethanol (C₂H₅OH)</h2>
+      <p>An alcohol molecule commonly found in beverages and used as a fuel additive and solvent.</p>
+      <ThreeScene sceneType="ethanol" height="400px" />
+    </div>
+
     <div class="info-box">
       <h2>About These Models</h2>
       <p>
@@ -62,6 +139,28 @@ import ThreeScene from '../components/ThreeScene.astro';
   .model-section h2 {
     margin-top: 0;
     color: #2c3e50;
+  }
+
+  .section-divider {
+    margin: 4rem 0 2rem 0;
+    padding: 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  }
+
+  .section-divider h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+    color: white;
+  }
+
+  .section-divider p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
   }
 
   .info-box {

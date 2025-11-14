@@ -1,6 +1,4 @@
 ---
-import MathZoom from '../components/MathZoom.astro';
-
 interface Props {
   title: string;
   description?: string;
@@ -237,7 +235,6 @@ const { title, description = "My Personal Website with 3D Models" } = Astro.prop
   <main>
     <slot />
   </main>
-  <MathZoom />
 </body>
 </html>
 
