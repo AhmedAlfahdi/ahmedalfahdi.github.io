@@ -1,0 +1,669 @@
+---
+// Interactive CPU Registers Component
+---
+
+<div class="cpu-registers-container">
+  <div class="registers-header">
+    <h3>x86-64 General Purpose Registers</h3>
+    <p class="subtitle">Click on any register to see its sub-registers and details</p>
+  </div>
+
+  <div class="registers-grid">
+    <!-- RAX Register -->
+    <div class="register-item" data-register="rax">
+      <div class="register-label">RAX</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section eax">
+            <span class="section-label">EAX (32)</span>
+            <div class="sub-sections">
+              <div class="sub-section ax">
+                <span class="tiny-label">AX (16)</span>
+                <div class="byte-sections">
+                  <div class="byte-section ah"><span class="byte-label">AH</span></div>
+                  <div class="byte-section al"><span class="byte-label">AL</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Accumulator</div>
+    </div>
+
+    <!-- RBX Register -->
+    <div class="register-item" data-register="rbx">
+      <div class="register-label">RBX</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section ebx">
+            <span class="section-label">EBX (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Base</div>
+    </div>
+
+    <!-- RCX Register -->
+    <div class="register-item" data-register="rcx">
+      <div class="register-label">RCX</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section ecx">
+            <span class="section-label">ECX (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Counter</div>
+    </div>
+
+    <!-- RDX Register -->
+    <div class="register-item" data-register="rdx">
+      <div class="register-label">RDX</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section edx">
+            <span class="section-label">EDX (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Data</div>
+    </div>
+
+    <!-- RSI Register -->
+    <div class="register-item" data-register="rsi">
+      <div class="register-label">RSI</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section esi">
+            <span class="section-label">ESI (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Source Index</div>
+    </div>
+
+    <!-- RDI Register -->
+    <div class="register-item" data-register="rdi">
+      <div class="register-label">RDI</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section edi">
+            <span class="section-label">EDI (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Destination Index</div>
+    </div>
+
+    <!-- RBP Register -->
+    <div class="register-item special" data-register="rbp">
+      <div class="register-label">RBP</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section ebp">
+            <span class="section-label">EBP (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x00007FFF12340000</div>
+      <div class="register-purpose">Base Pointer</div>
+    </div>
+
+    <!-- RSP Register -->
+    <div class="register-item special" data-register="rsp">
+      <div class="register-label">RSP</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section esp">
+            <span class="section-label">ESP (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x00007FFF12340FF8</div>
+      <div class="register-purpose">Stack Pointer</div>
+    </div>
+
+    <!-- R8-R15 -->
+    <div class="register-item" data-register="r8">
+      <div class="register-label">R8</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section r8d">
+            <span class="section-label">R8D (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Extended GPR</div>
+    </div>
+
+    <div class="register-item" data-register="r9">
+      <div class="register-label">R9</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section r9d">
+            <span class="section-label">R9D (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Extended GPR</div>
+    </div>
+
+    <div class="register-item" data-register="r10">
+      <div class="register-label">R10</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section r10d">
+            <span class="section-label">R10D (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Extended GPR</div>
+    </div>
+
+    <div class="register-item" data-register="r11">
+      <div class="register-label">R11</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section r11d">
+            <span class="section-label">R11D (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Extended GPR</div>
+    </div>
+
+    <div class="register-item" data-register="r12">
+      <div class="register-label">R12</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section r12d">
+            <span class="section-label">R12D (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Extended GPR</div>
+    </div>
+
+    <div class="register-item" data-register="r13">
+      <div class="register-label">R13</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section r13d">
+            <span class="section-label">R13D (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Extended GPR</div>
+    </div>
+
+    <div class="register-item" data-register="r14">
+      <div class="register-label">R14</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section r14d">
+            <span class="section-label">R14D (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Extended GPR</div>
+    </div>
+
+    <div class="register-item" data-register="r15">
+      <div class="register-label">R15</div>
+      <div class="register-bar">
+        <div class="bit-sections">
+          <div class="bit-section r15d">
+            <span class="section-label">R15D (32)</span>
+          </div>
+          <div class="bit-section upper"><span class="section-label">Upper 32 bits</span></div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000000</div>
+      <div class="register-purpose">Extended GPR</div>
+    </div>
+  </div>
+
+  <!-- Instruction Pointer and Flags -->
+  <div class="special-registers">
+    <div class="register-item special-reg" data-register="rip">
+      <div class="register-label">RIP</div>
+      <div class="register-bar instruction-pointer">
+        <span class="section-label">Instruction Pointer (64-bit)</span>
+      </div>
+      <div class="register-value">0x0000000000401234</div>
+      <div class="register-purpose">Next instruction address</div>
+    </div>
+
+    <div class="register-item special-reg" data-register="rflags">
+      <div class="register-label">RFLAGS</div>
+      <div class="register-bar flags-bar">
+        <div class="flag-bits">
+          <div class="flag-bit" data-flag="CF" title="Carry Flag">CF</div>
+          <div class="flag-bit" data-flag="PF" title="Parity Flag">PF</div>
+          <div class="flag-bit" data-flag="AF" title="Auxiliary Flag">AF</div>
+          <div class="flag-bit active" data-flag="ZF" title="Zero Flag">ZF</div>
+          <div class="flag-bit" data-flag="SF" title="Sign Flag">SF</div>
+          <div class="flag-bit" data-flag="OF" title="Overflow Flag">OF</div>
+          <div class="flag-bit active" data-flag="IF" title="Interrupt Flag">IF</div>
+          <div class="flag-bit" data-flag="DF" title="Direction Flag">DF</div>
+        </div>
+      </div>
+      <div class="register-value">0x0000000000000246</div>
+      <div class="register-purpose">Status & Control Flags</div>
+    </div>
+  </div>
+
+  <!-- Interactive Controls -->
+  <div class="controls-section">
+    <h4>Simulate Register Operations</h4>
+    <div class="operation-buttons">
+      <button class="op-btn" data-operation="mov">MOV RAX, 0x1234</button>
+      <button class="op-btn" data-operation="add">ADD RAX, RBX</button>
+      <button class="op-btn" data-operation="xor">XOR RAX, RAX</button>
+      <button class="op-btn" data-operation="push">PUSH RAX</button>
+      <button class="op-btn" data-operation="pop">POP RBX</button>
+      <button class="op-btn" data-operation="reset">RESET ALL</button>
+    </div>
+  </div>
+
+  <!-- Info Panel -->
+  <div class="info-panel">
+    <h4>📌 Register Information</h4>
+    <p id="info-text">Click on any register to see detailed information.</p>
+  </div>
+</div>
+
+<script>
+  // Register state
+  const registers = {
+    rax: 0n, rbx: 0n, rcx: 0n, rdx: 0n,
+    rsi: 0n, rdi: 0n, rbp: 0x7FFF12340000n, rsp: 0x7FFF12340FF8n,
+    r8: 0n, r9: 0n, r10: 0n, r11: 0n,
+    r12: 0n, r13: 0n, r14: 0n, r15: 0n,
+    rip: 0x401234n,
+    rflags: 0x246n
+  };
+
+  const registerInfo = {
+    rax: { name: 'RAX', purpose: 'Accumulator register. Used for return values and arithmetic operations. Can be accessed as RAX (64), EAX (32), AX (16), AH/AL (8).' },
+    rbx: { name: 'RBX', purpose: 'Base register. General purpose, often used as a pointer to data. Callee-saved.' },
+    rcx: { name: 'RCX', purpose: 'Counter register. Used for loop counters and shift/rotate counts. 4th function argument.' },
+    rdx: { name: 'RDX', purpose: 'Data register. Used in I/O operations and arithmetic extensions. 3rd function argument.' },
+    rsi: { name: 'RSI', purpose: 'Source Index. Points to source in string operations. 2nd function argument.' },
+    rdi: { name: 'RDI', purpose: 'Destination Index. Points to destination in string operations. 1st function argument.' },
+    rbp: { name: 'RBP', purpose: 'Base Pointer. Points to the base of the current stack frame. Callee-saved.' },
+    rsp: { name: 'RSP', purpose: 'Stack Pointer. Points to the top of the stack. Must be 16-byte aligned.' },
+    r8: { name: 'R8', purpose: 'Extended GPR. 5th function argument. Added in x86-64.' },
+    r9: { name: 'R9', purpose: 'Extended GPR. 6th function argument. Added in x86-64.' },
+    r10: { name: 'R10', purpose: 'Extended GPR. Caller-saved, general purpose.' },
+    r11: { name: 'R11', purpose: 'Extended GPR. Caller-saved, general purpose.' },
+    r12: { name: 'R12', purpose: 'Extended GPR. Callee-saved, general purpose.' },
+    r13: { name: 'R13', purpose: 'Extended GPR. Callee-saved, general purpose.' },
+    r14: { name: 'R14', purpose: 'Extended GPR. Callee-saved, general purpose.' },
+    r15: { name: 'R15', purpose: 'Extended GPR. Callee-saved, general purpose.' },
+    rip: { name: 'RIP', purpose: 'Instruction Pointer. Contains the address of the next instruction to execute.' },
+    rflags: { name: 'RFLAGS', purpose: 'Flags register containing status (ZF, CF, SF, OF) and control flags (IF, DF).' }
+  };
+
+  function updateDisplay() {
+    document.querySelectorAll('.register-item').forEach(item => {
+      const regName = item.dataset.register;
+      if (regName && registers[regName] !== undefined) {
+        const valueElem = item.querySelector('.register-value');
+        if (valueElem) {
+          const value = registers[regName].toString(16).padStart(16, '0').toUpperCase();
+          valueElem.textContent = `0x${value}`;
+          
+          // Highlight if non-zero
+          if (registers[regName] !== 0n) {
+            item.classList.add('has-value');
+          } else {
+            item.classList.remove('has-value');
+          }
+        }
+      }
+    });
+  }
+
+  // Register click handlers
+  document.querySelectorAll('.register-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const regName = item.dataset.register;
+      const info = registerInfo[regName];
+      if (info) {
+        const infoPanel = document.getElementById('info-text');
+        infoPanel.innerHTML = `<strong>${info.name}</strong>: ${info.purpose}<br><br>Current value: <code>${item.querySelector('.register-value').textContent}</code>`;
+        
+        // Highlight selected
+        document.querySelectorAll('.register-item').forEach(r => r.classList.remove('selected'));
+        item.classList.add('selected');
+      }
+    });
+  });
+
+  // Operation handlers
+  document.querySelectorAll('.op-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const op = btn.dataset.operation;
+      
+      switch(op) {
+        case 'mov':
+          registers.rax = 0x1234n;
+          break;
+        case 'add':
+          registers.rax = (registers.rax + registers.rbx) & 0xFFFFFFFFFFFFFFFFn;
+          break;
+        case 'xor':
+          registers.rax = 0n;
+          break;
+        case 'push':
+          registers.rsp -= 8n;
+          break;
+        case 'pop':
+          registers.rbx = registers.rax;
+          registers.rsp += 8n;
+          break;
+        case 'reset':
+          Object.keys(registers).forEach(key => {
+            if (key !== 'rbp' && key !== 'rsp' && key !== 'rip' && key !== 'rflags') {
+              registers[key] = 0n;
+            }
+          });
+          registers.rbp = 0x7FFF12340000n;
+          registers.rsp = 0x7FFF12340FF8n;
+          registers.rip = 0x401234n;
+          registers.rflags = 0x246n;
+          break;
+      }
+      
+      updateDisplay();
+      
+      // Show feedback
+      btn.classList.add('clicked');
+      setTimeout(() => btn.classList.remove('clicked'), 300);
+    });
+  });
+
+  // Initialize
+  updateDisplay();
+</script>
+
+<style>
+  .cpu-registers-container {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 12px;
+    margin: 2rem 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .registers-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .registers-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: #2c3e50;
+  }
+
+  .subtitle {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+
+  .registers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .register-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .register-item:hover {
+    border-color: #3498db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(52,152,219,0.2);
+  }
+
+  .register-item.selected {
+    border-color: #2ecc71;
+    background: #f0fff4;
+  }
+
+  .register-item.has-value {
+    background: #fff9e6;
+    border-color: #f39c12;
+  }
+
+  .register-item.special {
+    background: #e8f4f8;
+  }
+
+  .register-label {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+
+  .register-bar {
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 6px;
+    margin: 0.5rem 0;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+  }
+
+  .bit-sections {
+    display: flex;
+    width: 100%;
+    height: 100%;
+  }
+
+  .bit-section {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 2px solid rgba(255,255,255,0.3);
+  }
+
+  .bit-section.eax, .bit-section.ebx, .bit-section.ecx, .bit-section.edx,
+  .bit-section.esi, .bit-section.edi, .bit-section.ebp, .bit-section.esp,
+  .bit-section.r8d, .bit-section.r9d, .bit-section.r10d, .bit-section.r11d,
+  .bit-section.r12d, .bit-section.r13d, .bit-section.r14d, .bit-section.r15d {
+    width: 50%;
+    background: rgba(255,255,255,0.2);
+  }
+
+  .bit-section.upper {
+    width: 50%;
+  }
+
+  .section-label {
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  .register-value {
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    color: #e74c3c;
+    font-weight: bold;
+    margin: 0.5rem 0;
+  }
+
+  .register-purpose {
+    font-size: 0.85rem;
+    color: #666;
+    font-style: italic;
+  }
+
+  .special-registers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .special-registers {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .instruction-pointer {
+    background: linear-gradient(135deg, #f39c12 0%, #e74c3c 100%);
+  }
+
+  .flags-bar {
+    background: #34495e;
+    padding: 0.5rem;
+  }
+
+  .flag-bits {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .flag-bit {
+    background: #7f8c8d;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    cursor: help;
+  }
+
+  .flag-bit.active {
+    background: #2ecc71;
+  }
+
+  .controls-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .controls-section h4 {
+    margin-top: 0;
+    color: #2c3e50;
+  }
+
+  .operation-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .op-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+  }
+
+  .op-btn:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  .op-btn[data-operation="reset"] {
+    background: #e74c3c;
+  }
+
+  .op-btn[data-operation="reset"]:hover {
+    background: #c0392b;
+  }
+
+  .op-btn.clicked {
+    animation: pulse 0.3s ease;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  .info-panel {
+    background: #e8f4f8;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+  }
+
+  .info-panel h4 {
+    margin-top: 0;
+    color: #2980b9;
+  }
+
+  .info-panel p {
+    margin: 0;
+    line-height: 1.6;
+    color: #555;
+  }
+
+  .info-panel code {
+    background: #34495e;
+    color: #2ecc71;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+  }
+</style>
+

@@ -1,0 +1,297 @@
+---
+layout: ../../layouts/BaseLayout.astro
+title: Interactive CPU Registers Architecture
+description: Explore x86-64 CPU registers with interactive visualizations
+---
+
+import CPURegisters from '../../components/CPURegisters.astro';
+
+# Interactive CPU Registers Architecture
+
+An interactive guide to understanding x86-64 CPU registers and their architecture.
+
+## What are CPU Registers?
+
+CPU registers are small, extremely fast storage locations directly inside the processor. They're the fastest memory available in a computer system and are used to hold data that the CPU is actively working with.
+
+---
+
+## x86-64 General Purpose Registers
+
+The x86-64 architecture provides 16 general-purpose registers, each 64 bits (8 bytes) wide:
+
+<CPURegisters />
+
+---
+
+## Register Categories
+
+### General Purpose Registers (GPRs)
+
+| Register | Purpose | Common Use |
+|----------|---------|------------|
+| **RAX** | Accumulator | Return values, arithmetic operations |
+| **RBX** | Base | Base pointer for memory access |
+| **RCX** | Counter | Loop counter, string operations |
+| **RDX** | Data | I/O operations, arithmetic extensions |
+| **RSI** | Source Index | String/array source pointer |
+| **RDI** | Destination Index | String/array destination pointer |
+| **RBP** | Base Pointer | Stack frame base pointer |
+| **RSP** | Stack Pointer | Current stack top pointer |
+| **R8-R15** | Extended | Additional general-purpose registers |
+
+### Special Purpose Registers
+
+| Register | Purpose | Description |
+|----------|---------|-------------|
+| **RIP** | Instruction Pointer | Address of next instruction to execute |
+| **RFLAGS** | Flags | Status and control flags (ZF, CF, SF, OF, etc.) |
+
+---
+
+## Register Sizes and Naming
+
+x86-64 registers support multiple access sizes for backward compatibility:
+
+### 64-bit Register Hierarchy
+
+```
+RAX (64-bit)     [━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━]
+ └─ EAX (32-bit) [━━━━━━━━━━━━━━━━]
+     └─ AX (16)  [━━━━━━━━]
+         ├─ AH   [━━━━] (high byte)
+         └─ AL   [━━━━] (low byte)
+```
+
+**Example for RAX:**
+- **RAX**: Full 64-bit register (bits 0-63)
+- **EAX**: Lower 32 bits (bits 0-31) - writing clears upper 32 bits
+- **AX**: Lower 16 bits (bits 0-15)
+- **AH**: High byte of AX (bits 8-15)
+- **AL**: Low byte of AX (bits 0-7)
+
+---
+
+## Common Register Operations
+
+### Moving Data
+```asm
+mov rax, 0x1234       ; Load immediate value into RAX
+mov rbx, rax          ; Copy RAX to RBX
+mov [rbp-8], rax      ; Store RAX to memory
+```
+
+### Arithmetic
+```asm
+add rax, rbx          ; RAX = RAX + RBX
+sub rax, 10           ; RAX = RAX - 10
+mul rcx               ; RAX = RAX * RCX (unsigned)
+imul rax, rbx         ; RAX = RAX * RBX (signed)
+```
+
+### Logic Operations
+```asm
+and rax, rbx          ; RAX = RAX & RBX (bitwise AND)
+or rax, 0xFF          ; RAX = RAX | 0xFF (bitwise OR)
+xor rax, rax          ; RAX = 0 (common way to zero a register)
+not rax               ; RAX = ~RAX (bitwise NOT)
+```
+
+---
+
+## Calling Convention (System V AMD64 ABI)
+
+On Linux/Unix systems, function arguments are passed in registers:
+
+| Argument | Register | Type |
+|----------|----------|------|
+| 1st | **RDI** | Integer/Pointer |
+| 2nd | **RSI** | Integer/Pointer |
+| 3rd | **RDX** | Integer/Pointer |
+| 4th | **RCX** | Integer/Pointer |
+| 5th | **R8** | Integer/Pointer |
+| 6th | **R9** | Integer/Pointer |
+| Return | **RAX** | Integer/Pointer |
+
+**Floating-point arguments** use XMM0-XMM7 registers.
+
+---
+
+## Stack Operations
+
+The stack grows downward (from high to low memory addresses):
+
+```asm
+push rax              ; Decrement RSP, store RAX at [RSP]
+pop rbx               ; Load [RSP] into RBX, increment RSP
+```
+
+**Stack Frame Example:**
+```
+High Memory
+    ┌─────────────┐
+    │  Arguments  │
+    ├─────────────┤
+    │ Return Addr │ ← RBP + 8
+    ├─────────────┤
+    │  Old RBP    │ ← RBP
+    ├─────────────┤
+    │  Local Vars │
+    ├─────────────┤
+    │     ...     │ ← RSP (current stack top)
+    └─────────────┘
+Low Memory
+```
+
+---
+
+## RFLAGS Register
+
+The RFLAGS register contains status and control flags:
+
+### Common Flags
+
+- **CF (Carry Flag)**: Set if arithmetic carry/borrow occurred
+- **ZF (Zero Flag)**: Set if result is zero
+- **SF (Sign Flag)**: Set if result is negative
+- **OF (Overflow Flag)**: Set if signed overflow occurred
+- **PF (Parity Flag)**: Set if result has even parity
+- **AF (Auxiliary Flag)**: Used for BCD arithmetic
+- **DF (Direction Flag)**: Controls string operation direction
+- **IF (Interrupt Flag)**: Enable/disable interrupts
+
+**Example:**
+```asm
+cmp rax, rbx          ; Compare RAX and RBX (sets flags)
+je equal              ; Jump if equal (ZF = 1)
+jg greater            ; Jump if greater (ZF = 0 and SF = OF)
+jl less               ; Jump if less (SF ≠ OF)
+```
+
+---
+
+## Register Preservation
+
+### Caller-Saved (Volatile)
+These registers may be modified by called functions:
+- RAX, RCX, RDX, RSI, RDI, R8-R11
+
+### Callee-Saved (Non-volatile)
+These must be preserved by called functions:
+- RBX, RBP, R12-R15
+
+**RSP must always be preserved and properly aligned (16-byte).**
+
+---
+
+## Practical Examples
+
+### Example 1: Simple Function
+```asm
+; int add(int a, int b) { return a + b; }
+add_function:
+    mov eax, edi      ; Load first argument (a)
+    add eax, esi      ; Add second argument (b)
+    ret               ; Return (result in EAX)
+```
+
+### Example 2: Loop with Counter
+```asm
+; Sum array of 10 integers
+    xor rax, rax      ; Sum = 0
+    mov rcx, 10       ; Counter = 10
+    lea rsi, [array]  ; RSI = array pointer
+loop_start:
+    add rax, [rsi]    ; Sum += *array
+    add rsi, 4        ; array++
+    loop loop_start   ; Decrement RCX, loop if not zero
+```
+
+### Example 3: Stack Frame Setup
+```asm
+function:
+    push rbp          ; Save old base pointer
+    mov rbp, rsp      ; Set up new stack frame
+    sub rsp, 32       ; Allocate 32 bytes for locals
+    
+    ; ... function body ...
+    
+    mov rsp, rbp      ; Restore stack pointer
+    pop rbp           ; Restore base pointer
+    ret               ; Return
+```
+
+---
+
+## Performance Considerations
+
+### Register Speed Hierarchy
+
+1. **Registers** (~1 cycle) ← Fastest
+2. **L1 Cache** (~4 cycles)
+3. **L2 Cache** (~12 cycles)
+4. **L3 Cache** (~40 cycles)
+5. **RAM** (~100-300 cycles)
+6. **Disk** (~10,000,000+ cycles) ← Slowest
+
+**Key Takeaway:** Keep frequently accessed data in registers for maximum performance!
+
+---
+
+## Debugging Tips
+
+### Using GDB to Inspect Registers
+
+```bash
+# View all registers
+(gdb) info registers
+
+# View specific register
+(gdb) print $rax
+(gdb) print/x $rax      # Hexadecimal
+(gdb) print/t $rax      # Binary
+
+# View register in different sizes
+(gdb) print/x $eax      # 32-bit
+(gdb) print/x $ax       # 16-bit
+(gdb) print/x $al       # 8-bit
+```
+
+---
+
+## SIMD Registers
+
+Modern x86-64 CPUs also include vector registers for parallel operations:
+
+### Register Types
+- **XMM0-XMM15**: 128-bit (SSE)
+- **YMM0-YMM15**: 256-bit (AVX)
+- **ZMM0-ZMM31**: 512-bit (AVX-512)
+
+These are used for:
+- Floating-point operations
+- SIMD (Single Instruction, Multiple Data) operations
+- Vector processing
+- Multimedia applications
+
+---
+
+## Resources
+
+- [Intel® 64 and IA-32 Architectures Software Developer's Manual](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
+- [AMD64 Architecture Programmer's Manual](https://www.amd.com/en/search/documentation/hub.html)
+- [System V AMD64 ABI](https://wiki.osdev.org/System_V_ABI)
+- [x86-64 Assembly Reference](https://www.felixcloutier.com/x86/)
+
+---
+
+**Related Topics:**
+- [[Reverse Engineering 0x09]] - Assembly and multiplication operations
+- Memory hierarchy and cache architecture
+- Instruction pipelining and out-of-order execution
+- Branch prediction and speculative execution
+
+---
+
+*Last updated: November 14, 2025*
+

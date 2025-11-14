@@ -388,9 +388,10 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     container.addEventListener('mouseleave', onMouseUp);
     
     // Double click to reset auto-rotation
-    container.addEventListener('dblclick', () => {
+    const onDoubleClick = () => {
       autoRotate = !autoRotate;
-    });
+    };
+    container.addEventListener('dblclick', onDoubleClick);
     
     // Mouse wheel for zoom
     const onWheel = (e: WheelEvent) => {
@@ -491,7 +492,8 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       container.removeEventListener('mousemove', onMouseMove, { passive: true } as any);
       container.removeEventListener('mouseup', onMouseUp);
       container.removeEventListener('mouseleave', onMouseUp);
-      container.removeEventListener('wheel', onWheel);
+      container.removeEventListener('dblclick', onDoubleClick);
+      container.removeEventListener('wheel', onWheel, { passive: false } as any);
     };
     
     // Store cleanup for potential future use

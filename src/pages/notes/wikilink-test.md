@@ -25,6 +25,9 @@ Here's a note that references both [[Obsidian Demo]] and [[Reverse Engineering 0
 ### In a Sentence
 You can read more about assembly in the [[Reverse Engineering 0x09|assembly multiplication guide]].
 
+### Technical Notes
+Check out the [[CPU Registers|interactive CPU registers architecture]] to learn about x86-64 registers.
+
 ## Conversion Rules
 
 The plugin automatically:
