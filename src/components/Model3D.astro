@@ -177,7 +177,9 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       // Optimize materials for performance
       model.traverse((child) => {
         if (child instanceof THREE.Mesh) {
-          child.frustumCulled = true;
+          // Disable frustum culling to prevent models from disappearing during scroll
+          // This is especially important on mobile where viewport calculations can be unreliable
+          child.frustumCulled = false;
           child.matrixAutoUpdate = true;
           
           // Optimize material if it's a standard/physical material
@@ -388,6 +390,25 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       }, 100);
     };
     
+    // Handle visibility changes (important for mobile scrolling)
+    // Force render when container becomes visible again
+    let visibilityObserver: IntersectionObserver | null = null;
+    if ('IntersectionObserver' in window) {
+      visibilityObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && model) {
+            // Force a render when the model becomes visible
+            renderer.render(scene, camera);
+          }
+        });
+      }, {
+        threshold: 0.01, // Trigger when even 1% is visible
+        rootMargin: '50px' // Start rendering slightly before it's visible
+      });
+      
+      visibilityObserver.observe(container);
+    }
+    
     // Handle WebGL context loss (common on mobile)
     const canvas = renderer.domElement;
     canvas.addEventListener('webglcontextlost', (event) => {
@@ -440,6 +461,11 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       
       // Dispose renderer
       renderer.dispose();
+      
+      // Disconnect intersection observer
+      if (visibilityObserver) {
+        visibilityObserver.disconnect();
+      }
       
       // Remove event listeners
       window.removeEventListener('resize', resizeHandler);
