@@ -16,6 +16,7 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     </svg>
   </button>
   <div class="fps-counter">FPS: <span class="fps-value">--</span></div>
+  <div class="tap-hint">👆 Tap to reload if blank</div>
   <div class="three-container" style={`height: ${height}`} data-scene-type={sceneType}></div>
 </div>
 
@@ -537,6 +538,47 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       scene.background = new THREE.Color(bgColors[bgMode]);
     });
     
+    // Tap/Click canvas to force reload (workaround for Chrome mobile canvas clearing)
+    const tapHint = wrapper.querySelector('.tap-hint') as HTMLElement;
+    let tapCount = 0;
+    
+    const forceReload = (e: Event) => {
+      // Only trigger if clicking the canvas itself, not buttons
+      if ((e.target as HTMLElement).tagName === 'CANVAS') {
+        tapCount++;
+        console.log(`Force reload triggered (tap ${tapCount}):`, sceneType);
+        
+        // Hide tap hint after first use
+        if (tapHint && tapCount === 1) {
+          tapHint.style.opacity = '0';
+          setTimeout(() => {
+            tapHint.style.display = 'none';
+          }, 300);
+        }
+        
+        // Force visibility on mesh and all children
+        if (mesh) {
+          mesh.visible = true;
+          if (mesh.traverse) {
+            mesh.traverse((child: any) => {
+              child.visible = true;
+            });
+          }
+        }
+        
+        // Triple render for maximum reliability
+        renderer.render(scene, camera);
+        requestAnimationFrame(() => {
+          renderer.render(scene, camera);
+          requestAnimationFrame(() => {
+            renderer.render(scene, camera);
+          });
+        });
+      }
+    };
+    
+    container.addEventListener('click', forceReload);
+    
     // FPS counter - simple
     const fpsCounter = wrapper.querySelector('.fps-value') as HTMLElement;
     let fpsFrames = 0;
@@ -641,6 +683,7 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       container.removeEventListener('touchcancel', onTouchEnd, { passive: true } as any);
       container.removeEventListener('dblclick', onDoubleClick);
       container.removeEventListener('wheel', onWheel, { passive: false } as any);
+      container.removeEventListener('click', forceReload);
     };
     
     // Store cleanup for potential future use
@@ -708,6 +751,36 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     min-width: 2ch;
     display: inline-block;
     text-align: right;
+  }
+  
+  .tap-hint {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: rgba(103, 126, 234, 0.9);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: opacity 0.3s ease;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.8;
+      transform: translateX(-50%) scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(-50%) scale(1.05);
+    }
   }
 
   .three-container {
