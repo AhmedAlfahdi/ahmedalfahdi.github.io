@@ -35,8 +35,7 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
   }
 
   // CRITICAL FIX: Lazy load scenes to avoid WebGL context limit on mobile (Chrome limit: 8-16)
-  // Only initialize WebGL when scene is near viewport
-  // Keep observing to re-render when scrolling back into view (Chrome clears off-screen canvases)
+  // Aggressively dispose and recreate scenes to prevent Chrome mobile canvas clearing
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const wrapper = entry.target as HTMLElement;
@@ -44,36 +43,48 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       
       if (entry.isIntersecting) {
         // Scene is visible
-        if (!container.querySelector('canvas')) {
+        const canvas = container.querySelector('canvas');
+        if (!canvas) {
           // First time - initialize
+          console.log('Initializing scene:', container.dataset.sceneType);
           initializeScene(wrapper, container);
         } else {
-          // Already initialized - force re-render (Chrome may have cleared canvas)
-          const renderer = (container as any).__renderer;
-          const scene = (container as any).__scene;
-          const camera = (container as any).__camera;
-          const mesh = (container as any).__mesh;
-          if (renderer && scene && camera) {
-            // Make sure mesh is visible
-            if (mesh) {
-              mesh.visible = true;
-              if (mesh.traverse) {
-                mesh.traverse((child: any) => {
-                  child.visible = true;
-                });
-              }
-            }
-            // Force multiple renders to ensure canvas is restored
-            renderer.render(scene, camera);
-            requestAnimationFrame(() => {
-              renderer.render(scene, camera);
-            });
+          // Already initialized - check if canvas is blank (Chrome cleared it)
+          // Force complete reinitialization
+          console.log('Scene coming back into view, reinitializing:', container.dataset.sceneType);
+          
+          // Cleanup old scene
+          const cleanup = (container as any).__cleanup;
+          if (cleanup) {
+            cleanup();
+          }
+          
+          // Remove old canvas
+          if (canvas && canvas.parentNode) {
+            canvas.parentNode.removeChild(canvas);
+          }
+          
+          // Reinitialize from scratch
+          initializeScene(wrapper, container);
+        }
+      } else {
+        // Scene is NOT visible - dispose to free up WebGL context
+        const cleanup = (container as any).__cleanup;
+        if (cleanup) {
+          console.log('Scene scrolled out of view, disposing:', container.dataset.sceneType);
+          cleanup();
+          
+          // Remove canvas to mark as uninitialized
+          const canvas = container.querySelector('canvas');
+          if (canvas && canvas.parentNode) {
+            canvas.parentNode.removeChild(canvas);
           }
         }
       }
     });
   }, {
-    rootMargin: '100px' // Start loading 100px before visible
+    rootMargin: '100px', // Start loading 100px before visible
+    threshold: 0.01 // Trigger when even 1% is visible
   });
   
   // Observe all wrappers
@@ -538,46 +549,40 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       scene.background = new THREE.Color(bgColors[bgMode]);
     });
     
-    // Tap/Click canvas to force reload (workaround for Chrome mobile canvas clearing)
+    // Tap/Click anywhere in container to force complete reinitialization
     const tapHint = wrapper.querySelector('.tap-hint') as HTMLElement;
     let tapCount = 0;
     
-    const forceReload = (e: Event) => {
-      // Only trigger if clicking the canvas itself, not buttons
-      if ((e.target as HTMLElement).tagName === 'CANVAS') {
-        tapCount++;
-        console.log(`Force reload triggered (tap ${tapCount}):`, sceneType);
-        
-        // Hide tap hint after first use
-        if (tapHint && tapCount === 1) {
-          tapHint.style.opacity = '0';
-          setTimeout(() => {
-            tapHint.style.display = 'none';
-          }, 300);
-        }
-        
-        // Force visibility on mesh and all children
-        if (mesh) {
-          mesh.visible = true;
-          if (mesh.traverse) {
-            mesh.traverse((child: any) => {
-              child.visible = true;
-            });
-          }
-        }
-        
-        // Triple render for maximum reliability
-        renderer.render(scene, camera);
-        requestAnimationFrame(() => {
-          renderer.render(scene, camera);
-          requestAnimationFrame(() => {
-            renderer.render(scene, camera);
-          });
-        });
+    const forceReinit = (e: Event) => {
+      tapCount++;
+      console.log(`Force reinitialize triggered (tap ${tapCount}):`, sceneType);
+      
+      // Hide tap hint after first use
+      if (tapHint && tapCount === 1) {
+        tapHint.style.opacity = '0';
+        setTimeout(() => {
+          tapHint.style.display = 'none';
+        }, 300);
       }
+      
+      // Complete cleanup and reinitialization
+      const cleanup = (container as any).__cleanup;
+      if (cleanup) {
+        cleanup();
+      }
+      
+      // Remove old canvas
+      const oldCanvas = container.querySelector('canvas');
+      if (oldCanvas && oldCanvas.parentNode) {
+        oldCanvas.parentNode.removeChild(oldCanvas);
+      }
+      
+      // Reinitialize from scratch
+      initializeScene(wrapper, container);
     };
     
-    container.addEventListener('click', forceReload);
+    // Make entire container clickable (not just canvas)
+    container.addEventListener('click', forceReinit);
     
     // FPS counter - simple
     const fpsCounter = wrapper.querySelector('.fps-value') as HTMLElement;
@@ -598,10 +603,11 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     
     // Ensure everything is fully initialized before starting animation
     let isReady = false;
+    let animationId: number;
     
     // Animation - simple
     function animate() {
-      requestAnimationFrame(animate);
+      animationId = requestAnimationFrame(animate);
       
       // Only render if scene is ready
       if (!isReady) return;
@@ -649,6 +655,12 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     
     // Cleanup function to prevent memory leaks
     const cleanup = () => {
+      // Stop animation loop
+      isReady = false;
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+      
       // Dispose geometries
       if (geometry) geometry.dispose();
       if (edges) edges.dispose();
@@ -683,7 +695,7 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       container.removeEventListener('touchcancel', onTouchEnd, { passive: true } as any);
       container.removeEventListener('dblclick', onDoubleClick);
       container.removeEventListener('wheel', onWheel, { passive: false } as any);
-      container.removeEventListener('click', forceReload);
+      container.removeEventListener('click', forceReinit);
     };
     
     // Store cleanup for potential future use
