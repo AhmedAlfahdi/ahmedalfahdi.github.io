@@ -59,8 +59,8 @@ A modern, feature-rich personal website with interactive 3D models, Obsidian not
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/AhmedAlfahdi/ahmedalfahdi.github.io.git
+cd ahmedalfahdi.github.io
 ```
 
 2. Install dependencies:
@@ -122,8 +122,8 @@ Edit `astro.config.mjs` and update these values:
 
 ```javascript
 export default defineConfig({
-  site: 'https://yourusername.github.io',
-  base: '/your-repo-name',  // Remove this line if deploying to yourusername.github.io
+  site: 'https://ahmedalfahdi.github.io',
+  // No 'base' needed for user/organization site (ahmedalfahdi.github.io)
 });
 ```
 

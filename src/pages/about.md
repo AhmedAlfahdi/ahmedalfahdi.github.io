@@ -6,14 +6,18 @@ description: Learn more about me and this website
 
 # About Me
 
-Welcome! I'm passionate about web development, 3D graphics, and creating interactive experiences on the web.
+Welcome! I'm Ahmed N. Alfahdi, a mechanical engineer tinkering with software and hardware for fun and productivity.
+
+A fresh Mechanical Engineering graduate from German University of Technology, which is affiliated with RWTH Aachen University in Germany. I am a passionate learner who is always willing to learn and work across technologies and domains. I love to explore new technologies and leverage them to solve real-life problems.
 
 ## My Skills
 
+- **Engineering**: Mechanical Engineering, Hardware Tinkering
 - **Frontend Development**: HTML, CSS, JavaScript, TypeScript
 - **3D Graphics**: Three.js, WebGL
 - **Frameworks**: Astro, React, Vue
-- **Tools**: Git, VS Code, Blender
+- **Tools**: Git, VS Code, AutoHotkey
+- **Programming**: Python, C#
 
 ## Why This Website?
 
@@ -42,9 +46,9 @@ const techStack = {
 
 Feel free to reach out:
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
-- Twitter: [@yourhandle](https://twitter.com/yourhandle)
+- GitHub: [@AhmedAlfahdi](https://github.com/AhmedAlfahdi)
+- LinkedIn: [AhmedAlfahdi](https://linkedin.com/in/AhmedAlfahdi)
+- Location: Muscat, Oman
 
 ---
 

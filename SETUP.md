@@ -16,23 +16,23 @@ Visit `http://localhost:4321` to see your site!
 
 ## Configuration for GitHub Pages
 
-### Option A: User/Organization Site (yourusername.github.io)
+### Option A: User/Organization Site (ahmedalfahdi.github.io)
 
 Edit `astro.config.mjs`:
 ```javascript
 export default defineConfig({
-  site: 'https://yourusername.github.io',
+  site: 'https://ahmedalfahdi.github.io',
   // Remove the 'base' property
   integrations: [mdx()],
 });
 ```
 
-### Option B: Project Site (yourusername.github.io/project-name)
+### Option B: Project Site (ahmedalfahdi.github.io/project-name)
 
 Edit `astro.config.mjs`:
 ```javascript
 export default defineConfig({
-  site: 'https://yourusername.github.io',
+  site: 'https://ahmedalfahdi.github.io',
   base: '/your-repo-name', // Your repository name
   integrations: [mdx()],
 });
@@ -42,7 +42,7 @@ export default defineConfig({
 
 1. **Create a new repository on GitHub**
    - Go to https://github.com/new
-   - Name it (e.g., `personal-website` or `yourusername.github.io`)
+   - Name it (e.g., `personal-website` or `ahmedalfahdi.github.io`)
    - Keep it public for GitHub Pages
 
 2. **Initialize and push your code**
@@ -51,7 +51,7 @@ git init
 git add .
 git commit -m "Initial commit"
 git branch -M main
-git remote add origin https://github.com/yourusername/your-repo-name.git
+git remote add origin https://github.com/AhmedAlfahdi/ahmedalfahdi.github.io.git
 git push -u origin main
 ```
 
@@ -119,9 +119,9 @@ Don't forget to add them to the nav in `BaseLayout.astro`!
 
 ## Next Steps
 
-- [ ] Update `astro.config.mjs` with your GitHub username
+- [x] Update `astro.config.mjs` with your GitHub username
+- [x] Update About page with your information
 - [ ] Customize colors and styles
-- [ ] Add your own content to About page
 - [ ] Write your first blog post
 - [ ] Add custom 3D models or load external .gltf files
 - [ ] Set up a custom domain (optional)
