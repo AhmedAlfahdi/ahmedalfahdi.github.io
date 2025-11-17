@@ -522,6 +522,30 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     
     window.addEventListener('resize', resizeHandler);
     
+    // Force rendering during scroll (critical for Chrome mobile)
+    let scrollTimeout: number;
+    const forceRenderOnScroll = () => {
+      renderer.render(scene, camera);
+      clearTimeout(scrollTimeout);
+      scrollTimeout = window.setTimeout(() => {
+        renderer.render(scene, camera);
+      }, 150);
+    };
+    
+    window.addEventListener('scroll', forceRenderOnScroll, { passive: true });
+    
+    // Also listen to touch events for mobile
+    let touchTimeout: number;
+    const forceRenderOnTouch = () => {
+      renderer.render(scene, camera);
+      clearTimeout(touchTimeout);
+      touchTimeout = window.setTimeout(() => {
+        renderer.render(scene, camera);
+      }, 50);
+    };
+    
+    container.addEventListener('touchmove', forceRenderOnTouch, { passive: true });
+    
     // Cleanup function to prevent memory leaks
     const cleanup = () => {
       // Dispose geometries
@@ -548,12 +572,14 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       
       // Remove event listeners
       window.removeEventListener('resize', resizeHandler);
+      window.removeEventListener('scroll', forceRenderOnScroll, { passive: true } as any);
       container.removeEventListener('mousedown', onMouseDown);
       container.removeEventListener('mousemove', onMouseMove, { passive: true } as any);
       container.removeEventListener('mouseup', onMouseUp);
       container.removeEventListener('mouseleave', onMouseUp);
       container.removeEventListener('touchstart', onTouchStart, { passive: true } as any);
       container.removeEventListener('touchmove', onTouchMove, { passive: false } as any);
+      container.removeEventListener('touchmove', forceRenderOnTouch, { passive: true } as any);
       container.removeEventListener('touchend', onTouchEnd, { passive: true } as any);
       container.removeEventListener('touchcancel', onTouchEnd, { passive: true } as any);
       container.removeEventListener('dblclick', onDoubleClick);

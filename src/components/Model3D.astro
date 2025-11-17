@@ -409,6 +409,42 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       visibilityObserver.observe(container);
     }
     
+    // Force rendering during scroll (critical for Chrome mobile)
+    let scrollTimeout: number;
+    let isScrolling = false;
+    const forceRenderOnScroll = () => {
+      if (!isScrolling) {
+        isScrolling = true;
+      }
+      // Force render immediately
+      if (model) {
+        renderer.render(scene, camera);
+      }
+      
+      // Clear timeout and set a new one
+      clearTimeout(scrollTimeout);
+      scrollTimeout = window.setTimeout(() => {
+        isScrolling = false;
+      }, 150);
+    };
+    
+    // Add scroll listener with passive flag for performance
+    window.addEventListener('scroll', forceRenderOnScroll, { passive: true });
+    
+    // Also listen to touch events for mobile
+    let touchTimeout: number;
+    const forceRenderOnTouch = () => {
+      if (model) {
+        renderer.render(scene, camera);
+      }
+      clearTimeout(touchTimeout);
+      touchTimeout = window.setTimeout(() => {
+        renderer.render(scene, camera);
+      }, 50);
+    };
+    
+    container.addEventListener('touchmove', forceRenderOnTouch, { passive: true });
+    
     // Handle WebGL context loss (common on mobile)
     const canvas = renderer.domElement;
     canvas.addEventListener('webglcontextlost', (event) => {
@@ -469,12 +505,14 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       
       // Remove event listeners
       window.removeEventListener('resize', resizeHandler);
+      window.removeEventListener('scroll', forceRenderOnScroll, { passive: true } as any);
       container.removeEventListener('mousedown', onMouseDown);
       container.removeEventListener('mousemove', onMouseMove, { passive: true } as any);
       container.removeEventListener('mouseup', onMouseUp);
       container.removeEventListener('mouseleave', onMouseUp);
       container.removeEventListener('touchstart', onTouchStart, { passive: true } as any);
       container.removeEventListener('touchmove', onTouchMove, { passive: false } as any);
+      container.removeEventListener('touchmove', forceRenderOnTouch, { passive: true } as any);
       container.removeEventListener('touchend', onTouchEnd, { passive: true } as any);
       container.removeEventListener('touchcancel', onTouchEnd, { passive: true } as any);
       container.removeEventListener('wheel', onWheel);
