@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://yourusername.github.io/your-repo-name/sitemap.xml
+Sitemap: https://ahmedalfahdi.github.io/sitemap.xml
 
