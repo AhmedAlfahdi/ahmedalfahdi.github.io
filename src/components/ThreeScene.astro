@@ -82,15 +82,12 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
     
-    // Force immediate render to ensure canvas is visible
-    renderer.render(scene, camera);
-    
     container.appendChild(renderer.domElement);
     
-    // Force another render after appending to DOM
-    requestAnimationFrame(() => {
+    // Wait for canvas to be fully attached to DOM
+    setTimeout(() => {
       renderer.render(scene, camera);
-    });
+    }, 50);
     
     // Note: Using MeshBasicMaterial which doesn't require lighting for mobile compatibility
     
@@ -298,6 +295,11 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       }
       
       mesh = molecule;
+      mesh.visible = true; // Explicitly set visible
+      // Ensure all children are visible
+      mesh.traverse((child) => {
+        child.visible = true;
+      });
       scene.add(mesh);
       console.log('Molecule added to scene:', sceneType, 'children:', molecule.children.length);
       
@@ -356,6 +358,7 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       geometryMesh.add(wireframe);
       
       mesh = geometryMesh;
+      mesh.visible = true; // Explicitly set visible
       scene.add(mesh);
       console.log('Geometry added to scene:', sceneType, 'vertices:', geometry?.attributes?.position?.count);
     }
@@ -497,9 +500,15 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       }
     }
     
+    // Ensure everything is fully initialized before starting animation
+    let isReady = false;
+    
     // Animation - simple
     function animate() {
       requestAnimationFrame(animate);
+      
+      // Only render if scene is ready
+      if (!isReady) return;
       
       if (autoRotate && !isDragging) {
         mesh.rotation.x += 0.003;
@@ -510,7 +519,19 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       updateFPS();
     }
     
-    animate();
+    // Wait for next frame to ensure DOM is fully ready, then start animation
+    requestAnimationFrame(() => {
+      // Ensure mesh is visible and in scene
+      if (mesh && scene.children.includes(mesh)) {
+        console.log('Scene ready, mesh visible:', mesh.visible);
+        mesh.visible = true; // Explicitly set visible
+        renderer.render(scene, camera); // Force initial render
+        isReady = true;
+        animate(); // Start animation loop
+      } else {
+        console.error('Mesh not found in scene!');
+      }
+    });
     
     // Handle window resize with throttling
     let resizeTimeout;
