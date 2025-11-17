@@ -35,20 +35,40 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
 
   // CRITICAL FIX: Lazy load scenes to avoid WebGL context limit on mobile (Chrome limit: 8-16)
   // Only initialize WebGL when scene is near viewport
+  // Keep observing to re-render when scrolling back into view (Chrome clears off-screen canvases)
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
+      const wrapper = entry.target as HTMLElement;
+      const container = wrapper.querySelector('.three-container') as HTMLElement;
+      
       if (entry.isIntersecting) {
-        const wrapper = entry.target as HTMLElement;
-        const container = wrapper.querySelector('.three-container') as HTMLElement;
-        
-        // Skip if already initialized
-        if (container.querySelector('canvas')) return;
-        
-        // Initialize this scene
-        initializeScene(wrapper, container);
-        
-        // Stop observing after initialization
-        observer.unobserve(wrapper);
+        // Scene is visible
+        if (!container.querySelector('canvas')) {
+          // First time - initialize
+          initializeScene(wrapper, container);
+        } else {
+          // Already initialized - force re-render (Chrome may have cleared canvas)
+          const renderer = (container as any).__renderer;
+          const scene = (container as any).__scene;
+          const camera = (container as any).__camera;
+          const mesh = (container as any).__mesh;
+          if (renderer && scene && camera) {
+            // Make sure mesh is visible
+            if (mesh) {
+              mesh.visible = true;
+              if (mesh.traverse) {
+                mesh.traverse((child: any) => {
+                  child.visible = true;
+                });
+              }
+            }
+            // Force multiple renders to ensure canvas is restored
+            renderer.render(scene, camera);
+            requestAnimationFrame(() => {
+              renderer.render(scene, camera);
+            });
+          }
+        }
       }
     });
   }, {
@@ -104,6 +124,11 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     renderer.setSize(container.clientWidth, container.clientHeight);
     
     container.appendChild(renderer.domElement);
+    
+    // Store references for re-rendering when scrolling back into view
+    (container as any).__renderer = renderer;
+    (container as any).__scene = scene;
+    (container as any).__camera = camera;
     
     // Wait for canvas to be fully attached to DOM
     setTimeout(() => {
@@ -322,6 +347,10 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
         child.visible = true;
       });
       scene.add(mesh);
+      
+      // Store mesh reference for re-rendering
+      (container as any).__mesh = mesh;
+      
       console.log('Molecule added to scene:', sceneType, 'children:', molecule.children.length);
       
     } else {
@@ -381,6 +410,10 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       mesh = geometryMesh;
       mesh.visible = true; // Explicitly set visible
       scene.add(mesh);
+      
+      // Store mesh reference for re-rendering
+      (container as any).__mesh = mesh;
+      
       console.log('Geometry added to scene:', sceneType, 'vertices:', geometry?.attributes?.position?.count);
     }
     
