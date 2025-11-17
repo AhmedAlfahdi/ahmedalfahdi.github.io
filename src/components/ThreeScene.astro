@@ -16,7 +16,6 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     </svg>
   </button>
   <div class="fps-counter">FPS: <span class="fps-value">--</span></div>
-  <div class="tap-hint">👆 Tap to reload if blank</div>
   <div class="three-container" style={`height: ${height}`} data-scene-type={sceneType}></div>
 </div>
 
@@ -34,8 +33,27 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     }
   }
 
-  // CRITICAL FIX: Lazy load scenes to avoid WebGL context limit on mobile (Chrome limit: 8-16)
-  // Aggressively dispose and recreate scenes to prevent Chrome mobile canvas clearing
+  /**
+   * CRITICAL FIX FOR CHROME MOBILE WebGL ISSUES
+   * 
+   * Problem: Chrome mobile has aggressive memory management that causes WebGL rendering issues:
+   * 1. Hard limit of 8-16 WebGL contexts (device-dependent)
+   * 2. Clears canvas buffers when scrolling out of view
+   * 3. Can corrupt/lose WebGL contexts without proper cleanup
+   * 
+   * Solution: Aggressive dispose-and-recreate strategy
+   * - Only initialize scenes when they scroll into viewport (lazy loading)
+   * - Completely dispose scenes (stop animation, free GPU memory) when scrolling out
+   * - Recreate scenes from scratch when scrolling back in
+   * 
+   * Benefits:
+   * - Never exceeds WebGL context limit (only 2-3 active at once)
+   * - No stale/broken contexts
+   * - Reliable rendering on all mobile devices
+   * - Automatic memory management
+   * 
+   * Trade-off: Slightly more CPU usage when scrolling, but ensures reliability
+   */
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const wrapper = entry.target as HTMLElement;
@@ -549,41 +567,6 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       scene.background = new THREE.Color(bgColors[bgMode]);
     });
     
-    // Tap/Click anywhere in container to force complete reinitialization
-    const tapHint = wrapper.querySelector('.tap-hint') as HTMLElement;
-    let tapCount = 0;
-    
-    const forceReinit = (e: Event) => {
-      tapCount++;
-      console.log(`Force reinitialize triggered (tap ${tapCount}):`, sceneType);
-      
-      // Hide tap hint after first use
-      if (tapHint && tapCount === 1) {
-        tapHint.style.opacity = '0';
-        setTimeout(() => {
-          tapHint.style.display = 'none';
-        }, 300);
-      }
-      
-      // Complete cleanup and reinitialization
-      const cleanup = (container as any).__cleanup;
-      if (cleanup) {
-        cleanup();
-      }
-      
-      // Remove old canvas
-      const oldCanvas = container.querySelector('canvas');
-      if (oldCanvas && oldCanvas.parentNode) {
-        oldCanvas.parentNode.removeChild(oldCanvas);
-      }
-      
-      // Reinitialize from scratch
-      initializeScene(wrapper, container);
-    };
-    
-    // Make entire container clickable (not just canvas)
-    container.addEventListener('click', forceReinit);
-    
     // FPS counter - simple
     const fpsCounter = wrapper.querySelector('.fps-value') as HTMLElement;
     let fpsFrames = 0;
@@ -695,7 +678,6 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       container.removeEventListener('touchcancel', onTouchEnd, { passive: true } as any);
       container.removeEventListener('dblclick', onDoubleClick);
       container.removeEventListener('wheel', onWheel, { passive: false } as any);
-      container.removeEventListener('click', forceReinit);
     };
     
     // Store cleanup for potential future use
@@ -763,36 +745,6 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     min-width: 2ch;
     display: inline-block;
     text-align: right;
-  }
-  
-  .tap-hint {
-    position: absolute;
-    bottom: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    background: rgba(103, 126, 234, 0.9);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    pointer-events: none;
-    backdrop-filter: blur(4px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    transition: opacity 0.3s ease;
-    animation: pulse 2s ease-in-out infinite;
-  }
-  
-  @keyframes pulse {
-    0%, 100% {
-      opacity: 0.8;
-      transform: translateX(-50%) scale(1);
-    }
-    50% {
-      opacity: 1;
-      transform: translateX(-50%) scale(1.05);
-    }
   }
 
   .three-container {

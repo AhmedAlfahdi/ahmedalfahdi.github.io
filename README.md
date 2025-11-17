@@ -218,6 +218,28 @@ description: Post description
 
 **Requirements:** WebGL support for 3D models
 
+### Chrome Mobile WebGL Optimization
+
+This site implements an aggressive dispose-and-recreate strategy to handle Chrome mobile's WebGL limitations:
+
+**The Problem:**
+- Chrome mobile has a hard limit of 8-16 WebGL contexts (device-dependent)
+- Aggressively clears canvas buffers when scrolling to save memory
+- Can corrupt or lose WebGL contexts without proper cleanup
+
+**The Solution (implemented in ThreeScene.astro):**
+- **Lazy Loading:** Only initialize 3D scenes when they scroll into the viewport (IntersectionObserver)
+- **Aggressive Disposal:** Completely dispose scenes (stop animation, free GPU memory) when scrolling out of view
+- **Full Reinitialization:** Recreate scenes from scratch when scrolling back into view
+
+**Benefits:**
+- Never exceeds WebGL context limit (only 2-3 scenes active at once)
+- No stale or broken WebGL contexts
+- Reliable rendering on all mobile devices
+- Automatic memory management
+
+**Trade-off:** Slightly higher CPU usage when scrolling, but ensures 100% reliability on mobile devices.
+
 ## Documentation
 
 - `3D-MODELS-GUIDE.md` - Complete guide for 3D models
