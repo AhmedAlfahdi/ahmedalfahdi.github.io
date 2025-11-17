@@ -92,26 +92,7 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       renderer.render(scene, camera);
     });
     
-    // Removed THREE.Clock - using manual delta time calculation for better performance
-    
-    // Enhanced Lighting for better visibility
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-    scene.add(ambientLight);
-    
-    // Main light from top-right
-    const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    mainLight.position.set(5, 5, 5);
-    scene.add(mainLight);
-    
-    // Fill light from left
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
-    fillLight.position.set(-5, 3, 2);
-    scene.add(fillLight);
-    
-    // Back light for depth
-    const backLight = new THREE.DirectionalLight(0xffffff, 0.4);
-    backLight.position.set(0, 2, -5);
-    scene.add(backLight);
+    // Note: Using MeshBasicMaterial which doesn't require lighting for mobile compatibility
     
     // Molecular structure helper functions
     const moleculeTypes = ['water', 'methane', 'ammonia', 'co2', 'benzene', 'ethanol'];
@@ -119,14 +100,15 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     
     function createAtom(color: number, size: number) {
       const geometry = new THREE.SphereGeometry(size, 32, 32);
-      const material = new THREE.MeshPhongMaterial({ 
-        color, 
-        shininess: 100,
-        specular: 0x555555
+      // Use MeshBasicMaterial for better mobile compatibility
+      const material = new THREE.MeshBasicMaterial({ 
+        color,
+        side: THREE.FrontSide
       });
       const mesh = new THREE.Mesh(geometry, material);
       // Disable frustum culling to prevent disappearing
       mesh.frustumCulled = false;
+      mesh.matrixAutoUpdate = true;
       return mesh;
     }
     
@@ -134,10 +116,15 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       const direction = new THREE.Vector3().subVectors(end, start);
       const length = direction.length();
       const geometry = new THREE.CylinderGeometry(0.08, 0.08, length, 8);
-      const material = new THREE.MeshPhongMaterial({ color });
+      // Use MeshBasicMaterial for better mobile compatibility
+      const material = new THREE.MeshBasicMaterial({ 
+        color,
+        side: THREE.FrontSide
+      });
       const bond = new THREE.Mesh(geometry, material);
       // Disable frustum culling to prevent disappearing
       bond.frustumCulled = false;
+      bond.matrixAutoUpdate = true;
       
       bond.position.copy(start).add(direction.multiplyScalar(0.5));
       bond.quaternion.setFromUnitVectors(
@@ -312,6 +299,7 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       
       mesh = molecule;
       scene.add(mesh);
+      console.log('Molecule added to scene:', sceneType, 'children:', molecule.children.length);
       
     } else {
       // Create geometry based on type (optimized for performance)
@@ -344,19 +332,16 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
           geometry = new THREE.BoxGeometry(2, 2, 2);
       }
       
-      // Enhanced material for better visibility
-      const material = new THREE.MeshPhongMaterial({
+      // Use MeshBasicMaterial for better mobile compatibility (no lighting calculations)
+      const material = new THREE.MeshBasicMaterial({
         color: 0x4a90e2,
-        shininess: 150,
-        specular: 0x888888,
-        flatShading: false,
-        emissive: 0x0a2540,
-        emissiveIntensity: 0.15
+        side: THREE.FrontSide
       });
       
       const geometryMesh = new THREE.Mesh(geometry, material);
       // Disable frustum culling to prevent disappearing
       geometryMesh.frustumCulled = false;
+      geometryMesh.matrixAutoUpdate = true;
       
       // Add edges for better definition
       edges = new THREE.EdgesGeometry(geometry);
@@ -372,6 +357,7 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       
       mesh = geometryMesh;
       scene.add(mesh);
+      console.log('Geometry added to scene:', sceneType, 'vertices:', geometry?.attributes?.position?.count);
     }
     
     // Mouse and Touch interaction
