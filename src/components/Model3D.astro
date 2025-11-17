@@ -128,18 +128,43 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
     directionalLight.position.set(5, 5, 5);
     scene.add(directionalLight);
     
-    // Load model
+    // Load model with retry logic and better error handling
     let model: THREE.Object3D;
     const fileExtension = src.split('.').pop()?.toLowerCase();
+    
+    // Helper function to load with timeout
+    async function loadWithTimeout(loaderFunc: () => Promise<any>, timeoutMs = 30000) {
+      return Promise.race([
+        loaderFunc(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Loading timeout - check your internet connection')), timeoutMs)
+        )
+      ]);
+    }
+    
+    // Helper function to retry loading
+    async function loadWithRetry(loaderFunc: () => Promise<any>, maxRetries = 2) {
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          if (attempt > 0) {
+            loadingIndicator.textContent = `Retrying... (${attempt}/${maxRetries})`;
+          }
+          return await loadWithTimeout(loaderFunc, 30000);
+        } catch (error) {
+          if (attempt === maxRetries) throw error;
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+      }
+    }
     
     try {
       if (fileExtension === 'gltf' || fileExtension === 'glb') {
         const loader = new GLTFLoader();
-        const gltf = await loader.loadAsync(src);
+        const gltf = await loadWithRetry(() => loader.loadAsync(src));
         model = gltf.scene;
       } else if (fileExtension === 'obj') {
         const loader = new OBJLoader();
-        model = await loader.loadAsync(src);
+        model = await loadWithRetry(() => loader.loadAsync(src));
       } else {
         throw new Error(`Unsupported file format: ${fileExtension}`);
       }
@@ -153,9 +178,6 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       model.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.frustumCulled = true;
-          
-          // Keep matrixAutoUpdate enabled - it's optimized in Three.js core
-          // Disabling it causes more problems than it solves
           child.matrixAutoUpdate = true;
           
           // Optimize material if it's a standard/physical material
@@ -186,8 +208,21 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       
     } catch (error) {
       console.error('Error loading 3D model:', error);
-      loadingIndicator.textContent = `Error loading model: ${error.message}`;
+      const errorMsg = error.message || 'Unknown error';
+      
+      // Provide more helpful error messages
+      if (errorMsg.includes('timeout')) {
+        loadingIndicator.textContent = 'Loading timeout. Please check your internet connection and try refreshing.';
+      } else if (errorMsg.includes('404') || errorMsg.includes('not found')) {
+        loadingIndicator.textContent = 'Model file not found. Please check the file path.';
+      } else if (errorMsg.includes('memory') || errorMsg.includes('out of memory')) {
+        loadingIndicator.textContent = 'Not enough memory to load this model. Try closing other tabs.';
+      } else {
+        loadingIndicator.textContent = `Error loading model: ${errorMsg}`;
+      }
+      
       loadingIndicator.style.color = '#e74c3c';
+      loadingIndicator.style.fontSize = '0.9rem';
       return;
     }
     
@@ -353,6 +388,26 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       }, 100);
     };
     
+    // Handle WebGL context loss (common on mobile)
+    const canvas = renderer.domElement;
+    canvas.addEventListener('webglcontextlost', (event) => {
+      event.preventDefault();
+      console.warn('WebGL context lost');
+      loadingIndicator.textContent = 'Graphics context lost. Refreshing page...';
+      loadingIndicator.style.display = 'block';
+      loadingIndicator.style.color = '#f39c12';
+      
+      // Attempt to restore after a short delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    }, false);
+    
+    canvas.addEventListener('webglcontextrestored', () => {
+      console.log('WebGL context restored');
+      loadingIndicator.style.display = 'none';
+    }, false);
+    
     window.addEventListener('resize', resizeHandler);
     
     // Cleanup function to prevent memory leaks
@@ -397,6 +452,12 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       container.removeEventListener('touchend', onTouchEnd, { passive: true } as any);
       container.removeEventListener('touchcancel', onTouchEnd, { passive: true } as any);
       container.removeEventListener('wheel', onWheel);
+      
+      // Remove WebGL context event listeners
+      if (canvas) {
+        canvas.removeEventListener('webglcontextlost', () => {});
+        canvas.removeEventListener('webglcontextrestored', () => {});
+      }
     };
     
     // Store cleanup for potential future use
