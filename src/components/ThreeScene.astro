@@ -33,14 +33,35 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     }
   }
 
-  // Find all three wrappers and initialize them
-  document.querySelectorAll('.three-wrapper').forEach((wrapperEl: Element) => {
-    const wrapper = wrapperEl as HTMLElement;
-    const container = wrapper.querySelector('.three-container') as HTMLElement;
+  // CRITICAL FIX: Lazy load scenes to avoid WebGL context limit on mobile (Chrome limit: 8-16)
+  // Only initialize WebGL when scene is near viewport
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const wrapper = entry.target as HTMLElement;
+        const container = wrapper.querySelector('.three-container') as HTMLElement;
+        
+        // Skip if already initialized
+        if (container.querySelector('canvas')) return;
+        
+        // Initialize this scene
+        initializeScene(wrapper, container);
+        
+        // Stop observing after initialization
+        observer.unobserve(wrapper);
+      }
+    });
+  }, {
+    rootMargin: '100px' // Start loading 100px before visible
+  });
+  
+  // Observe all wrappers
+  document.querySelectorAll('.three-wrapper').forEach((wrapper) => {
+    observer.observe(wrapper);
+  });
+  
+  function initializeScene(wrapper: HTMLElement, container: HTMLElement) {
     const sceneType = container.dataset.sceneType || 'cube';
-    
-    // Skip if already initialized
-    if (container.querySelector('canvas')) return;
     
     // Check WebGL support
     if (!isWebGLAvailable()) {
@@ -596,7 +617,7 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       enumerable: false,
       configurable: true
     });
-  });
+  } // End of initializeScene function
 </script>
 
 <style>
