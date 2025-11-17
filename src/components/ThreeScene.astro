@@ -112,7 +112,10 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
         shininess: 100,
         specular: 0x555555
       });
-      return new THREE.Mesh(geometry, material);
+      const mesh = new THREE.Mesh(geometry, material);
+      // Disable frustum culling to prevent disappearing
+      mesh.frustumCulled = false;
+      return mesh;
     }
     
     function createBond(start: THREE.Vector3, end: THREE.Vector3, color: number = 0xcccccc) {
@@ -121,6 +124,8 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       const geometry = new THREE.CylinderGeometry(0.08, 0.08, length, 8);
       const material = new THREE.MeshPhongMaterial({ color });
       const bond = new THREE.Mesh(geometry, material);
+      // Disable frustum culling to prevent disappearing
+      bond.frustumCulled = false;
       
       bond.position.copy(start).add(direction.multiplyScalar(0.5));
       bond.quaternion.setFromUnitVectors(
@@ -140,6 +145,8 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     if (isMolecule) {
       // Create molecular structure
       const molecule = new THREE.Group();
+      // Disable frustum culling for the entire group
+      molecule.frustumCulled = false;
       
       // Atom colors (CPK coloring convention)
       const colors = {
@@ -336,6 +343,8 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
       });
       
       const geometryMesh = new THREE.Mesh(geometry, material);
+      // Disable frustum culling to prevent disappearing
+      geometryMesh.frustumCulled = false;
       
       // Add edges for better definition
       edges = new THREE.EdgesGeometry(geometry);
@@ -346,6 +355,7 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
         opacity: 0.3
       });
       wireframe = new THREE.LineSegments(edges, lineMaterial);
+      wireframe.frustumCulled = false;
       geometryMesh.add(wireframe);
       
       mesh = geometryMesh;
