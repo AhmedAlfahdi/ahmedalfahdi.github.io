@@ -8,7 +8,7 @@ import { remarkWikilinks } from './src/utils/remark-wikilinks.mjs';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://ahmedalfahdi.github.io',
-  base: '/Perosnal-Website',
+  // No 'base' needed for user/organization site (ahmedalfahdi.github.io)
   integrations: [mdx()],
   markdown: {
     remarkPlugins: [remarkGfm, remarkMath, remarkWikilinks],
