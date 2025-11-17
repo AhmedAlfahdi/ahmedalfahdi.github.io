@@ -2,43 +2,45 @@
 
 A modern, feature-rich personal website with interactive 3D models, Obsidian notes integration, and beautiful markdown rendering. Built with Astro and Three.js, optimized for GitHub Pages.
 
-## ✨ Key Features
+## Key Features
 
-### 🎨 Interactive 3D Models
+### Interactive 3D Models
 - Real-time WebGL rendering with Three.js
 - Support for multiple formats: GLTF, GLB, OBJ
-- Interactive controls (rotate, zoom, background toggle)
+- Interactive controls for desktop and mobile
+  - Desktop: Click and drag to rotate, scroll to zoom
+  - Mobile: Single finger swipe to rotate, pinch to zoom
+- Background toggle (light/dark)
 - Embedded models in markdown files
-- Aggressive performance optimizations (60 FPS cap, frustum culling, memory management)
-- Frame-rate independent animations (smooth at any FPS)
+- Performance optimizations: 60 FPS cap, frustum culling, memory management
+- Frame-rate independent animations
 
-### 📝 Obsidian Notes Integration
+### Obsidian Notes Integration
 - Full Obsidian vault compatibility
-- Automatic wikilink conversion `[[Note]]` → working links
+- Automatic wikilink conversion `[[Note]]` to working links
 - Mermaid diagram support (flowcharts, sequence, class diagrams)
 - LaTeX math rendering with KaTeX
 - Interactive diagram controls (zoom, pan, fullscreen)
 - Interactive math equation enlargement
 - GitHub-flavored markdown
 
-### 🎯 Performance Optimizations
-- **Frame rate capping** - Locked to 60 FPS to prevent GPU spikes
-- **Intersection Observer** - Lazy loading, pauses off-screen animations
-- **Frustum culling** - Only renders objects visible to the camera
-- **Memory management** - Automatic cleanup prevents memory leaks
-- **Optimized renderer** - Shadows & unnecessary buffers disabled
-- **Simplified lighting** - Reduced light count for better performance
-- **Optimized geometry** - Lower polygon counts for built-in shapes
-- **Frame-rate independence** - Smooth animations using delta time
+### Performance Optimizations
+- Frame rate capping locked to 60 FPS to prevent GPU spikes
+- Intersection Observer for lazy loading and pausing off-screen animations
+- Frustum culling - only renders objects visible to the camera
+- Automatic memory management prevents memory leaks
+- Optimized renderer with shadows and unnecessary buffers disabled
+- Simplified lighting for better performance
+- Optimized geometry with lower polygon counts
+- Frame-rate independent animations using delta time
 
-### 🎨 UI Features
-- Light/Dark background toggle for 3D objects
-- Responsive design (mobile-friendly)
-- Modern gradient styling
-- Interactive control panels
-- Smooth animations and transitions
+### Responsive Design
+- Mobile-first responsive navigation
+- Touch screen support for all 3D interactions
+- Adaptive font sizes and spacing for different screen sizes
+- Optimized layouts for phones, tablets, and desktops
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Astro** - Modern static site generator with island architecture
 - **Three.js** - WebGL 3D graphics library
@@ -75,7 +77,7 @@ npm run dev
 
 4. Open your browser and visit `http://localhost:4321`
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 /
@@ -143,7 +145,7 @@ git push origin main
 
 The GitHub Action will automatically build and deploy your site!
 
-## 🎨 Customization
+## Customization
 
 ### Adding Custom 3D Models
 
@@ -205,57 +207,49 @@ description: Post description
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build locally
 
-## 🌟 Highlights
+## Browser Support
 
-### 3D Model Features
-- ✅ Drag to rotate, scroll to zoom
-- ✅ Light/Dark background toggle
-- ✅ Auto-rotate with double-click toggle
-- ✅ Reset view button
-- ✅ Performance optimized (frustum culling, memory cleanup)
-- ✅ Smooth animations (frame-rate independent)
-
-### Obsidian Features
-- ✅ Automatic wikilink conversion
-- ✅ Mermaid diagrams (with zoom, pan, fullscreen)
-- ✅ LaTeX math (with interactive zoom)
-- ✅ Code syntax highlighting
-- ✅ Tables, task lists, callouts
-- ✅ GitHub-flavored markdown
-
-### Performance
-- ✅ GPU-accelerated rendering
-- ✅ Lazy loading with Intersection Observer
-- ✅ Automatic memory management
-- ✅ Only renders visible objects
-- ✅ 60 FPS animations
-- ✅ Optimized for mobile
-
-## 🌐 Browser Support
-
-- ✅ Chrome 90+ (recommended)
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
-- ✅ Mobile browsers (iOS 14+, Android 9+)
+### Supported Browsers
+- Chrome 90+ (recommended)
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+- Mobile browsers (iOS 14+, Android 9+)
 
 **Requirements:** WebGL support for 3D models
 
-## 📚 Documentation
+## Documentation
 
 - `3D-MODELS-GUIDE.md` - Complete guide for 3D models
 - `OBSIDIAN-GUIDE.md` - Guide for Obsidian integration
+- `SETUP.md` - Quick setup guide for GitHub Pages deployment
 - Inline comments throughout the codebase
 
-## 🤝 Contributing
+## Development Workflow
 
-Feel free to fork this repository and customize it for your own use! If you add interesting features, PRs are welcome.
+### Local Development
+1. Make changes to source files
+2. Run `npm run dev` to test in development mode
+3. Visit `http://localhost:4321` to preview changes
 
-## 📄 License
+### Testing Before Deployment
+1. Run `npm run build` to build for production
+2. Run `npm run preview` to test the production build locally
+3. Visit `http://localhost:4321` to verify everything works
+4. Commit and push only after local testing passes
 
-MIT License - feel free to use this template for your own website!
+### Deployment
+Changes pushed to the `main` branch automatically trigger GitHub Actions to build and deploy the site to GitHub Pages.
 
-## 🙏 Acknowledgments
+## Contributing
+
+Feel free to fork this repository and customize it for your own use. If you add interesting features, pull requests are welcome.
+
+## License
+
+MIT License - feel free to use this template for your own website.
+
+## Acknowledgments
 
 - Built with [Astro](https://astro.build/)
 - 3D graphics powered by [Three.js](https://threejs.org/)
@@ -263,16 +257,6 @@ MIT License - feel free to use this template for your own website!
 - Math rendering with [KaTeX](https://katex.org/)
 - Hosted on [GitHub Pages](https://pages.github.com/)
 
-## 🎯 Future Enhancements
+## Author
 
-Potential features to add:
-- [ ] Dark mode for entire site
-- [ ] Search functionality for notes
-- [ ] Tags and categories
-- [ ] RSS feed for blog
-- [ ] Comment system integration
-- [ ] Analytics integration
-
----
-
-**Made with ❤️ using Astro and Three.js**
+Ahmed N. Alfahdi - [GitHub](https://github.com/AhmedAlfahdi)
