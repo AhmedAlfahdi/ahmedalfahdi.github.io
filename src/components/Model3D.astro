@@ -562,6 +562,12 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
     display: block;
     background: #1a1a2e;
     min-height: 400px;
+    /* Force GPU compositing for WebKit browsers (Chrome/Safari) */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .model3d-container canvas {
@@ -570,6 +576,11 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
     height: 100% !important;
     position: relative;
     touch-action: none;
+    /* Force GPU layer for canvas in WebKit */
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
   
   .loading-indicator {

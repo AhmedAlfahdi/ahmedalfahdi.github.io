@@ -633,6 +633,12 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     overflow: visible;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: relative;
+    /* Force GPU compositing for WebKit browsers (Chrome/Safari) */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .three-container canvas {
@@ -641,6 +647,11 @@ const sceneId = `scene-${Math.random().toString(36).substr(2, 9)}`;
     height: 100% !important;
     position: relative;
     touch-action: none;
+    /* Force GPU layer for canvas in WebKit */
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 </style>
 
