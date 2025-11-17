@@ -556,17 +556,20 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
   .model3d-container {
     width: 100%;
     border-radius: 8px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     background: #1a1a2e;
+    min-height: 400px;
   }
 
   .model3d-container canvas {
     display: block;
+    width: 100% !important;
+    height: 100% !important;
+    position: relative;
+    touch-action: none;
   }
   
   .loading-indicator {
