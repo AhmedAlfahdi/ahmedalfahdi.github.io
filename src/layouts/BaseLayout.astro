@@ -282,6 +282,7 @@ const { title, description = "My Personal Website with 3D Models" } = Astro.prop
     pre code span {
       background: transparent !important;
     }
+    /* Removed custom dual-scrollbars; rely on native bottom scrollbar */
 
     blockquote {
       border-left: 4px solid var(--accent-secondary);
@@ -494,5 +495,23 @@ const { title, description = "My Personal Website with 3D Models" } = Astro.prop
       block.classList.add('callout', `callout-${tag}`);
       block.setAttribute('data-callout', tag);
     });
+
+    // Add a tooltip for horizontal scrolling on overflowed code/tables
+    const addScrollTips = () => {
+      document.querySelectorAll('pre, table').forEach((el) => {
+        if (el.scrollWidth > el.clientWidth + 1) {
+          el.setAttribute('title', 'Tip: hold Shift + mouse wheel to scroll horizontally');
+        } else {
+          el.removeAttribute('title');
+        }
+      });
+    };
+
+    addScrollTips();
+    window.addEventListener('resize', addScrollTips);
+    window.setTimeout(addScrollTips, 300);
+    window.addEventListener('load', addScrollTips);
+
+    // Removed dual-scroll logic; native bottom scrollbars remain
   }
 </script>
