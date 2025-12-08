@@ -6,34 +6,20 @@ interface Props {
   width?: string;
 }
 
-const { 
-  src, 
-  title = 'PDF Document', 
-  height = '600px',
-  width = '100%'
+const {
+  src,
+  title = 'PDF Document',
+  height = '640px',
+  width = '100%',
 } = Astro.props;
-
-const containerId = `pdf-viewer-${Math.random().toString(36).substr(2, 9)}`;
 ---
 
 <div class="pdf-viewer-wrapper" style={`height: ${height}; width: ${width};`}>
-  <div class="pdf-controls">
-    <button class="pdf-btn" data-action="prev" title="Previous Page">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-      </svg>
-    </button>
-    <span class="pdf-page-info">
-      <span class="page-num">1</span> / <span class="page-count">--</span>
-    </span>
-    <button class="pdf-btn" data-action="next" title="Next Page">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
-      </svg>
-    </button>
-    <button class="pdf-btn" data-action="zoom-out" title="Zoom Out">-</button>
-    <span class="pdf-zoom-info">100%</span>
-    <button class="pdf-btn" data-action="zoom-in" title="Zoom In">+</button>
+  <div class="pdf-header">
+    <div class="pdf-meta">
+      <span class="pdf-label">PDF</span>
+      <span class="pdf-title">{title}</span>
+    </div>
     <a href={src} download class="pdf-btn pdf-download" title="Download PDF">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
         <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
@@ -41,225 +27,126 @@ const containerId = `pdf-viewer-${Math.random().toString(36).substr(2, 9)}`;
       </svg>
     </a>
   </div>
-  <div class="pdf-loading">Loading PDF...</div>
-  <canvas 
-    id={containerId}
-    class="pdf-canvas"
-    data-pdf-src={src}
-  ></canvas>
+
+  <div class="pdf-frame">
+    <iframe 
+      class="pdf-iframe"
+      src={`${src}#toolbar=1&statusbar=0&navpanes=0&view=FitH`}
+      title={title}
+      loading="lazy"
+    ></iframe>
+    <div class="pdf-native-controls">
+      <a class="pdf-btn" href={`${src}#toolbar=1&statusbar=0&navpanes=0`} target="_blank" rel="noreferrer">
+        Open with native controls
+      </a>
+    </div>
+  </div>
 </div>
-
-<script>
-  // Import PDF.js from CDN
-  const pdfjsLib = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs');
-
-  // Set worker
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs';
-
-  document.querySelectorAll('.pdf-canvas').forEach(async (canvasEl) => {
-    const canvas = canvasEl as HTMLCanvasElement;
-    const wrapper = canvas.closest('.pdf-viewer-wrapper') as HTMLElement;
-    const pdfSrc = canvas.dataset.pdfSrc!;
-    
-    const loadingEl = wrapper.querySelector('.pdf-loading') as HTMLElement;
-    const pageNumEl = wrapper.querySelector('.page-num') as HTMLElement;
-    const pageCountEl = wrapper.querySelector('.page-count') as HTMLElement;
-    const zoomEl = wrapper.querySelector('.pdf-zoom-info') as HTMLElement;
-    const buttons = wrapper.querySelectorAll('.pdf-btn[data-action]');
-
-    let pdfDoc: any = null;
-    let pageNum = 1;
-    let pageRendering = false;
-    let pageNumPending: number | null = null;
-    let scale = 1.5;
-
-    const ctx = canvas.getContext('2d')!;
-
-    // Render page
-    function renderPage(num: number) {
-      pageRendering = true;
-      pdfDoc.getPage(num).then((page: any) => {
-        const viewport = page.getViewport({ scale });
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        const renderContext = {
-          canvasContext: ctx,
-          viewport: viewport
-        };
-
-        const renderTask = page.render(renderContext);
-        renderTask.promise.then(() => {
-          pageRendering = false;
-          if (pageNumPending !== null) {
-            renderPage(pageNumPending);
-            pageNumPending = null;
-          }
-        });
-      });
-
-      pageNumEl.textContent = num.toString();
-    }
-
-    // Queue page rendering
-    function queueRenderPage(num: number) {
-      if (pageRendering) {
-        pageNumPending = num;
-      } else {
-        renderPage(num);
-      }
-    }
-
-    // Button handlers
-    buttons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const action = (btn as HTMLElement).dataset.action;
-        
-        switch(action) {
-          case 'prev':
-            if (pageNum <= 1) return;
-            pageNum--;
-            queueRenderPage(pageNum);
-            break;
-          case 'next':
-            if (pageNum >= pdfDoc.numPages) return;
-            pageNum++;
-            queueRenderPage(pageNum);
-            break;
-          case 'zoom-in':
-            scale += 0.25;
-            zoomEl.textContent = `${Math.round(scale * 100)}%`;
-            queueRenderPage(pageNum);
-            break;
-          case 'zoom-out':
-            if (scale <= 0.5) return;
-            scale -= 0.25;
-            zoomEl.textContent = `${Math.round(scale * 100)}%`;
-            queueRenderPage(pageNum);
-            break;
-        }
-      });
-    });
-
-    // Load PDF
-    try {
-      const loadingTask = pdfjsLib.getDocument(pdfSrc);
-      pdfDoc = await loadingTask.promise;
-      
-      pageCountEl.textContent = pdfDoc.numPages.toString();
-      loadingEl.style.display = 'none';
-      canvas.style.display = 'block';
-      
-      renderPage(pageNum);
-    } catch (error) {
-      console.error('Error loading PDF:', error);
-      loadingEl.textContent = 'Error loading PDF. Please try downloading it.';
-      loadingEl.style.color = '#e74c3c';
-    }
-  });
-</script>
 
 <style>
   .pdf-viewer-wrapper {
     position: relative;
     display: flex;
     flex-direction: column;
-    background: #f5f5f5;
-    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(26, 33, 42, 0.9), rgba(16, 24, 32, 0.95));
+    border: 1px solid var(--border-strong);
     overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 16px 32px rgba(0, 0, 0, 0.35);
     margin: 2rem 0;
   }
 
-  .pdf-controls {
+  .pdf-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    background: #fff;
-    border-bottom: 1px solid #ddd;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0.9rem 1rem;
+    background: rgba(12, 20, 28, 0.9);
+    border-bottom: 1px solid var(--border-strong);
+    gap: 0.75rem;
+  }
+
+  .pdf-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--text-secondary);
+  }
+
+  .pdf-label {
+    padding: 0.15rem 0.55rem;
+    border: 1px solid var(--border-strong);
+    background: rgba(245, 165, 36, 0.08);
+    color: var(--accent-primary);
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-size: 0.75rem;
+  }
+
+  .pdf-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
   }
 
   .pdf-btn {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 0.5rem 0.75rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    padding: 0.45rem 0.7rem;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    color: #333;
+    color: var(--text-primary);
     font-size: 0.875rem;
     font-weight: 500;
     text-decoration: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .pdf-btn:hover {
-    background: #f0f0f0;
-    border-color: #999;
+    background: rgba(245, 165, 36, 0.08);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
   }
 
-  .pdf-btn:active {
-    transform: scale(0.95);
+  .pdf-frame {
+    flex: 1;
+    background: #0d131b;
+    border-top: 1px solid var(--border-strong);
+    position: relative;
   }
 
-  .pdf-page-info,
-  .pdf-zoom-info {
-    font-size: 0.875rem;
-    color: #666;
-    font-weight: 500;
-    padding: 0 0.5rem;
+  .pdf-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #0d131b;
   }
 
-  .pdf-download {
-    margin-left: auto;
+  .pdf-native-controls {
+    position: absolute;
+    bottom: 0.9rem;
+    right: 1rem;
+    z-index: 2;
+    display: flex;
+    justify-content: flex-end;
   }
 
-  .pdf-loading {
-    text-align: center;
-    padding: 3rem;
-    color: #666;
-    font-size: 1rem;
+  .pdf-native-controls .pdf-btn {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.25px;
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    background: rgba(245, 165, 36, 0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 4px 14px rgba(0, 0, 0, 0.25);
   }
 
-  .pdf-canvas {
-    display: none;
-    max-width: 100%;
-    height: auto;
-    margin: 0 auto;
-    background: white;
-  }
-
-  /* Dark mode support */
-  :global(.dark) .pdf-viewer-wrapper {
-    background: #1a1a2e;
-  }
-
-  :global(.dark) .pdf-controls {
-    background: #2d2d44;
-    border-bottom-color: #3d3d54;
-  }
-
-  :global(.dark) .pdf-btn {
-    background: #2d2d44;
-    border-color: #3d3d54;
-    color: #e0e0e0;
-  }
-
-  :global(.dark) .pdf-btn:hover {
-    background: #3d3d54;
-    border-color: #4d4d64;
-  }
-
-  :global(.dark) .pdf-page-info,
-  :global(.dark) .pdf-zoom-info {
-    color: #b0b0b0;
-  }
-
-  :global(.dark) .pdf-loading {
-    color: #b0b0b0;
+  .pdf-native-controls .pdf-btn:hover {
+    background: rgba(245, 165, 36, 0.14);
+    color: var(--text-primary);
   }
 </style>
