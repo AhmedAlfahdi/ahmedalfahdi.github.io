@@ -1,14 +1,515 @@
 ---
-title: "Sample Note"
+title: "Notes on Assemblly"
 description: "A sample note from your Obsidian vault."
 date: 2025-11-24
 tags: ["obsidian", "note"]
 ---
 
-# Sample Note
+## Multiplication Types 
 
-This is a sample note. It supports **markdown**, *italics*, and other standard formatting.
+1. Unsigned (negative numbers)
+2. Signed (Positive numbers)
 
-## Section 1
+### Unsigned
 
-You can add your thoughts, observations, and knowledge here.
+We use `MUL` for positive number. The format requires only one input. This follows the implicit multiplication format. Implicit multiplicand is always AL (8-bit), AX (16-bit), EAX (32-bit), or RAX (64-bit). 
+
+| Operand Size | Multiplicand (implicit)      | Multiplier (explicit operand) | Result stored in                   | Result size          |
+| ------------ | ---------------------------- | ----------------------------- | ---------------------------------- | -------------------- |
+| 8-bit        | AL (Accumulator Lower 8-bit) | 8-bit operand                 | AX (Accumulator 16-bit)            | 16-bit (double size) |
+| 16-bit       | AX (Accumulator 16-bit)      | 16-bit operand                | DX:AX (DX high 16-bit, AX low)     | 32-bit               |
+| 32-bit       | EAX (Accumulator 32-bit)     | 32-bit operand                | EDX:EAX (EDX high 32-bit, EAX low) | 64-bit               |
+| 64-bit       | RAX (Accumulator 64-bit)     | 64-bit operand                | RDX:RAX (RDX high 64-bit, RAX low) | 128-bit              |
+
+> [!Hint]
+> The format `DX:AX` is showing that the MSB (Most Significant Byte) is stored in `DX` and LSB is stored in `AX`
+
+#### Example 1 (8-bit):
+
+
+```asm
+mov al, 10      ; Load AL with 10 (decimal) note that this is the implicit number
+mov bl, 25      ; Load BL with 25 (decimal)
+mul bl          ; Multiply AL by BL (10 * 25 = 250)
+                ; Result stored in AX (16-bit): AL = lower byte, AH = higher byte
+; AX = 00FAh (hex for 250 decimal)
+
+```
+
+This example for 8-bit. The number `10` is 8-bit and number `25` is 8-bit. The multiplication result will be in the 16-bit, and therefore it must be stored in in `AX` register which is a 16-bit. 
+
+
+```asm
+Register Dump # 0
+EAX = 00000000 EBX = 00000000 ECX = 00000000 EDX = 00000000
+ESI = 00874088 EDI = 0087C650 EBP = 0019FF20 ESP = 0019FF00
+EIP = 001D89FA FLAGS = 0246          ZF    PF
+Register Dump # 1
+EAX = 000000FA EBX = 00000019 ECX = 00000000 EDX = 00000000
+ESI = 00874088 EDI = 0087C650 EBP = 0019FF20 ESP = 0019FF00
+EIP = 001D8A07 FLAGS = 0246          ZF    PF
+```
+
+
+#### Example 2 (16-bit):
+
+```asm
+mov ax, 0x3344  ; Load AX with 3344h
+mov bx, 0x1122  ; Load BX with 1122h
+mul bx          ; Multiply AX by BX
+                ; Result stored in DX:AX (32-bit)
+; DX:AX = 036E5308h (since 0x3344 * 0x1122 = 0x036E5308)
+
+```
+
+```asm
+Register Dump # 0
+EAX = 00000000 EBX = 00000000 ECX = 00000000 EDX = 00000000
+ESI = 007E4088 EDI = 007EC650 EBP = 0019FF20 ESP = 0019FF00
+EIP = 00B289FA FLAGS = 0246          ZF    PF
+Register Dump # 1
+EAX = 00005308 EBX = 00001122 ECX = 00000000 EDX = 0000036E
+ESI = 007E4088 EDI = 007EC650 EBP = 0019FF20 ESP = 0019FF00
+EIP = 00B28A0C FLAGS = 0A47 OF       ZF    PF CF
+```
+---
+
+```asm
+# EAX
+EAX = hex(13124)
+# EDX
+EDX = hex(4386)
+# Muplication
+hex(EDX * EAX)
+
+```
+
+
+#### Example 3 (32-bit)
+
+```asm
+mov eax, 12345h ; Load EAX with 0x12345
+mov ebx, 1000h  ; Load EBX with 0x1000
+mul ebx         ; Multiply EAX by EBX
+                ; Result stored in EDX:EAX (64-bit)
+; EDX:EAX = 0000000012345000h
+
+```
+
+
+```asm
+Register Dump # 0
+EAX = 00000000 EBX = 00000000 ECX = 00000000 EDX = 00000000
+ESI = 006140A0 EDI = 0061C670 EBP = 0019FF20 ESP = 0019FF00
+EIP = 007D89FA FLAGS = 0246          ZF    PF
+Register Dump # 1
+EAX = 12345000 EBX = 00001000 ECX = 00000000 EDX = 00000000
+ESI = 006140A0 EDI = 0061C670 EBP = 0019FF20 ESP = 0019FF00
+EIP = 007D8A0D FLAGS = 0246          ZF    PF
+```
+
+#### Example 4 (64-bit)
+
+```asm
+mov rax, 0x123456789ABCDEF0    ; Load RAX with a 64-bit value
+mov rbx, 0x100000000           ; Load RBX with another 64-bit value
+mul rbx                        ; Multiply RAX by RBX (unsigned)
+; Result is stored in RDX:RAX (128-bit)
+
+```
+
+> [!Error]
+> When trying to compile this using `build_x86` it gives fetal error. That is because the compiler (assembler) needs to be `x64`. Also, `dump-regs` function is written for `x86` only.
+
+
+
+## Signed
+
+Comparison between signed and unsigned: 
+
+| Instruction | Operand Type | Result Sign                        | Comments                     |
+| ----------- | ------------ | ---------------------------------- | ---------------------------- |
+| `mul`       | Unsigned     | Always ≥ 0 (non-neg)               | Product treated as unsigned  |
+| `imul`      | Signed       | Can be negative, zero, or positive | Product with signed operands |
+
+- The **single-operand form** multiplies the accumulator by the supplied operand and stores the full result in a register pair (e.g., EDX:EAX for 32-bit).
+- The **two-operand form** is like `dest = dest * src`.
+- The **three-operand form** is `dest = src * immediate`.
+- `imul` treats operands as **signed integers**, so the result can be negative or positive depending on inputs.
+- Flags (overflow, carry) are set according to whether the full result fits in the destination operand.
+#### Single-operand form
+
+```asm
+; 8-bit example, multiply AL by BL, result in AX (16 bits)
+mov al, -4
+mov bl, 4
+imul bl   ; AX = AL * BL = -4 * 4 = -16 (0xFFF0)
+
+; 16-bit example, multiply AX by BX, result in DX:AX
+mov ax, -3000
+mov bx, 3
+imul bx   ; DX:AX = AX * BX (32-bit signed product)
+
+```
+
+#### Two-operand form
+
+```asm
+; Multiply EBX by ECX, store the signed 32-bit result in EAX
+mov ebx, -10
+mov ecx, 20
+imul eax, ebx       ; stored at EAX = EBX * 20  (EAX = -10 * 20 = -200)
+
+imul ecx, ebx       ; stored at ECX = ECX * EBX (ECX = 20 * -10 = -200)
+
+```
+
+#### Three-operand form
+
+Multiply a register/memory operand by an immediate constant, store the product in a register.
+
+```asm
+imul ecx, ebx, 1234   ; ecx = ebx * 1234 (signed multiply)
+
+imul eax, eax, -22    ; eax = eax * -22
+
+```
+
+##
+
+
+> [!Important]
+> The compare mnemonic (`cmp`) won't give a result; only gives a flag. To get a result you use (`sub`)
+
+
+| Jump    | Condition                 | Flag(s) tested     | Notes         | References                                    |
+| ------- | ------------------------- | ------------------ | ------------- | --------------------------------------------- |
+| JO      | Overflow                  | OF = 1             |               |                                               |
+| JNO     | No Overflow               | OF = 0             |               |                                               |
+| JB/JC   | Below / Carry             | CF = 1             | Jump if carry |                                               |
+| JAE/JNC | Above or Equal / No Carry | CF = 0             | Jump if zero  |                                               |
+| JE/JZ   | Equal / Zero              | ZF = 1             |               |                                               |
+| JNE/JNZ | Not Equal / Not Zero      | ZF = 0             |               |                                               |
+| JBE     | Below or Equal            | CF = 1 or ZF = 1   |               |                                               |
+| JA      | Above                     | CF = 0 and ZF = 0  |               |                                               |
+| JS      | Sign                      | SF = 1             |               |                                               |
+| JNS     | No Sign                   | SF = 0             |               |                                               |
+| JP/JPE  | Parity Even               | PF = 1             |               |                                               |
+| JNP/JPO | Parity Odd                | PF = 0             |               |                                               |
+| JL      | Less (signed)             | SF ≠ OF            |               |                                               |
+| JGE     | Greater or Equal (signed) | SF = OF            |               |                                               |
+| JLE     | Less or Equal (signed)    | ZF = 1 or SF ≠ OF  |               | See [[0xA#4.2.2 Examination|4.2.2 Examination]] |
+| JG      | Greater (signed)          | ZF = 0 and SF = OF |               |                                               |
+
+
+## Examples 
+
+### From `C++` to `ASM`
+
+Take the `C++` code that has three conditions; `x=10`, `x>10`, and `x<10`:
+
+```cpp
+#include <iostream>          // Input/output operations
+using namespace std;         // Standard namespace
+
+int main() {
+    
+    int x;                   // Variable to store user input
+    cin >> x;                // Get integer from user
+
+    if (x == 10) {           // Check if input equals 10
+        cout << "Equal" << std::endl;
+    }
+    else if (x > 10) {       // Check if input is greater than 10
+        cout << "Greater" << std::endl;
+    }
+    else {                    // Input must be less than 10
+        cout << "Less than" << std::endl;
+    }
+
+    return 0;                // Exit successfully
+}
+```
+
+The rewrite of this `c++` code in Assembly would be:
+
+```asm
+; Include the assembly I/O library for input/output functions
+%include "asm_io.inc"
+
+; Data segment - contains initialized data
+segment .data
+; Define string constants for output messages
+c1 db "Equal",0xA,0        ; String "Equal" with newline and null terminator
+c2 db "Greater",0xA,0      ; String "Greater" with newline and null terminator  
+c3 db "Less than",0xA,0    ; String "Less than" with newline and null terminator
+c4 db "i",0xA,0            ; String "i" with newline and null terminator
+
+; BSS segment - contains uninitialized data (not used in this program)
+segment .bss
+
+; Text segment - contains the actual program code
+segment .text
+        global  _asm_main    ; Declare _asm_main as global symbol (entry point)
+_asm_main:                   ; Main function label
+;; PROLOGUE - Function setup
+    enter   0,0              ; Create stack frame with 0 local variables, 0 parameters
+    pusha                    ; Save all general-purpose registers (eax, ebx, ecx, edx, esi, edi, ebp, esp)
+
+;; START WRITING YOUR CUSTOM PROGRAMS HERE.
+
+    call read_int            ; Read an integer from user input and store in eax
+
+    cmp eax, 0xA            ; Compare the input value with 10 (0xA in hexadecimal)
+    jz equal                ; Jump to 'equal' label if the values are equal (zero flag set)
+    jnc greater             ; Jump to 'greater' label if input is greater than 10 (no carry flag)
+    jmp less                ; Jump to 'less' label if input is less than 10 (unconditional jump)
+
+equal:                      ; Label for when input equals 10
+    mov eax , c1            ; Load address of "Equal" string into eax
+    call print_string       ; Print the string pointed to by eax
+    jmp done                ; Jump to 'done' label to skip other conditions
+
+greater:                    ; Label for when input is greater than 10
+    mov eax,c2              ; Load address of "Greater" string into eax
+    call print_string       ; Print the string pointed to by eax
+    jmp done                ; Jump to 'done' label to skip other conditions
+
+less:                       ; Label for when input is less than 10
+    mov eax, c3             ; Load address of "Less than" string into eax
+    call print_string       ; Print the string pointed to by eax
+    jmp done                ; Jump to 'done' label to skip other conditions
+
+done:                       ; Label for program completion
+
+;; END OF CUSTOM CODE. 
+;; EPILOGUE - Function cleanup
+    popa                    ; Restore all general-purpose registers
+    mov     eax, 0          ; Set return value to 0 (success)
+    leave                   ; Restore stack frame
+    ret                     ; Return from function
+
+```
+
+
+> [!Hint]
+> What is label? label is a named address; just like `_asm_main:` for example.
+
+### Reversing from `EXE` to `ASM`
+
+#### Steps to reproduce 
+
+1. Open terminal using `Developer PowerShell for VS 2022` profile in the `code.cpp` directory
+2.  Compile with the command:
+
+```powershell
+cl -Zi .\code.cpp
+```
+
+> [!Expand]
+> See [[C++ Compiling]]
+
+3. Revers using [[Ghidra]]
+#### Examination 
+
+
+Here is the cleaned up version of disassembly  from Ghidra (using custom Jython script):
+
+```asm
+
+/*******************************************************************************
+*                                FUNCTION PROLOGUE                            
+*******************************************************************************/
+14000ff70:  SUB RSP,0x38                    ; Allocate 56 bytes on stack for local variables
+  
+/*******************************************************************************
+*                                INPUT OPERATIONS                              
+*******************************************************************************/
+14000ff74:  LEA RDX,[RSP + 0x20]           ; Load address of input variable (local_18) into RDX
+14000ff79:  LEA RCX,[0x14013cbb0]          ; Load address of std::cin into RCX (first parameter)
+14000ff80:  CALL 0x14000321a                ; Call std::basic_istream<>::operator>> to read integer
+14000ff85:  NOP                             ; No operation (alignment/padding)
+
+/*******************************************************************************
+*                                COMPARISON LOGIC - BRANCH 1: EQUAL TO 10      
+*******************************************************************************/
+14000ff86:  CMP dword ptr [RSP + 0x20],0xa  ; Compare input value with 10 (0xa in hex)
+14000ff8b:  JNZ 0x14000ffb2                 ; If NOT equal to 10, jump to next comparison
+
+/*******************************************************************************
+*                                OUTPUT BRANCH 1: "Equal"                      
+*******************************************************************************/
+14000ff8d:  LEA RDX,[0x14010f300]          ; Load address of "Equal" string into RDX (second parameter)
+14000ff94:  LEA RCX,[0x14013ccb0]          ; Load address of std::cout into RCX (first parameter)
+14000ff9b:  CALL 0x14000188e                ; Call std::operator<< to print "Equal" string
+14000ffa0:  LEA RDX,[0x14000130c]           ; Load address of std::endl into RDX (second parameter)
+14000ffa7:  MOV RCX,RAX                    ; Move return value from previous call to RCX (first parameter)
+14000ffaa:  CALL 0x140003873                ; Call std::basic_ostream<>::operator<< to print newline
+14000ffaf:  NOP                             ; No operation (alignment/padding)
+14000ffb0:  JMP 0x140010001                 ; Jump to program exit
+
+/*******************************************************************************
+*                                COMPARISON LOGIC - BRANCH 2: GREATER THAN 10  
+*******************************************************************************/
+14000ffb2:  CMP dword ptr [RSP + 0x20],0xa  ; Compare input value with 10 again
+14000ffb7:  JLE 0x14000ffde                 ; If LESS THAN OR EQUAL to 10, jump to final branch
+
+/*******************************************************************************
+*                                OUTPUT BRANCH 2: "Greater"                    
+*******************************************************************************/
+14000ffb9:  LEA RDX,[0x14010f308]          ; Load address of "Greater" string into RDX (second parameter)
+14000ffc0:  LEA RCX,[0x14013ccb0]          ; Load address of std::cout into RCX (first parameter)
+14000ffc7:  CALL 0x14000188e                ; Call std::operator<< to print "Greater" string
+14000ffcc:  LEA RDX,[0x14000130c]           ; Load address of std::endl into RDX (second parameter)
+14000ffd3:  MOV RCX,RAX                    ; Move return value from previous call to RCX (first parameter)
+14000ffd6:  CALL 0x140003873                ; Call std::basic_ostream<>::operator<< to print newline
+14000ffdb:  NOP                             ; No operation (alignment/padding)
+14000ffdc:  JMP 0x140010001                 ; Jump to program exit
+
+/*******************************************************************************
+*                                OUTPUT BRANCH 3: "Less than"                  
+*******************************************************************************/
+14000ffde:  LEA RDX,[0x14010f310]          ; Load address of "Less than" string into RDX (second parameter)
+14000ffe5:  LEA RCX,[0x14013ccb0]          ; Load address of std::cout into RCX (first parameter)
+14000ffec:  CALL 0x14000188e                ; Call std::operator<< to print "Less than" string
+14000fff1:  LEA RDX,[0x14000130c]           ; Load address of std::endl into RDX (second parameter)
+14000fff8:  MOV RCX,RAX                    ; Move return value from previous call to RCX (first parameter)
+14000fffb:  CALL 0x140003873                ; Call std::basic_ostream<>::operator<< to print newline
+140010000:  NOP                             ; No operation (alignment/padding)
+
+/*******************************************************************************
+*                                FUNCTION EPILOGUE                            
+*******************************************************************************/
+140010001:  XOR EAX,EAX                     ; Set return value to 0 (success)
+140010003:  ADD RSP,0x38                    ; Restore stack pointer (deallocate 56 bytes)
+140010007:  RET                             ; Return from function
+
+/*******************************************************************************
+*                                END OF FUNCTION                              
+*******************************************************************************/
+
+```
+
+
+```asm
+/*******************************************************************************
+*                                COMPARISON WITH HANDWRITTEN ASSEMBLY          
+*******************************************************************************/
+
+/*******************************************************************************
+*                                ARCHITECTURAL DIFFERENCES                    
+*******************************************************************************/
+
+C++ Decompiled (rev.eng.codeCPP.nas):
+- Architecture: x64 (64-bit)
+- Calling Convention: Windows x64 (RCX, RDX, R8, R9 for parameters)
+- Stack Management: RSP-based addressing
+- Compiler: Microsoft Visual C++ (cl.exe)
+- Optimization: Debug build with -Zi flag
+
+  
+
+Handwritten Assembly (10.asm):
+- Architecture: x86 (32-bit)
+- Calling Convention: cdecl (stack-based parameters)
+- Stack Management: EBP-based addressing
+- Assembler: NASM (Netwide Assembler)
+- Optimization: Manual assembly
+
+/*******************************************************************************
+*                                FUNCTIONAL SIMILARITIES                      
+*******************************************************************************/
+
+Core Logic - Both programs implement:
+1. Input Operation: Read integer from user
+2. Comparison Logic: Compare input with 10 (0xA)
+3. Three-Way Branching: Equal, Greater, Less than
+4. Output Operations: Print appropriate message
+5. Program Exit: Return 0 (success)
+
+Comparison Instructions:
+- C++: CMP dword ptr [RSP + 0x20],0xa
+- Handwritten: cmp eax, 0xA
+
+
+Jump Instructions:
+- C++: JNZ 0x14000ffb2 (Jump if Not Zero)
+- Handwritten: jz equal (Jump if Zero)
+
+/*******************************************************************************
+*                                KEY DIFFERENCES                              
+*******************************************************************************/
+
+
+1. Input/Output Handling:
+- C++: Uses C++ standard library (std::cin, std::cout, std::endl)
+- Handwritten: Uses custom assembly I/O library (read_int, print_string)
+
+1. String Storage:
+- C++: Strings stored in .rdata section at fixed addresses
+- Handwritten: Strings defined in .data section with labels
+
+1. Register Usage:
+- C++: Uses 64-bit registers (RAX, RCX, RDX, RSP)
+- Handwritten: Uses 32-bit registers (EAX, ECX, EDX, EBP)
+
+
+4. Stack Frame:
+- C++: No explicit stack frame (RSP-based)
+- Handwritten: Uses ENTER/LEAVE instructions (EBP-based)
+
+
+/*******************************************************************************
+*                                INSTRUCTION MAPPING                          
+*******************************************************************************/
+
+Input Operations:
+
+C++:    LEA RDX,[RSP + 0x20]           ; Setup input buffer
+        LEA RCX,[0x14013cbb0]          ; Load std::cin
+        CALL 0x14000321a                ; Call input operator
+
+
+Handwritten: call read_int              ; Direct function call
+
+Comparison Operations:
+
+C++:    CMP dword ptr [RSP + 0x20],0xa  ; Compare stack variable
+        JNZ 0x14000ffb2                 ; Jump if not equal
+
+  
+
+Handwritten: cmp eax, 0xA               ; Compare register
+        jz equal                        ; Jump if equal
+
+  
+
+Output Operations:
+C++:    LEA RDX,[0x14010f300]          ; Load string address
+        LEA RCX,[0x14013ccb0]          ; Load std::cout
+        CALL 0x14000188e                ; Call output operator
+
+  
+Handwritten: mov eax, c1                ; Load string label
+        call print_string               ; Direct function call
+
+  
+
+/*******************************************************************************
+*                                CONCLUSION                                    
+*******************************************************************************/
+
+Both programs implement the same core logic but with different architectural approaches:
+
+1. C++ Version: More complex due to C++ standard library overhead
+2. Handwritten Version: Simpler, more direct assembly approach
+3. Same Algorithm: Three-way comparison with appropriate output
+4. Different Optimization: C++ compiler optimizations vs. manual assembly
+
+The handwritten version is more readable and efficient for this simple task, while the C++ version demonstrates the overhead of using high-level language constructs.
+```
+
+
+
+
+

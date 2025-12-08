@@ -54,4 +54,26 @@ const { Content } = await note.render();
   .prose :global(ul) {
     padding-left: 1.5rem;
   }
+  .prose :global(ol) {
+    padding-left: 1.75rem;
+    list-style-position: outside;
+  }
+  .prose :global(li) {
+    margin: 0.35rem 0;
+  }
+  .prose :global(table) {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+  }
+  .prose :global(table th),
+  .prose :global(table td) {
+    white-space: nowrap;
+  }
+  .prose :global(table thead) {
+    position: sticky;
+    top: 0;
+  }
 </style>

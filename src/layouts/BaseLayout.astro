@@ -262,10 +262,25 @@ const { title, description = "My Personal Website with 3D Models" } = Astro.prop
       color: var(--text-primary);
       padding: 1rem;
       border: 1px solid var(--border-strong);
-      overflow-x: auto;
       margin: 1rem 0;
       border-left: 3px solid var(--accent-primary);
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+      overflow-x: auto;
+      white-space: pre;
+      word-break: normal;
+      overflow-wrap: normal;
+    }
+
+    /* Neutralize per-line shading from syntax highlighters */
+    pre code {
+      background: transparent !important;
+      box-shadow: none !important;
+      white-space: inherit;
+      word-break: normal;
+      overflow-wrap: normal;
+    }
+    pre code span {
+      background: transparent !important;
     }
 
     blockquote {
@@ -275,6 +290,30 @@ const { title, description = "My Personal Website with 3D Models" } = Astro.prop
       background: rgba(22, 31, 41, 0.85);
       color: var(--text-primary);
     }
+
+    /* Callouts */
+    .callout {
+      border: 1px solid var(--border-strong);
+      border-left: 4px solid var(--accent-primary);
+      background: rgba(22, 31, 41, 0.92);
+      padding: 1rem 1.25rem;
+      margin: 1.25rem 0;
+      position: relative;
+    }
+    .callout::before {
+      content: attr(data-callout);
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--accent-primary);
+      display: block;
+      margin-bottom: 0.35rem;
+      letter-spacing: 0.6px;
+      font-size: 0.9rem;
+    }
+    .callout-hint { border-left-color: var(--accent-secondary); }
+    .callout-info { border-left-color: var(--accent-secondary); }
+    .callout-error { border-left-color: #e1695d; }
+    .callout-warn { border-left-color: #f5a524; }
 
     table {
       width: 100%;
@@ -439,6 +478,21 @@ const { title, description = "My Personal Website with 3D Models" } = Astro.prop
       nav.classList.toggle('open');
       const expanded = nav.classList.contains('open');
       toggle.setAttribute('aria-expanded', expanded.toString());
+    });
+
+    // Lightweight callout parsing for Obsidian-style [!tag] blocks
+    document.querySelectorAll('blockquote').forEach((block) => {
+      const first = block.firstElementChild;
+      if (!first || first.tagName !== 'P') return;
+      const textNode = first.firstChild;
+      if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return;
+      const m = textNode.textContent?.trim().match(/^\[\!(\w+)\]\s*(.*)$/);
+      if (!m) return;
+      const tag = m[1].toLowerCase();
+      const rest = m[2] || '';
+      textNode.textContent = rest ? `${rest} ` : '';
+      block.classList.add('callout', `callout-${tag}`);
+      block.setAttribute('data-callout', tag);
     });
   }
 </script>
