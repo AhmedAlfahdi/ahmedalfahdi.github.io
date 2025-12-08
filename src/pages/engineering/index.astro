@@ -1,28 +1,25 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
-
-const projects = await getCollection('engineering');
-const sortedProjects = projects.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+// Simple static demo content
 ---
 
 <BaseLayout title="Engineering Projects">
   <div class="container">
     <h1>Engineering Projects</h1>
-    <p class="intro">Real-life engineering challenges and technical explorations.</p>
-    
+    <p class="intro">Quick demo of how projects will look. Replace with your real builds.</p>
+
     <div class="grid">
-      {sortedProjects.map(project => (
-        <a href={`/engineering/${project.slug}`} class="card">
-          <div class="status-badge">{project.data.status}</div>
-          <h2>{project.data.title}</h2>
-          <p>{project.data.description}</p>
-          <div class="meta">
-            <span class="category">[{project.data.category}]</span>
-            <time>{project.data.date.toLocaleDateString()}</time>
-          </div>
-        </a>
-      ))}
+      <div class="card">
+        <div class="status-badge">Demo</div>
+        <h2>Project Orion</h2>
+        <p>
+          Placeholder deep-dive: outline the challenge, constraints, and what you built. Swap this card with your real project once ready.
+        </p>
+        <div class="meta">
+          <span class="category">[CAT] Engineering Demo</span>
+          <time>2025-12-08</time>
+        </div>
+      </div>
     </div>
   </div>
 </BaseLayout>
