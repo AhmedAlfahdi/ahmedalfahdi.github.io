@@ -287,6 +287,41 @@ const { title, description = "My Personal Website with 3D Models" } = Astro.prop
     }
     /* Removed custom dual-scrollbars; rely on native bottom scrollbar */
 
+    /* Allow long math equations to scroll horizontally */
+    .katex-display {
+      overflow-x: auto;
+      overflow-y: hidden;
+      max-width: 100%;
+      padding-bottom: 0.25rem;
+      white-space: nowrap; /* keep long equations on a single line */
+      min-width: 0; /* allow scroll container to shrink */
+    }
+    .katex-display > .katex {
+      display: inline-block;
+      padding: 0.25rem 0;
+      white-space: nowrap;
+      min-width: max-content; /* prevent inner wrap so scrolling works */
+      line-height: 1.2;
+    }
+    /* Ensure KaTeX fragments don't wrap individually */
+    .katex-display .katex * {
+      white-space: nowrap;
+    }
+    /* Equation tags beneath formulas */
+    .equation-tag {
+      text-align: right;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin: 0.2rem 0 0.6rem;
+    }
+
+    @media (max-width: 520px) {
+      .katex-display {
+        font-size: 0.9rem; /* slight downscale for narrow screens */
+      }
+    }
+
     blockquote {
       border-left: 4px solid var(--accent-secondary);
       margin: 1.5rem 0;
