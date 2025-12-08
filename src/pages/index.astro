@@ -3,67 +3,353 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ThreeScene from '../components/ThreeScene.astro';
 ---
 
-<BaseLayout title="Home - My Personal Website">
+<BaseLayout title="Ahmed N. Alfahdi - Mechanical Engineer">
   <div class="container">
-    <h1>Welcome to My Personal Website</h1>
+    <h1>Ahmed N. Alfahdi</h1>
+    <p class="subtitle">Mechanical Engineer | Software Enthusiast | Hardware Tinkerer</p>
     
-    <p>
-      This is a demo website built with Astro, featuring interactive 3D models 
-      powered by Three.js and beautiful markdown rendering. All hosted on GitHub Pages!
-    </p>
+    <div class="about-section">
+      <h2>About Me</h2>
+      <p>
+        A fresh Mechanical Engineering graduate from German University of Technology, affiliated with RWTH Aachen University in Germany. 
+        I am a passionate learner who is always willing to learn and work across technologies and domains. 
+        I love to explore new technologies and leverage them to solve real-life problems.
+      </p>
 
-    <h2>Interactive 3D Cube</h2>
-    <div class="interaction-hint">
-      🖱️ <strong>Try it:</strong> Click and drag to rotate • Scroll to zoom • Double-click to toggle auto-rotation • Click button to toggle background
+      <div class="skills">
+        <h3>Skills & Expertise</h3>
+        <ul class="skills-list">
+          <li><strong>Engineering:</strong> Mechanical Engineering, Hardware Tinkering</li>
+          <li><strong>Programming:</strong> Python, C#, Assembly (x86/x64)</li>
+          <li><strong>Web Development:</strong> HTML, CSS, JavaScript, TypeScript</li>
+          <li><strong>3D Graphics:</strong> Three.js, WebGL</li>
+          <li><strong>Tools:</strong> Git, VS Code, AutoHotkey, WinDbg, Ghidra</li>
+        </ul>
+      </div>
     </div>
-    <ThreeScene sceneType="cube" />
 
-    <h2>About This Site</h2>
-    <p>
-      This site demonstrates the power of modern web technologies:
-    </p>
-    <ul style="margin-left: 2rem; margin-bottom: 1rem;">
-      <li><strong>Astro</strong> - Fast, content-focused static site generator</li>
-      <li><strong>Three.js</strong> - WebGL 3D graphics library</li>
-      <li><strong>Markdown/MDX</strong> - Easy content authoring</li>
-      <li><strong>GitHub Pages</strong> - Free hosting</li>
-    </ul>
+    <div class="sections-overview">
+      <h2>Explore My Work</h2>
+      
+      <div class="section-cards">
+        <a href="/coding" class="section-card">
+          <div class="card-label">[01]</div>
+          <h3>Coding Projects</h3>
+          <p>Software development, automation tools, and programming showcases.</p>
+        </a>
 
-    <h2>Features</h2>
-    <ul style="margin-left: 2rem;">
-      <li>🎨 Interactive 3D models with real-time rendering</li>
-      <li>📝 Markdown content with syntax highlighting</li>
-      <li>⚡ Lightning-fast performance with Astro</li>
-      <li>📱 Fully responsive design</li>
-      <li>🚀 Optimized for production</li>
-    </ul>
+        <a href="/notes" class="section-card">
+          <div class="card-label">[02]</div>
+          <h3>Notes & Knowledge</h3>
+          <p>Personal knowledge base, Obsidian notes, and technical observations.</p>
+        </a>
+
+        <a href="/engineering" class="section-card">
+          <div class="card-label">[03]</div>
+          <h3>Engineering</h3>
+          <p>Real-life engineering projects, design challenges, and technical deep dives.</p>
+        </a>
+
+        <a href="/career" class="section-card">
+          <div class="card-label">[04]</div>
+          <h3>Career & Experience</h3>
+          <p>Professional journey in Oil & Gas, mechanical engineering, and industry experience.</p>
+        </a>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>Interactive Demo</h2>
+      <div class="interaction-hint">
+        <strong>CONTROLS:</strong> Click + Drag to Rotate | Scroll to Zoom | Double-Click for Auto-Rotation
+      </div>
+      <ThreeScene sceneType="dodecahedron" height="400px" />
+    </div>
+
+    <div class="contact-section">
+      <h2>Get In Touch</h2>
+      <div class="contact-links">
+        <a href="https://github.com/AhmedAlfahdi" target="_blank" class="contact-link">
+          <span class="link-label">[GIT]</span> GitHub
+        </a>
+        <a href="https://linkedin.com/in/AhmedAlfahdi" target="_blank" class="contact-link">
+          <span class="link-label">[LNK]</span> LinkedIn
+        </a>
+        <span class="contact-link">
+          <span class="link-label">[LOC]</span> Muscat, Oman
+        </span>
+      </div>
+    </div>
   </div>
 </BaseLayout>
 
 <style>
-  ul {
-    color: #555;
-    line-height: 1.8;
+  .subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-weight: 400;
+    letter-spacing: 1px;
+    font-family: var(--font-mono);
+    border-left: 2px solid var(--accent-primary);
+    padding-left: 1rem;
+  }
+
+  .about-section {
+    margin-bottom: 3rem;
+  }
+
+  .skills {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    border-left: 4px solid var(--accent-secondary);
+    position: relative;
+  }
+
+  .skills::before {
+    content: "SKILLS_MATRIX_V1.0";
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    background: var(--bg-secondary);
+    padding: 0 10px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    border: 1px solid var(--border-light);
+  }
+
+  .skills h3 {
+    color: var(--text-primary);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 0.5rem;
+  }
+
+  .skills-list {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .skills-list li {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    color: var(--text-secondary);
+  }
+
+  .skills-list li::before {
+    content: "[+]";
+    position: absolute;
+    left: 0;
+    color: var(--accent-secondary);
+    font-weight: bold;
+    font-size: 0.8rem;
+  }
+
+  .skills-list strong {
+    color: var(--text-primary);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+  }
+
+  .sections-overview {
+    margin: 3rem 0;
+  }
+
+  .section-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+
+  .section-card {
+    background: var(--bg-tertiary);
+    padding: 2rem;
+    border: 1px solid var(--border-light);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .section-card::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, transparent 50%, var(--border-light) 50%);
+    transition: background 0.2s;
+  }
+
+  .section-card:hover {
+    background: var(--bg-secondary);
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .section-card:hover::after {
+    background: linear-gradient(135deg, transparent 50%, var(--accent-primary) 50%);
+  }
+
+  .section-card:hover .card-label {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    border-color: var(--accent-primary);
+  }
+
+  .section-card:hover h3 {
+    color: var(--accent-primary);
+  }
+
+  .section-card:hover p {
+    color: var(--text-primary);
+  }
+
+  .card-label {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--accent-secondary);
+    font-family: var(--font-mono);
+    background: var(--bg-primary);
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--border-light);
+    transition: all 0.2s;
+  }
+
+  .section-card h3 {
+    color: var(--text-primary);
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+
+  .section-card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .demo-section {
+    margin: 3rem 0;
+    padding: 2rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    position: relative;
   }
   
-  strong {
-    color: #2c3e50;
+  .demo-section::before {
+    content: "INTERACTIVE_MODULE";
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background: var(--bg-secondary);
+    padding: 0 10px;
+    font-size: 0.7rem;
+    color: var(--accent-primary);
+    border: 1px solid var(--border-light);
   }
 
   .interaction-hint {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
     padding: 1rem 1.5rem;
-    border-radius: 8px;
-    margin: 1rem 0;
+    margin: 1rem 0 2rem 0;
     text-align: center;
-    font-size: 0.95rem;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    font-size: 0.85rem;
+    border: 1px dashed var(--border-heavy);
+    letter-spacing: 1px;
   }
 
   .interaction-hint strong {
-    color: white;
+    color: var(--accent-primary);
+    font-weight: 700;
+  }
+
+  .contact-section {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    color: var(--text-primary);
+    border-top: 4px solid var(--border-heavy);
+  }
+
+  .contact-section h2 {
+    color: var(--text-primary);
+    margin-top: 0;
+  }
+
+  .contact-links {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+
+  .contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    text-decoration: none;
     font-weight: 600;
+    transition: all 0.2s;
+    border: 1px solid var(--border-light);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+
+  .contact-link:hover {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    border-color: var(--accent-primary);
+  }
+
+  .contact-link:hover .link-label {
+    color: var(--bg-primary);
+  }
+
+  .link-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--accent-secondary);
+    transition: color 0.2s;
+  }
+
+  @media (max-width: 768px) {
+    .section-cards {
+      grid-template-columns: 1fr;
+    }
+
+    .contact-links {
+      flex-direction: column;
+    }
+
+    .contact-link {
+      width: 100%;
+      justify-content: center;
+    }
   }
 </style>
 

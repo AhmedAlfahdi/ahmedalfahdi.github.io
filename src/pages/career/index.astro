@@ -1,0 +1,95 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const career = await getCollection('career');
+const sortedCareer = career.sort((a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf());
+---
+
+<BaseLayout title="Career & Experience">
+  <div class="container">
+    <h1>Career & Experience</h1>
+    <p class="intro">Professional journey in Oil & Gas and Engineering.</p>
+    
+    <div class="timeline">
+      {sortedCareer.map(job => (
+        <div class="timeline-item">
+          <div class="date-col">
+            <span class="date">
+              {job.data.startDate.getFullYear()} - {job.data.current ? 'Present' : job.data.endDate?.getFullYear()}
+            </span>
+          </div>
+          <div class="content-col">
+            <a href={`/career/${job.slug}`} class="job-card">
+              <h2>{job.data.role}</h2>
+              <h3>{job.data.company}</h3>
+              {job.data.location && <span class="location">{job.data.location}</span>}
+            </a>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .intro {
+    color: var(--text-secondary);
+    margin-bottom: 3rem;
+  }
+  .timeline {
+    border-left: 2px solid var(--border-light);
+    padding-left: 2rem;
+  }
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2.4rem;
+    top: 0.5rem;
+    width: 1rem;
+    height: 1rem;
+    background: var(--bg-primary);
+    border: 2px solid var(--accent-primary);
+    border-radius: 50%;
+  }
+  .date {
+    font-family: var(--font-mono);
+    color: var(--accent-secondary);
+    font-weight: bold;
+  }
+  .job-card {
+    display: block;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s;
+  }
+  .job-card:hover {
+    border-color: var(--accent-primary);
+  }
+  .job-card h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+  }
+  .job-card h3 {
+    margin: 0.5rem 0;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: normal;
+  }
+  .location {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+</style>

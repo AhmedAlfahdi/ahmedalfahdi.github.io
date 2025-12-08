@@ -1,0 +1,68 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('engineering');
+  return projects.map(project => ({
+    params: { slug: project.slug },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { Content } = await project.render();
+---
+
+<BaseLayout title={project.data.title}>
+  <div class="container">
+    <a href="/engineering" class="back-link">← Back to Engineering</a>
+    <article class="content">
+      <div class="header">
+        <h1>{project.data.title}</h1>
+        <div class="status-bar">
+          <span class="status">STATUS: {project.data.status}</span>
+          <span class="category">CATEGORY: {project.data.category}</span>
+          <time>DATE: {project.data.date.toLocaleDateString()}</time>
+        </div>
+      </div>
+      
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .back-link {
+    display: inline-block;
+    margin-bottom: 2rem;
+    color: var(--accent-secondary);
+    text-decoration: none;
+  }
+  .header {
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 2rem;
+  }
+  .status-bar {
+    display: flex;
+    gap: 2rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--accent-primary);
+    margin-top: 1rem;
+  }
+  .prose {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 65ch;
+  }
+  .prose :global(h2) {
+    color: var(--text-primary);
+    margin-top: 2rem;
+    border-left: 3px solid var(--accent-secondary);
+    padding-left: 1rem;
+  }
+</style>

@@ -2,11 +2,12 @@ import { visit } from 'unist-util-visit';
 
 /**
  * Remark plugin to convert Obsidian-style wikilinks to regular markdown links
- * Converts [[Page]] to [Page](/notes/page)
- * Converts [[Page|Display Text]] to [Display Text](/notes/page)
+ * Converts [[Page]] to [Page](/learning/reverse-engineering/page) for reverse engineering content
+ * Converts [[Page]] to [Page](/notes/page) for other content
+ * Converts [[Page|Display Text]] to [Display Text](/path/page)
  */
 export function remarkWikilinks() {
-  return (tree) => {
+  return (tree, file) => {
     visit(tree, 'text', (node, index, parent) => {
       if (!node.value || typeof node.value !== 'string') return;
       
@@ -39,7 +40,14 @@ export function remarkWikilinks() {
           .replace(/[^a-z0-9-]/g, '');    // remove special chars
         
         const text = displayText || link;
-        const url = `/notes/${slug}`;
+        
+        // Determine base path based on file location
+        // If file is in learning/reverse-engineering, use /learning/reverse-engineering/
+        // Otherwise default to /notes/
+        const filePath = file?.history?.[0] || '';
+        const isReverseEngineering = filePath.includes('reverse-engineering');
+        const basePath = isReverseEngineering ? '/learning/reverse-engineering' : '/notes';
+        const url = `${basePath}/${slug}`;
         
         // Create link node
         newNodes.push({

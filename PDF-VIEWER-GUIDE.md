@@ -1,20 +1,24 @@
 # PDF Viewer Guide
 
-Your website now supports PDF viewing using a simple, fast, and reliable component!
+Your website now supports PDF viewing using **PDF.js** - Mozilla's powerful PDF rendering library!
 
 ## PDFViewer Component
 
-Basic PDF viewer using native browser capabilities - fast, lightweight, and works perfectly in all modern browsers.
+Professional PDF viewer with custom controls - guaranteed to display PDFs inline regardless of browser settings.
 
 **Features:**
-- ✅ No external dependencies
-- ✅ Fast loading
-- ✅ Works immediately in all modern browsers
-- ✅ Lightweight
-- ✅ Download button
-- ✅ Print button
-- ✅ Open in new tab
-- ✅ Responsive design
+- ✅ **Guaranteed inline display** - Never downloads, always displays
+- ✅ **Custom navigation controls** - Previous/Next page buttons
+- ✅ **Zoom controls** - Zoom in/out with visual feedback
+- ✅ **Page counter** - Shows current page and total pages
+- ✅ **Download button** - Easy PDF download option
+- ✅ **Dark mode support** - Adapts to your site's theme
+- ✅ **Loading indicator** - Shows progress while loading
+- ✅ **Error handling** - Graceful error messages
+- ✅ **No external dependencies** - Uses PDF.js from CDN
+- ✅ **Works offline** - After first load
+- ✅ **All modern browsers** - Chrome, Firefox, Safari, Edge
+- ✅ **Mobile friendly** - Works on phones and tablets
 
 ---
 
@@ -42,20 +46,20 @@ import PDFViewer from '../../components/PDFViewer.astro';
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `src` | string | **required** | Path to PDF file |
-| `title` | string | `"PDF Document"` | Display title |
-| `height` | string | `"600px"` | Container height |
-| `width` | string | `"100%"` | Container width |
-| `showDownload` | boolean | `true` | Show download button |
+| `title` | string | `"PDF Document"` | Accessibility title |
+| `height` | string | `"600px"` | Viewer height |
+| `width` | string | `"100%"` | Viewer width |
 
 ### Built-in Controls
 
-The browser's native PDF viewer provides:
-- Page navigation
-- Zoom controls
-- Search functionality
-- Print options
-- Download capability
-- Text selection
+The PDF.js viewer provides custom controls:
+- **◀️ Previous Page** - Navigate to previous page
+- **▶️ Next Page** - Navigate to next page
+- **Page Counter** - Shows "1 / 5" format
+- **➖ Zoom Out** - Decrease zoom level
+- **➕ Zoom In** - Increase zoom level
+- **Zoom Display** - Shows current zoom (e.g., "150%")
+- **📥 Download** - Download the PDF file
 
 ---
 
@@ -128,7 +132,6 @@ Here's the Intel manual for reference:
   src="/pdfs/quick-reference.pdf" 
   title="Quick Reference Card"
   height="400px"
-  showDownload={false}
 />
 ```
 

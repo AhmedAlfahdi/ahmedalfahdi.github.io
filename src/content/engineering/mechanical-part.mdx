@@ -1,0 +1,48 @@
+---
+title: "Mechanical Part Design"
+description: "Detailed design documentation for a mechanical component."
+date: 2025-11-24
+status: "Completed"
+category: "Mechanical"
+featured: true
+---
+
+import Model3D from '../../components/Model3D.astro';
+import PDFViewer from '../../components/PDFViewer.astro';
+
+# Mechanical Part Design
+
+This project involves the design and analysis of a custom mechanical bracket.
+
+## 3D Visualization
+
+Below is the interactive 3D model of the final design.
+
+<Model3D 
+  src="/models/Axe.glb" 
+  height="500px" 
+  scale={2} 
+  background="#1a1a2e"
+/>
+
+## Technical Drawings
+
+The engineering drawings are available below:
+
+<PDFViewer 
+  src="/pdfs/20000096503.pdf" 
+  title="Engineering Drawing v1.0" 
+  height="600px" 
+/>
+
+## Specifications
+
+| Property | Value |
+|----------|-------|
+| Material | Al 6061-T6 |
+| Weight | 150g |
+| Max Load | 500N |
+
+## Analysis
+
+Finite Element Analysis (FEA) was performed to ensure structural integrity...

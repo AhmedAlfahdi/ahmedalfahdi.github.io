@@ -1,0 +1,63 @@
+---
+title: "Advanced Coding Demo"
+description: "Demonstrating code blocks, syntax highlighting, and 3D model embedding."
+date: 2025-11-24
+tags: ["demo", "mdx", "threejs"]
+featured: true
+demoUrl: "https://github.com/example/repo"
+repoUrl: "https://github.com/example/repo"
+---
+
+import Model3D from '../../components/Model3D.astro';
+
+# Advanced Coding Demo
+
+This page demonstrates the power of MDX for documenting coding projects. You can mix standard markdown with interactive components.
+
+## Syntax Highlighting
+
+We use Shiki for beautiful syntax highlighting in code blocks.
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  role: 'admin' | 'user';
+}
+
+function getUser(id: number): User {
+  return {
+    id,
+    name: 'John Doe',
+    role: 'admin'
+  };
+}
+```
+
+## Interactive 3D Models
+
+You can embed 3D models directly in your documentation to visualize algorithms, data structures, or hardware.
+
+<Model3D 
+  src="/models/space.glb" 
+  height="400px" 
+  scale={1.5} 
+  autoRotate={true}
+  background="transparent"
+/>
+
+> **Note:** The model above is interactive! You can rotate it with your mouse or touch.
+
+## Component Usage
+
+To use the 3D model component:
+
+```astro
+import Model3D from '../../components/Model3D.astro';
+
+<Model3D 
+  src="/models/my-model.glb" 
+  height="400px" 
+  scale={1} 
+/>
+```

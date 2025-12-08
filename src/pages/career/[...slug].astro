@@ -1,0 +1,77 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const career = await getCollection('career');
+  return career.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<BaseLayout title={`${entry.data.role} at ${entry.data.company}`}>
+  <div class="container">
+    <a href="/career" class="back-link">← Back to Career</a>
+    <article class="content">
+      <div class="header">
+        <h1>{entry.data.role}</h1>
+        <h2>{entry.data.company}</h2>
+        <div class="meta">
+          <span class="date">
+            {entry.data.startDate.toLocaleDateString()} - {entry.data.current ? 'Present' : entry.data.endDate?.toLocaleDateString()}
+          </span>
+          {entry.data.location && <span class="location">📍 {entry.data.location}</span>}
+        </div>
+      </div>
+      
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .back-link {
+    display: inline-block;
+    margin-bottom: 2rem;
+    color: var(--accent-secondary);
+    text-decoration: none;
+  }
+  .header {
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 2rem;
+  }
+  .header h1 {
+    margin-bottom: 0.5rem;
+  }
+  .header h2 {
+    color: var(--accent-primary);
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+  }
+  .meta {
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+    display: flex;
+    gap: 2rem;
+  }
+  .prose {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 65ch;
+  }
+  .prose :global(h3) {
+    color: var(--text-primary);
+    margin-top: 2rem;
+  }
+  .prose :global(ul) {
+    padding-left: 1.5rem;
+  }
+</style>

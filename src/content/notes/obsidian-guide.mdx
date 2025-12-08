@@ -1,0 +1,53 @@
+---
+title: "Obsidian & MDX Guide"
+description: "A guide to using Obsidian features and manual MDX enhancements."
+date: 2025-11-24
+tags: ["obsidian", "guide", "mdx"]
+---
+
+import PDFViewer from '../../components/PDFViewer.astro';
+import Mermaid from '../../components/Mermaid.astro';
+
+# Obsidian & MDX Guide
+
+This website supports many Obsidian features out of the box, plus the ability to add custom React/Astro components.
+
+## Obsidian Features
+
+### Math Equations
+LaTeX math is supported automatically:
+$$
+e^{i\pi} + 1 = 0
+$$
+
+### Mermaid Diagrams
+Use the `<Mermaid>` component for diagrams:
+
+<Mermaid chart={`
+graph TD
+    A[Obsidian] -->|Export| B(MDX)
+    B -->|Build| C{Astro}
+    C -->|Deploy| D[Website]
+`} />
+
+### Callouts
+> [!TIP]
+> This is a tip callout from Obsidian!
+
+## Manual Enhancements
+
+### Embedding PDFs
+You can embed PDF documents directly in your notes:
+
+<PDFViewer 
+  src="/pdfs/20000096503.pdf" 
+  title="Sample Document" 
+  height="500px" 
+/>
+
+### Usage
+```astro
+import PDFViewer from '../../components/PDFViewer.astro';
+
+<PDFViewer src="/pdfs/my-doc.pdf" />
+```

@@ -180,7 +180,6 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       model.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           // Disable frustum culling to prevent models from disappearing during scroll
-          // This is especially important on mobile where viewport calculations can be unreliable
           child.frustumCulled = false;
           child.matrixAutoUpdate = true;
           
@@ -214,19 +213,14 @@ const containerId = `model3d-${Math.random().toString(36).substr(2, 9)}`;
       console.error('Error loading 3D model:', error);
       const errorMsg = error.message || 'Unknown error';
       
-      // Provide more helpful error messages
-      if (errorMsg.includes('timeout')) {
-        loadingIndicator.textContent = 'Loading timeout. Please check your internet connection and try refreshing.';
-      } else if (errorMsg.includes('404') || errorMsg.includes('not found')) {
-        loadingIndicator.textContent = 'Model file not found. Please check the file path.';
-      } else if (errorMsg.includes('memory') || errorMsg.includes('out of memory')) {
-        loadingIndicator.textContent = 'Not enough memory to load this model. Try closing other tabs.';
-      } else {
-        loadingIndicator.textContent = `Error loading model: ${errorMsg}`;
-      }
-      
-      loadingIndicator.style.color = '#e74c3c';
-      loadingIndicator.style.fontSize = '0.9rem';
+      loadingIndicator.innerHTML = `
+        <div style="color: #ff3333; background: rgba(0,0,0,0.8); padding: 1rem; border-radius: 4px;">
+          <strong>Error loading model:</strong><br/>
+          ${errorMsg}<br/>
+          <small>Src: ${src}</small>
+        </div>
+      `;
+      container.style.border = '2px solid #ff3333';
       return;
     }
     

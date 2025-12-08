@@ -1,0 +1,77 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('coding');
+  return projects.map(project => ({
+    params: { slug: project.slug },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { Content } = await project.render();
+---
+
+<BaseLayout title={project.data.title}>
+  <div class="container">
+    <a href="/coding" class="back-link">← Back to Coding</a>
+    <article class="content">
+      <h1>{project.data.title}</h1>
+      <div class="meta">
+        <time>{project.data.date.toLocaleDateString()}</time>
+        {project.data.tags && (
+          <div class="tags">
+            {project.data.tags.map(tag => <span class="tag">#{tag}</span>)}
+          </div>
+        )}
+      </div>
+      
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .back-link {
+    display: inline-block;
+    margin-bottom: 2rem;
+    color: var(--accent-secondary);
+    text-decoration: none;
+  }
+  .meta {
+    margin-bottom: 2rem;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  .tags {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .tag {
+    background: var(--bg-tertiary);
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--border-light);
+    font-size: 0.8rem;
+  }
+  .prose {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 65ch;
+  }
+  .prose :global(h2) {
+    color: var(--text-primary);
+    margin-top: 2rem;
+  }
+  .prose :global(pre) {
+    background: var(--bg-tertiary);
+    padding: 1rem;
+    border: 1px solid var(--border-light);
+    overflow-x: auto;
+  }
+</style>

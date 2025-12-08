@@ -1,0 +1,57 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('notes');
+  return notes.map(note => ({
+    params: { slug: note.slug },
+    props: { note },
+  }));
+}
+
+const { note } = Astro.props;
+const { Content } = await note.render();
+---
+
+<BaseLayout title={note.data.title}>
+  <div class="container">
+    <a href="/notes" class="back-link">← Back to Notes</a>
+    <article class="content">
+      <h1>{note.data.title}</h1>
+      <div class="meta">
+        <time>{note.data.date.toLocaleDateString()}</time>
+      </div>
+      
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .back-link {
+    display: inline-block;
+    margin-bottom: 2rem;
+    color: var(--accent-secondary);
+    text-decoration: none;
+  }
+  .meta {
+    margin-bottom: 2rem;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+  }
+  .prose {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 65ch;
+  }
+  .prose :global(h2) {
+    color: var(--text-primary);
+    margin-top: 2rem;
+  }
+  .prose :global(ul) {
+    padding-left: 1.5rem;
+  }
+</style>
