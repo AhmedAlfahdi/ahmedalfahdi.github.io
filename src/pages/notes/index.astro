@@ -66,4 +66,21 @@ const sortedNotes = notes.sort((a, b) => b.data.date.valueOf() - a.data.date.val
     margin: 0;
     color: var(--text-secondary);
   }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 1.25rem;
+    }
+    .list {
+      gap: 0.75rem;
+    }
+    .list-item {
+      padding: 1.25rem;
+    }
+    .item-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.35rem;
+    }
+  }
 </style>

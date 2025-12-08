@@ -104,6 +104,27 @@ const { title, description = "My Personal Website with 3D Models" } = Astro.prop
       gap: 0;
     }
 
+    .menu-toggle {
+      display: none;
+      background: transparent;
+      border: 1px solid var(--border-light);
+      color: var(--text-primary);
+      padding: 0.45rem 0.6rem;
+      cursor: pointer;
+      gap: 0.3rem;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 4px;
+    }
+
+    .menu-toggle span {
+      display: block;
+      width: 18px;
+      height: 2px;
+      background: var(--text-primary);
+    }
+
     nav li {
       border-left: 1px solid var(--border-light);
     }
@@ -164,6 +185,9 @@ const { title, description = "My Personal Website with 3D Models" } = Astro.prop
         inset 0 1px 0 rgba(255, 255, 255, 0.04),
         0 18px 36px rgba(0, 0, 0, 0.35);
       overflow: hidden;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
     }
 
     .container::before,
@@ -332,18 +356,38 @@ const { title, description = "My Personal Website with 3D Models" } = Astro.prop
     }
 
     @media (max-width: 768px) {
+      .menu-toggle {
+        display: inline-flex;
+        margin: 0.5rem;
+      }
+
+      nav {
+        padding: 0.5rem 0.25rem;
+      }
+
       nav ul {
         flex-direction: column;
         width: 100%;
+        display: none;
       }
 
       nav li {
         border-left: none;
         border-top: 1px solid var(--border-light);
+        width: 100%;
       }
 
       nav a {
+        padding: 0.65rem 1rem;
+        font-size: 0.82rem;
+        letter-spacing: 0.8px;
         text-align: center;
+        line-height: 1.3;
+        width: 100%;
+      }
+
+      nav.nav-links.open ul {
+        display: flex;
       }
 
       main {
@@ -357,11 +401,22 @@ const { title, description = "My Personal Website with 3D Models" } = Astro.prop
       h1 {
         font-size: 1.85rem;
       }
+
+      h2 {
+        font-size: 1.1rem;
+      }
+
+      body {
+        background-size: 120px 120px, 120px 120px, 48px 48px, 48px 48px;
+      }
     }
   </style>
 </head>
 <body>
       <nav class="nav-links">
+        <button class="menu-toggle" aria-expanded="false" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
         <ul>
           <li><a href="/" class="nav-link">Home</a></li>
           <li><a href="/career" class="nav-link">Career &amp; Experience</a></li>
@@ -375,3 +430,15 @@ const { title, description = "My Personal Website with 3D Models" } = Astro.prop
   </main>
 </body>
 </html>
+
+<script>
+  if (typeof window !== 'undefined') {
+    const nav = document.querySelector('nav.nav-links');
+    const toggle = nav?.querySelector('.menu-toggle');
+    toggle?.addEventListener('click', () => {
+      nav.classList.toggle('open');
+      const expanded = nav.classList.contains('open');
+      toggle.setAttribute('aria-expanded', expanded.toString());
+    });
+  }
+</script>

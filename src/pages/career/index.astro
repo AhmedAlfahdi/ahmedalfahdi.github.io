@@ -92,4 +92,28 @@ const sortedCareer = career.sort((a, b) => b.data.startDate.valueOf() - a.data.s
     color: var(--text-muted);
     font-family: var(--font-mono);
   }
+
+  @media (max-width: 768px) {
+    .timeline {
+      padding-left: 1.25rem;
+      border-left-width: 1px;
+    }
+    .timeline-item {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      padding-left: 0.5rem;
+    }
+    .timeline-item::before {
+      left: -1.3rem;
+    }
+    .date {
+      font-size: 0.9rem;
+    }
+    .job-card {
+      padding: 1.25rem;
+    }
+    .job-card h2 {
+      font-size: 1.05rem;
+    }
+  }
 </style>
