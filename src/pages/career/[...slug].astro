@@ -89,7 +89,16 @@ const { Content } = await entry.render();
   .prose {
     color: var(--text-secondary);
     line-height: 1.6;
-    max-width: 65ch;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  /* Let rich embeds like PDF viewers use the wider container while staying centered */
+  .prose :global(.pdf-viewer-wrapper) {
+    margin-left: auto;
+    margin-right: auto;
   }
   .prose :global(h3) {
     color: var(--text-primary);
