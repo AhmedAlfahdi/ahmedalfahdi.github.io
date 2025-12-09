@@ -85,14 +85,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <script is:inline>
   const homeUtc = document.getElementById('home-utc');
   const pad = (n) => String(n).padStart(2, '0');
+  const pad3 = (n) => String(n).padStart(3, '0');
   const updateUtc = () => {
     const d = new Date();
     const date = `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
-    homeUtc.textContent = `UTC ${date} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
+    const ms = pad3(d.getUTCMilliseconds());
+    homeUtc.innerHTML = `UTC ${date} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}.${ms} <span style="font-size: 0.8em; opacity: 0.7;">(DUT1 ±0.9s)</span>`;
   };
   if (homeUtc) {
     updateUtc();
-    setInterval(updateUtc, 1000);
+    // Update every 10ms for smooth millisecond display
+    setInterval(updateUtc, 10);
   }
 </script>
 
