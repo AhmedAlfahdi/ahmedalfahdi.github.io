@@ -4,6 +4,29 @@ A modern, feature-rich personal website with interactive 3D models, Obsidian not
 
 ## Key Features
 
+### Earth Rotation & Universal Time Interactive Demo
+- Real-time 3D globe with WebGL rendering
+- Interactive features:
+  - Star field background with 1500+ stars
+  - Latitude/longitude grid lines (30° intervals)
+  - Greenwich meridian and equator visualization
+  - Six major cities with clickable markers (London, NYC, Tokyo, Sydney, Cairo, Muscat)
+  - Dynamic Sun indicator showing solar angle
+  - Interactive orbit controls (drag to rotate, zoom)
+- Educational visualizations:
+  - Sidereal vs Solar Day comparison diagram
+  - DUT1 (UT1 - UTC) historical graph
+  - Complete leap seconds timeline (1972-2016)
+  - Earth's rotation variations analysis
+  - Historical timeline (GMT → UT1 → UTC)
+- Advanced features:
+  - Keyboard shortcuts (Space: pause, R: reset, F: fullscreen)
+  - Click cities to see local solar time and day/night status
+  - Save longitude preference (localStorage)
+  - Cross-browser fullscreen support
+  - High-DPI canvas rendering for crisp graphics
+  - UT1 calculator with live UTC updates
+
 ### Interactive 3D Models
 - Real-time WebGL rendering with Three.js
 - Support for multiple formats: GLTF, GLB, OBJ
@@ -97,6 +120,7 @@ npm run dev
 │   ├── pages/
 │   │   ├── index.astro          # Home page
 │   │   ├── about.md             # About page
+│   │   ├── earth-rotation.astro # Earth Rotation & UT1 interactive demo
 │   │   ├── 3d-models.astro      # 3D models gallery
 │   │   ├── notes.astro          # Notes index
 │   │   ├── notes/               # Obsidian notes

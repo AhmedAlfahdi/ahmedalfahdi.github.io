@@ -8,24 +8,27 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <article class="content">
       <h1>Earth Rotation & Universal Time</h1>
       <p class="intro">
-        Estimate Universal Time (UT1) from UTC and DUT1, and compute an approximate local solar angle. Seconds are included in the UT1 display.
+        An interactive exploration of Earth's rotation, time standards, and the relationship between atomic time (UTC) and astronomical time (UT1). Use the 3D globe and calculator to understand how Earth's rotation defines our timekeeping systems.
       </p>
 
       <section>
-        <h2>Time Relationships</h2>
-        <p>Key relations for this demo:</p>
-        <ul>
-          <li>UT1 = UTC + DUT1 (DUT1 from IERS, typically within ±0.9 s).</li>
-          <li>Mean solar day: 86,400 SI seconds; UT1 tracks Earth rotation.</li>
-          <li>Local solar angle ≈ (UT1 · 15°/hour) + longitude.</li>
-        </ul>
+        <h2>What Are UTC and UT1?</h2>
+        <p>
+          <strong>UTC (Coordinated Universal Time)</strong> is the global time standard used by computers, networks, and civil timekeeping worldwide. It is based on extremely precise atomic clocks (TAI - International Atomic Time) that maintain uniform seconds independent of Earth's rotation.
+        </p>
+        <p>
+          <strong>UT1 (Universal Time)</strong> is a time scale directly tied to Earth's actual rotation. It measures the rotation angle of Earth relative to distant celestial objects. Unlike UTC's uniform atomic seconds, UT1 reflects the slightly irregular rotation of our planet.
+        </p>
+        <p>
+          <strong>DUT1 (Delta UT1)</strong> is the difference: DUT1 = UT1 − UTC. The International Earth Rotation and Reference Systems Service (IERS) publishes DUT1 values to keep the two time scales synchronized. When |DUT1| approaches ±0.9 seconds, a leap second is added to or removed from UTC to bring it back in alignment with UT1.
+        </p>
       </section>
 
       <section class="viewer">
         <h2>3D Globe (Earth rotation)</h2>
         <div id="globe-3d" class="globe-3d">
           <div class="globe-status" id="globe-status">Loading…</div>
-          <button id="fullscreen-btn" class="fullscreen-btn" title="Fullscreen (F)">⛶</button>
+          <button id="fullscreen-btn" class="fullscreen-btn" title="Fullscreen (F)">Fullscreen</button>
         </div>
         
         <div class="globe-info-row">
@@ -69,11 +72,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         
         <p class="note">A 3D wireframe globe showing Earth's rotation around its axis. The prime meridian (gold line) and equator (gold ring) rotate with the Earth. The rotation axis (gray dashed line) with N and S labels remains fixed in space. Six major cities are marked with subtle colored dots to provide geographic reference. The Sun (yellow sphere) shows the direction of your calculated solar angle and updates as you change the time or longitude.</p>
         <div class="keyboard-shortcuts">
-          <strong>⌨️ Keyboard Shortcuts:</strong>
+          <strong>Keyboard Shortcuts:</strong>
           <span><kbd>Space</kbd> Pause/Resume</span>
           <span><kbd>R</kbd> Reset view</span>
           <span><kbd>F</kbd> Fullscreen</span>
-          <span><kbd>🖱️ Click</kbd> City info</span>
         </div>
       </section>
 
@@ -123,17 +125,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           This is an illustrative calculation: it applies DUT1 directly to UTC and estimates solar angle from UT1 and longitude. Solar angle here is a simplified local solar angle, not GMST/GAST. For precise work, use full IERS conventions (GMST/GAST, EOP, and nutation models).
         </p>
         <p class="note">
-          Why only the solar angle moves when you change longitude: UT1 is the same everywhere (it’s Earth-rotation time), so changing longitude shifts your local hour angle relative to Greenwich—hence the solar angle changes, but UTC/UT1 values do not.
+          Why only the solar angle moves when you change longitude: UT1 is the same everywhere (it's Earth-rotation time), so changing longitude shifts your local hour angle relative to Greenwich—hence the solar angle changes, but UTC/UT1 values do not.
         </p>
       </section>
 
       <section>
-        <h2>UTC & UT1: Context</h2>
-        <p>
-          UTC (Coordinated Universal Time) is the modern time standard that keeps atomic clocks (TAI) in sync with Earth's rotation by adding leap seconds when needed. UT1 tracks Earth's actual rotation; the difference DUT1 = UT1 − UTC is published by the IERS and kept within ±0.9 s by leap seconds. Historically, GMT (Greenwich Mean Time) served as a mean solar time at Greenwich; UT1 is its modern rotational counterpart, while UTC is what computers and networks use daily.
-        </p>
-        <p>
-          Key terms: TAI is the continuous atomic time scale with no leap seconds. UTC is TAI with leap seconds to stay close to UT1. UT1 is Earth-rotation time derived from observations; DUT1 is the small offset published to connect UTC to UT1. GMST/GAST are sidereal time measures for pointing telescopes and computing local hour angles; this page uses a simplified solar-angle estimate for illustration.
+        <h2>Time Relationships</h2>
+        <p>The mathematical relationships used in this demonstration:</p>
+        <ul>
+          <li><strong>UT1 = UTC + DUT1</strong> where DUT1 is published by IERS (typically within ±0.9 s)</li>
+          <li><strong>Mean solar day = 86,400 SI seconds</strong> - UT1 tracks Earth's rotation relative to the Sun</li>
+          <li><strong>Sidereal day = 86,164.09 seconds</strong> - Earth's true rotation period relative to stars</li>
+          <li><strong>Local solar angle ≈ (UT1 hours × 15°/hour) + longitude</strong> - simplified calculation for illustration</li>
+        </ul>
+        <p class="note">
+          Note: This page uses simplified solar angle calculations for educational purposes. For precise astronomical work, use GMST/GAST (Greenwich Mean/Apparent Sidereal Time) with full IERS Earth Orientation Parameters (EOP) and nutation models.
         </p>
       </section>
 
@@ -175,13 +181,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <h2>Sidereal vs Solar Day</h2>
         <div class="comparison-grid">
           <div class="comparison-card">
-            <h3>🌟 Sidereal Day</h3>
+            <h3>Sidereal Day</h3>
             <div class="comparison-value">23h 56m 4.09s</div>
             <div class="comparison-exact">86,164.09 seconds</div>
             <p>Time for Earth to rotate 360° relative to distant stars. This is Earth's true rotation period.</p>
           </div>
           <div class="comparison-card">
-            <h3>☀️ Solar Day</h3>
+            <h3>Solar Day</h3>
             <div class="comparison-value">24h 0m 0s</div>
             <div class="comparison-exact">86,400 seconds</div>
             <p>Time for the Sun to return to the same position in the sky. Longer because Earth moves in its orbit around the Sun.</p>
@@ -220,22 +226,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <p>Earth's rotation is not constant. The length of day (LOD) varies due to multiple factors:</p>
         <div class="variation-grid">
           <div class="variation-card">
-            <h3>🌊 Tidal Friction</h3>
+            <h3>Tidal Friction</h3>
             <p><strong>Effect:</strong> +1.7 ms/century</p>
             <p>Moon's gravity creates tidal bulges that slow Earth's rotation. Over geological time, days are getting longer.</p>
           </div>
           <div class="variation-card">
-            <h3>❄️ Glacial Rebound</h3>
+            <h3>Glacial Rebound</h3>
             <p><strong>Effect:</strong> -0.6 ms/century</p>
             <p>Post-ice-age crustal rebound redistributes Earth's mass, slightly speeding up rotation (like a spinning ice skater pulling in their arms).</p>
           </div>
           <div class="variation-card">
-            <h3>🌍 Core-Mantle Coupling</h3>
+            <h3>Core-Mantle Coupling</h3>
             <p><strong>Effect:</strong> ±1-2 ms/decade</p>
             <p>Electromagnetic and gravitational interactions between Earth's liquid outer core and solid mantle cause irregular variations.</p>
           </div>
           <div class="variation-card">
-            <h3>🌪️ Atmospheric Winds</h3>
+            <h3>Atmospheric Winds</h3>
             <p><strong>Effect:</strong> ±0.5 ms/season</p>
             <p>Seasonal changes in atmospheric circulation transfer angular momentum, causing daily variations in Earth's rotation rate.</p>
           </div>
@@ -614,7 +620,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         return new THREE.Vector3(x, y, z);
       };
 
-      const cityMarkers = [];
       cities.forEach(city => {
         const pos = latLonToVector3(city.lat, city.lon, 1.02);
         
@@ -627,15 +632,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         });
         const cityMarker = new THREE.Mesh(cityGeo, cityMat);
         cityMarker.position.copy(pos);
-        cityMarker.userData = { 
-          city: city.name, 
-          lat: city.lat, 
-          lon: city.lon, 
-          color: city.color,
-          originalScale: 1
-        };
         earth.add(cityMarker);
-        cityMarkers.push(cityMarker);
         
         // City label - even smaller and closer to prevent clipping
         const cityLabel = createTextSprite(city.name, `#${city.color.toString(16).padStart(6, '0')}`, 0.28);
@@ -685,64 +682,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       status.textContent = 'Interactive (drag to rotate)';
       status.style.color = 'var(--text-muted)';
       
-      // Raycaster for city interactions
-      const raycaster = new THREE.Raycaster();
-      const mouse = new THREE.Vector2();
       let isPaused = false;
-      
-      // City info panel
-      const cityInfo = document.createElement('div');
-      cityInfo.id = 'city-info';
-      cityInfo.style.cssText = `
-        position: absolute;
-        bottom: 10px;
-        left: 10px;
-        background: rgba(12, 20, 28, 0.95);
-        border: 1px solid var(--accent-primary);
-        border-radius: 8px;
-        padding: 0.75rem;
-        color: var(--text-primary);
-        font-size: 0.85rem;
-        display: none;
-        z-index: 10;
-        min-width: 180px;
-      `;
-      host.appendChild(cityInfo);
-      
-      // Click handler for city info
-      renderer.domElement.addEventListener('click', (event) => {
-        const rect = renderer.domElement.getBoundingClientRect();
-        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(cityMarkers);
-        
-        if (intersects.length > 0) {
-          const clickedCity = intersects[0].object;
-          const data = clickedCity.userData;
-          const now = new Date();
-          const utcHours = now.getUTCHours();
-          const utcMinutes = now.getUTCMinutes();
-          
-          // Calculate local solar time (simplified)
-          const localHourOffset = data.lon / 15; // 15° per hour
-          const localHour = (utcHours + localHourOffset + 24) % 24;
-          const localMinute = utcMinutes;
-          
-          // Determine day/night
-          const isDaytime = localHour >= 6 && localHour < 18;
-          
-          cityInfo.innerHTML = `
-            <div style="font-weight: 700; color: var(--accent-primary); margin-bottom: 0.4rem;">${data.city}</div>
-            <div><strong>Lat:</strong> ${data.lat.toFixed(2)}°</div>
-            <div><strong>Lon:</strong> ${data.lon.toFixed(2)}°</div>
-            <div><strong>Local solar time:</strong> ${Math.floor(localHour).toString().padStart(2, '0')}:${localMinute.toString().padStart(2, '0')}</div>
-            <div><strong>Status:</strong> ${isDaytime ? '☀️ Daytime' : '🌙 Nighttime'}</div>
-          `;
-          cityInfo.style.display = 'block';
-        }
-      });
       
       // Keyboard shortcuts
       document.addEventListener('keydown', (event) => {
