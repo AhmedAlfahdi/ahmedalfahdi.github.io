@@ -1,0 +1,698 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Earth Rotation & Universal Time">
+  <div class="container">
+    <a href="/" class="back-link">← Back Home</a>
+    <article class="content">
+      <h1>Earth Rotation & Universal Time</h1>
+      <p class="intro">
+        Estimate Universal Time (UT1) from UTC and DUT1, and compute an approximate local solar angle. Seconds are included in the UT1 display.
+      </p>
+
+      <section>
+        <h2>Time Relationships</h2>
+        <p>Key relations for this demo:</p>
+        <ul>
+          <li>UT1 = UTC + DUT1 (DUT1 from IERS, typically within ±0.9 s).</li>
+          <li>Mean solar day: 86,400 SI seconds; UT1 tracks Earth rotation.</li>
+          <li>Local solar angle ≈ (UT1 · 15°/hour) + longitude.</li>
+        </ul>
+      </section>
+
+      <section class="viewer">
+        <h2>3D Globe (Earth rotation)</h2>
+        <div id="globe-3d" class="globe-3d">
+          <div class="globe-status" id="globe-status">Loading…</div>
+        </div>
+        
+        <div class="globe-info-row">
+          <div class="globe-legend">
+            <div class="legend-title">Legend</div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #2c6ead; border: 1px solid #2c6ead;"></span>
+              <span>Wireframe Earth (rotates)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #f5a524;"></span>
+              <span>Greenwich Meridian (0° longitude)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: rgba(245,165,36,0.5);"></span>
+              <span>Equator (0° latitude)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color legend-dashed" style="background: #9ea7b3;"></span>
+              <span>Rotation Axis (fixed, N/S labeled)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: linear-gradient(90deg, #ff4444 0%, #44ff44 25%, #4444ff 50%, #ffff44 75%, #ff44ff 100%);"></span>
+              <span>Major Cities (London, NYC, Tokyo, Sydney, Cairo)</span>
+            </div>
+          </div>
+          
+          <div class="globe-meta" id="globe-meta">
+            <div class="meta-title">Physical Properties</div>
+            <div><strong>Ω</strong> 7.2921159×10⁻⁵ rad/s</div>
+            <div><strong>Sidereal day</strong> 86,164.09 s</div>
+            <div><strong>Spin</strong> 15.041°/hr</div>
+            <div><strong>Rₑ</strong> ≈ 6,378 km</div>
+            <div id="globe-scale"><strong>Animation</strong> —</div>
+          </div>
+        </div>
+        
+        <p class="note">A 3D wireframe globe showing Earth's rotation around its axis. The prime meridian (gold line) and equator (gold ring) rotate with the Earth. The rotation axis (gray dashed line) with N and S labels remains fixed in space. Five major cities are marked with subtle colored dots to provide geographic reference.</p>
+      </section>
+
+      <section class="calc">
+        <h2>UT1 Calculator</h2>
+        <div class="calc-grid">
+          <label>
+            UTC (date & time)
+            <input id="utc-input" type="datetime-local" />
+          </label>
+          <label>
+            DUT1 (seconds, from IERS)
+            <input id="dut1-input" type="number" step="0.1" value="0.0" />
+            <div class="small-note">Example: -0.1 (see IERS Bulletin A)</div>
+            <button id="dut1-reset" type="button" class="pill">Reset DUT1</button>
+          </label>
+          <label>
+            Longitude (degrees, east + / west -)
+            <input id="lon-input" type="number" step="0.01" value="0" />
+          </label>
+        </div>
+        <label class="inline">
+          <input id="auto-utc" type="checkbox" checked />
+          Auto-update UTC from system clock (updates every second)
+          <span id="live-indicator" class="live-badge">LIVE</span>
+        </label>
+        <div class="links">
+          <a href="https://datacenter.iers.org/data/latestVersion/6_BULLETIN_A_V2013_016.txt" target="_blank" rel="noreferrer">Latest DUT1 (IERS Bulletin A)</a>
+        </div>
+        <div class="preset-row">
+          <span class="small-note">Quick longitudes:</span>
+          <div class="preset-buttons">
+            <button type="button" data-lon="-180" class="pill">-180</button>
+            <button type="button" data-lon="-90" class="pill">-90</button>
+            <button type="button" data-lon="0" class="pill">0</button>
+            <button type="button" data-lon="90" class="pill">90</button>
+            <button type="button" data-lon="180" class="pill">180</button>
+          </div>
+        </div>
+        <div class="results" id="results">
+          <div><strong>UTC used:</strong> <span id="utc-used">—</span></div>
+          <div><strong>DUT1 applied:</strong> <span id="dut1-applied">—</span></div>
+          <div><strong>UT1:</strong> <span id="ut1-val">—</span></div>
+          <div><strong>Solar angle (approx):</strong> <span id="angle-val">—</span></div>
+        </div>
+        <p class="note">
+          This is an illustrative calculation: it applies DUT1 directly to UTC and estimates solar angle from UT1 and longitude. Solar angle here is a simplified local solar angle, not GMST/GAST. For precise work, use full IERS conventions (GMST/GAST, EOP, and nutation models).
+        </p>
+        <p class="note">
+          Why only the solar angle moves when you change longitude: UT1 is the same everywhere (it’s Earth-rotation time), so changing longitude shifts your local hour angle relative to Greenwich—hence the solar angle changes, but UTC/UT1 values do not.
+        </p>
+      </section>
+
+      <section>
+        <h2>UTC & UT1: Context</h2>
+        <p>
+          UTC (Coordinated Universal Time) is the modern time standard that keeps atomic clocks (TAI) in sync with Earth’s rotation by adding leap seconds when needed. UT1 tracks Earth’s actual rotation; the difference DUT1 = UT1 − UTC is published by the IERS and kept within ±0.9 s by leap seconds. Historically, GMT (Greenwich Mean Time) served as a mean solar time at Greenwich; UT1 is its modern rotational counterpart, while UTC is what computers and networks use daily.
+        </p>
+        <p>
+          Key terms: TAI is the continuous atomic time scale with no leap seconds. UTC is TAI with leap seconds to stay close to UT1. UT1 is Earth-rotation time derived from observations; DUT1 is the small offset published to connect UTC to UT1. GMST/GAST are sidereal time measures for pointing telescopes and computing local hour angles; this page uses a simplified solar-angle estimate for illustration.
+        </p>
+      </section>
+    </article>
+  </div>
+</BaseLayout>
+
+<script is:inline type="module">
+  // Three.js globe with visible North/South poles
+  (async () => {
+    if (typeof window === 'undefined') return;
+    const host = document.getElementById('globe-3d');
+    const status = document.getElementById('globe-status');
+    const metaScale = document.getElementById('globe-scale');
+    if (!host || !status) return;
+
+    const renderCanvas = () => {
+      const canvas = document.createElement('canvas');
+      host.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+      const omega = 7.2921159e-5; // rad/s
+      const speedScale = 2000; // animation multiplier for visibility
+      const yScale = 0.82; // squash factor to give an oblique view
+      metaScale.textContent = `Animation ×${speedScale} (vs real rotation)`;
+
+      const resize = () => {
+        canvas.width = host.clientWidth || 360;
+        canvas.height = host.clientHeight || 360;
+      };
+      window.addEventListener('resize', resize);
+      resize();
+
+      let angle = 0;
+      let last = performance.now();
+
+      const draw = (ts) => {
+        const dt = (ts - last) / 1000;
+        last = ts;
+        angle += omega * speedScale * dt;
+
+        const { width: w, height: h } = canvas;
+        const r = Math.min(w, h) * 0.38;
+        const cx = w * 0.5;
+        const cy = h * 0.5;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Sphere (oblique projection)
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(1, yScale);
+        const grd = ctx.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.2, 0, 0, r);
+        grd.addColorStop(0, '#2c6ead');
+        grd.addColorStop(1, '#0b1723');
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Prime meridian (Greenwich)
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(1, yScale);
+        ctx.rotate(angle);
+        ctx.strokeStyle = '#f5a524';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -r);
+        ctx.lineTo(0, r);
+        ctx.stroke();
+
+        // Polar axis (north–south)
+        ctx.strokeStyle = '#9ea7b3';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(-r * 0.02, -r);
+        ctx.lineTo(-r * 0.02, r);
+        ctx.stroke();
+        ctx.restore();
+
+        requestAnimationFrame(draw);
+      };
+
+      status.textContent = 'Canvas render';
+      status.style.color = 'var(--text-muted)';
+      requestAnimationFrame(draw);
+    };
+
+    try {
+      // Load Three.js from CDN
+      const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.min.js')
+        .then(mod => mod.default || mod);
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+      camera.position.set(2.2, 2.5, 2.8);
+      camera.lookAt(0, 0, 0);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(window.devicePixelRatio || 1);
+      host.appendChild(renderer.domElement);
+
+      // Earth sphere - WIREFRAME
+      const sphereGeo = new THREE.SphereGeometry(1, 32, 32);
+      const sphereMat = new THREE.MeshBasicMaterial({
+        color: 0x2c6ead,
+        wireframe: true,
+        wireframeLinewidth: 1.5
+      });
+      const earth = new THREE.Mesh(sphereGeo, sphereMat);
+      scene.add(earth);
+
+      // Greenwich meridian - curve on sphere surface (longitude = 0°)
+      const meridianPoints = [];
+      const meridianSegments = 64;
+      const sphereRadius = 1.01; // slightly larger than sphere for visibility
+      for (let i = 0; i <= meridianSegments; i++) {
+        const lat = (i / meridianSegments) * Math.PI - Math.PI / 2; // -90° to +90°
+        const x = sphereRadius * Math.cos(lat) * Math.cos(0); // longitude = 0
+        const y = sphereRadius * Math.sin(lat);
+        const z = sphereRadius * Math.cos(lat) * Math.sin(0);
+        meridianPoints.push(new THREE.Vector3(x, y, z));
+      }
+      const meridianGeometry = new THREE.BufferGeometry().setFromPoints(meridianPoints);
+      const meridianMaterial = new THREE.LineBasicMaterial({ 
+        color: 0xf5a524,
+        linewidth: 3
+      });
+      const meridian = new THREE.Line(meridianGeometry, meridianMaterial);
+      earth.add(meridian); // child of earth, so rotates with it
+
+      // Equator line for reference
+      const equatorPoints = [];
+      const equatorSegments = 64;
+      for (let i = 0; i <= equatorSegments; i++) {
+        const angle = (i / equatorSegments) * Math.PI * 2;
+        const x = sphereRadius * Math.cos(angle);
+        const y = 0;
+        const z = sphereRadius * Math.sin(angle);
+        equatorPoints.push(new THREE.Vector3(x, y, z));
+      }
+      const equatorGeometry = new THREE.BufferGeometry().setFromPoints(equatorPoints);
+      const equatorMaterial = new THREE.LineBasicMaterial({ 
+        color: 0xf5a524,
+        linewidth: 2,
+        opacity: 0.5,
+        transparent: true
+      });
+      const equator = new THREE.Line(equatorGeometry, equatorMaterial);
+      earth.add(equator);
+
+      // Rotation axis - DASHED LINE (DOES NOT rotate - stays fixed in space)
+      const axisPoints = [];
+      axisPoints.push(new THREE.Vector3(0, -1.5, 0));
+      axisPoints.push(new THREE.Vector3(0, 1.5, 0));
+      const axisGeometry = new THREE.BufferGeometry().setFromPoints(axisPoints);
+      const axisMaterial = new THREE.LineDashedMaterial({
+        color: 0x9ea7b3,
+        linewidth: 2,
+        dashSize: 0.1,
+        gapSize: 0.05
+      });
+      const axis = new THREE.Line(axisGeometry, axisMaterial);
+      axis.computeLineDistances();
+      scene.add(axis); // NOT a child of earth, so stays fixed
+
+      // Label markers - N and S at axis ends (subtle)
+      const createTextSprite = (text, color, size = 1, bold = false) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 128;
+        canvas.height = 64;
+        
+        // Subtle background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        ctx.fillRect(24, 12, 80, 40);
+        
+        ctx.fillStyle = color;
+        ctx.font = `${bold ? 'bold' : 'normal'} 32px monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 64, 32);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        const material = new THREE.SpriteMaterial({ 
+          map: texture,
+          opacity: 0.8,
+          transparent: true
+        });
+        const sprite = new THREE.Sprite(material);
+        sprite.scale.set(size, size * 0.5, 1);
+        return sprite;
+      };
+
+      const northLabel = createTextSprite('N', '#cccccc', 0.5, false);
+      northLabel.position.set(0, 1.65, 0);
+      scene.add(northLabel);
+
+      const southLabel = createTextSprite('S', '#cccccc', 0.5, false);
+      southLabel.position.set(0, -1.65, 0);
+      scene.add(southLabel);
+
+      // Major cities as reference points (rotates with Earth)
+      const cities = [
+        { name: 'London', lat: 51.5, lon: 0, color: 0xff4444 },
+        { name: 'New York', lat: 40.7, lon: -74, color: 0x44ff44 },
+        { name: 'Tokyo', lat: 35.7, lon: 139.7, color: 0x4444ff },
+        { name: 'Sydney', lat: -33.9, lon: 151.2, color: 0xffff44 },
+        { name: 'Cairo', lat: 30.0, lon: 31.2, color: 0xff44ff }
+      ];
+
+      const latLonToVector3 = (lat, lon, radius) => {
+        const phi = (90 - lat) * (Math.PI / 180);
+        const theta = (lon + 180) * (Math.PI / 180);
+        const x = -(radius * Math.sin(phi) * Math.cos(theta));
+        const z = (radius * Math.sin(phi) * Math.sin(theta));
+        const y = (radius * Math.cos(phi));
+        return new THREE.Vector3(x, y, z);
+      };
+
+      cities.forEach(city => {
+        const pos = latLonToVector3(city.lat, city.lon, 1.02);
+        
+        // City marker (sphere) - smaller
+        const cityGeo = new THREE.SphereGeometry(0.02, 8, 8);
+        const cityMat = new THREE.MeshBasicMaterial({ 
+          color: city.color,
+          opacity: 0.8,
+          transparent: true
+        });
+        const cityMarker = new THREE.Mesh(cityGeo, cityMat);
+        cityMarker.position.copy(pos);
+        earth.add(cityMarker);
+        
+        // City label - smaller and more subtle, positioned closer to avoid clipping
+        const cityLabel = createTextSprite(city.name, `#${city.color.toString(16).padStart(6, '0')}`, 0.32);
+        const labelPos = latLonToVector3(city.lat, city.lon, 1.10);
+        cityLabel.position.copy(labelPos);
+        earth.add(cityLabel);
+      });
+
+      // Lighting
+      const ambient = new THREE.AmbientLight(0x556677, 0.9);
+      scene.add(ambient);
+      const dir = new THREE.DirectionalLight(0xffffff, 1.2);
+      dir.position.set(3, 2, 2);
+      scene.add(dir);
+
+      const resize = () => {
+        const w = host.clientWidth || 360;
+        const h = host.clientHeight || 360;
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      };
+      window.addEventListener('resize', resize);
+      resize();
+
+      const clock = new THREE.Clock();
+      const omega = 7.2921159e-5; // rad/s
+      const speedScale = 2000;
+      metaScale.textContent = `Animation ×${speedScale} (vs real rotation)`;
+
+      const animate = () => {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+        const dTheta = omega * speedScale * delta;
+        
+        // Only Earth rotates (and meridian is its child)
+        earth.rotation.y += dTheta;
+        
+        // axis, poles, and labels stay FIXED in space
+        
+        renderer.render(scene, camera);
+      };
+      animate();
+      status.textContent = 'Three.js render';
+      status.style.color = 'var(--text-muted)';
+    } catch (err) {
+      status.textContent = '3D unavailable (fallback to canvas)';
+      status.style.color = '#e1695d';
+      console.error('Globe 3D load failed:', err);
+      renderCanvas();
+    }
+  })();
+
+  // UT1 calculator only
+  const utcInput = document.getElementById('utc-input');
+  const dut1Input = document.getElementById('dut1-input');
+  const lonInput = document.getElementById('lon-input');
+  const ut1Val = document.getElementById('ut1-val');
+  const angleVal = document.getElementById('angle-val');
+  const autoUtc = document.getElementById('auto-utc');
+  const utcUsed = document.getElementById('utc-used');
+  const dut1Applied = document.getElementById('dut1-applied');
+  const dut1Reset = document.getElementById('dut1-reset');
+  const liveIndicator = document.getElementById('live-indicator');
+  const presetButtons = Array.from(document.querySelectorAll('.preset-buttons button'));
+  let tick;
+
+  // Set default UTC to current time (rounded to minutes)
+  const now = new Date();
+  now.setSeconds(0, 0);
+  const isoLocal = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+  utcInput.value = isoLocal;
+
+  function fmtDateWithSeconds(d) {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} UTC`;
+  }
+
+  function compute() {
+    let baseMs;
+    if (autoUtc.checked) {
+      baseMs = Date.now();
+      const t = new Date(baseMs - new Date().getTimezoneOffset() * 60000);
+      utcInput.value = t.toISOString().slice(0, 16);
+    } else {
+      baseMs = Date.parse(utcInput.value);
+    }
+    const utcMs = baseMs;
+    if (Number.isNaN(utcMs)) {
+      ut1Val.textContent = 'Invalid UTC';
+      angleVal.textContent = '—';
+      return;
+    }
+    const dut1 = Number(dut1Input.value) || 0;
+    const lon = Number(lonInput.value) || 0;
+
+    // UT1 = UTC + DUT1 (seconds)
+    const ut1 = new Date(utcMs + dut1 * 1000);
+    utcUsed.textContent = fmtDateWithSeconds(new Date(utcMs));
+    dut1Applied.textContent = `${dut1.toFixed(2)} s`;
+    ut1Val.textContent = `${fmtDateWithSeconds(ut1)} (UTC + ${dut1.toFixed(2)} s)`;
+
+    // Approximate solar angle at Greenwich (deg) = (UT1 hours * 15) mod 360
+    const ut1Hours = (ut1.getUTCHours() + ut1.getUTCMinutes() / 60 + ut1.getUTCSeconds() / 3600);
+    const greenwichAngle = (ut1Hours * 15) % 360;
+    const localAngle = ((greenwichAngle + lon) % 360 + 360) % 360;
+    angleVal.textContent = `${localAngle.toFixed(2)}° (approx local solar angle)`;
+  }
+
+  utcInput.addEventListener('input', compute);
+  dut1Input.addEventListener('input', compute);
+  lonInput.addEventListener('input', compute);
+  autoUtc.addEventListener('change', () => {
+    if (autoUtc.checked) {
+      if (!tick) tick = setInterval(compute, 1000);
+      liveIndicator.style.display = 'inline-flex';
+    } else if (tick) {
+      clearInterval(tick);
+      tick = undefined;
+      liveIndicator.style.display = 'none';
+    }
+    compute();
+  });
+
+  presetButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const val = Number(btn.dataset.lon);
+      lonInput.value = String(val);
+      compute();
+    });
+  });
+
+  dut1Reset.addEventListener('click', () => {
+    dut1Input.value = '0.0';
+    compute();
+  });
+
+  // start ticking
+  tick = setInterval(compute, 1000);
+  compute();
+</script>
+
+<style>
+  .intro {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+  }
+  .calc {
+    margin-top: 2rem;
+  }
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0 1.5rem;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+  .inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.5rem 0 0;
+  }
+  .small-note {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+  }
+  .pill {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+  .pill:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+  }
+  input[type="number"],
+  input[type="datetime-local"] {
+    padding: 0.55rem 0.65rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+  }
+  .links {
+    margin: 0.6rem 0 0.4rem;
+    font-size: 0.9rem;
+  }
+  .links a {
+    color: var(--accent-secondary);
+  }
+  .results {
+    display: grid;
+    gap: 0.35rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    padding: 1rem;
+  }
+  .results strong {
+    color: var(--accent-primary);
+  }
+  .note {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+  }
+  .preset-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin: 0.6rem 0;
+    flex-wrap: wrap;
+  }
+  .preset-buttons {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+  .live-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.8px;
+    color: var(--accent-primary);
+    border: 1px solid var(--accent-primary);
+    border-radius: 999px;
+    background: rgba(245,165,36,0.08);
+  }
+  .viewer {
+    margin: 1.5rem 0 1rem;
+  }
+  .globe-3d {
+    position: relative;
+    width: min(600px, 100%);
+    height: 468px;
+    border: 1px solid var(--border-strong);
+    background: radial-gradient(circle at 30% 30%, rgba(98,199,255,0.1), transparent 40%), #0c141c;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 24px rgba(0,0,0,0.35);
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  .globe-status {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    background: rgba(0,0,0,0.5);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+  }
+  .globe-info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .globe-legend {
+    display: grid;
+    gap: 0.5rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    padding: 0.8rem;
+    border-radius: 4px;
+  }
+  .legend-title {
+    font-weight: 700;
+    color: var(--accent-primary);
+    font-size: 0.85rem;
+    margin-bottom: 0.2rem;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  .legend-color {
+    width: 24px;
+    height: 12px;
+    border-radius: 2px;
+    border: 1px solid var(--border-strong);
+    flex-shrink: 0;
+  }
+  .legend-dashed {
+    background: repeating-linear-gradient(
+      90deg,
+      #9ea7b3 0px,
+      #9ea7b3 6px,
+      transparent 6px,
+      transparent 12px
+    ) !important;
+  }
+  .globe-meta {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    padding: 0.8rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+  }
+  .meta-title {
+    font-weight: 700;
+    color: var(--accent-primary);
+    font-size: 0.85rem;
+    margin-bottom: 0.2rem;
+  }
+  .globe-meta strong {
+    color: var(--accent-primary);
+    font-weight: 700;
+  }
+  @media (max-width: 600px) {
+    .calc-grid {
+      grid-template-columns: 1fr;
+    }
+    .globe-info-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+

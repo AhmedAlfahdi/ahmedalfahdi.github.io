@@ -3,7 +3,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="Ahmed N. Alfahdi - Mechanical Engineer">
-  <div class="container">
+  <div class="container home-wrap">
+    <a class="utc-badge" id="home-utc" href="/earth-rotation">UTC —</a>
     <h1>Ahmed N. Alfahdi</h1>
     <p class="subtitle">Mechanical Engineer | Oil & Gas Trainee | Automation & Reverse Engineering</p>
     
@@ -81,7 +82,42 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </div>
 </BaseLayout>
 
+<script is:inline>
+  const homeUtc = document.getElementById('home-utc');
+  const pad = (n) => String(n).padStart(2, '0');
+  const updateUtc = () => {
+    const d = new Date();
+    const date = `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+    homeUtc.textContent = `UTC ${date} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
+  };
+  if (homeUtc) {
+    updateUtc();
+    setInterval(updateUtc, 1000);
+  }
+</script>
+
 <style>
+  .home-wrap {
+    position: relative;
+  }
+  .utc-badge {
+    position: absolute;
+    top: -0.4rem;
+    right: 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.9px;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 0.35rem 0.65rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    background: rgba(12, 20, 28, 0.85);
+  }
+  .utc-badge:hover,
+  .utc-badge:focus {
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+  }
   .subtitle {
     font-size: 1rem;
     color: var(--text-secondary);
