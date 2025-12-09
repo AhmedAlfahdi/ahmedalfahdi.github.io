@@ -101,22 +101,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     position: relative;
   }
   .utc-badge {
-    position: absolute;
-    top: -0.4rem;
-    right: 0;
-    font-size: 0.75rem;
-    letter-spacing: 0.9px;
-    color: var(--text-muted);
+    display: block;
+    text-align: center;
+    margin: 0 auto 2rem;
+    width: fit-content;
+    font-size: 1rem;
+    letter-spacing: 1.2px;
+    color: var(--accent-primary);
     text-decoration: none;
-    padding: 0.35rem 0.65rem;
-    border: 1px solid var(--border-strong);
-    border-radius: 4px;
-    background: rgba(12, 20, 28, 0.85);
+    padding: 0.65rem 1.2rem;
+    border: 2px solid var(--accent-primary);
+    border-radius: 6px;
+    background: rgba(245, 165, 36, 0.08);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(245, 165, 36, 0.15);
+    transition: all 0.2s ease;
   }
   .utc-badge:hover,
   .utc-badge:focus {
-    color: var(--accent-primary);
-    border-color: var(--accent-primary);
+    color: #fff;
+    background: rgba(245, 165, 36, 0.15);
+    border-color: #f5a524;
+    box-shadow: 0 4px 12px rgba(245, 165, 36, 0.25);
+    transform: translateY(-1px);
   }
   .subtitle {
     font-size: 1rem;
