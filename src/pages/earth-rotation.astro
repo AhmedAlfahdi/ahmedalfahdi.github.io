@@ -47,8 +47,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <span>Rotation Axis (fixed, N/S labeled)</span>
             </div>
             <div class="legend-item">
-              <span class="legend-color" style="background: linear-gradient(90deg, #ff4444 0%, #44ff44 25%, #4444ff 50%, #ffff44 75%, #ff44ff 100%);"></span>
-              <span>Major Cities (London, NYC, Tokyo, Sydney, Cairo)</span>
+              <span class="legend-color" style="background: linear-gradient(90deg, #ff4444 0%, #44ff44 20%, #4444ff 40%, #ffff44 60%, #ff44ff 80%, #44ffff 100%);"></span>
+              <span>Major Cities (London, NYC, Tokyo, Sydney, Cairo, Muscat)</span>
             </div>
           </div>
           
@@ -62,7 +62,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </div>
         </div>
         
-        <p class="note">A 3D wireframe globe showing Earth's rotation around its axis. The prime meridian (gold line) and equator (gold ring) rotate with the Earth. The rotation axis (gray dashed line) with N and S labels remains fixed in space. Five major cities are marked with subtle colored dots to provide geographic reference.</p>
+        <p class="note">A 3D wireframe globe showing Earth's rotation around its axis. The prime meridian (gold line) and equator (gold ring) rotate with the Earth. The rotation axis (gray dashed line) with N and S labels remains fixed in space. Six major cities are marked with subtle colored dots to provide geographic reference.</p>
       </section>
 
       <section class="calc">
@@ -260,7 +260,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const meridianGeometry = new THREE.BufferGeometry().setFromPoints(meridianPoints);
       const meridianMaterial = new THREE.LineBasicMaterial({ 
         color: 0xf5a524,
-        linewidth: 3
+        linewidth: 1
       });
       const meridian = new THREE.Line(meridianGeometry, meridianMaterial);
       earth.add(meridian); // child of earth, so rotates with it
@@ -278,8 +278,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const equatorGeometry = new THREE.BufferGeometry().setFromPoints(equatorPoints);
       const equatorMaterial = new THREE.LineBasicMaterial({ 
         color: 0xf5a524,
-        linewidth: 2,
-        opacity: 0.5,
+        linewidth: 1,
+        opacity: 0.4,
         transparent: true
       });
       const equator = new THREE.Line(equatorGeometry, equatorMaterial);
@@ -300,27 +300,39 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       axis.computeLineDistances();
       scene.add(axis); // NOT a child of earth, so stays fixed
 
-      // Label markers - N and S at axis ends (subtle)
+      // Label markers - N and S at axis ends (high-res for crisp text)
       const createTextSprite = (text, color, size = 1, bold = false) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = 128;
-        canvas.height = 64;
         
-        // Subtle background
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-        ctx.fillRect(24, 12, 80, 40);
+        // High resolution for crisp rendering
+        const scale = 4; // 4x resolution
+        canvas.width = 256 * scale;
+        canvas.height = 128 * scale;
+        ctx.scale(scale, scale);
+        
+        // No background - just text with slight glow for visibility
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 8;
         
         ctx.fillStyle = color;
-        ctx.font = `${bold ? 'bold' : 'normal'} 32px monospace`;
+        ctx.font = `${bold ? '700' : '500'} 64px -apple-system, system-ui, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(text, 64, 32);
+        
+        // Anti-aliasing for smoother text
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        ctx.fillText(text, 128, 64);
         
         const texture = new THREE.CanvasTexture(canvas);
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        
         const material = new THREE.SpriteMaterial({ 
           map: texture,
-          opacity: 0.8,
+          opacity: 0.9,
           transparent: true
         });
         const sprite = new THREE.Sprite(material);
@@ -342,7 +354,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         { name: 'New York', lat: 40.7, lon: -74, color: 0x44ff44 },
         { name: 'Tokyo', lat: 35.7, lon: 139.7, color: 0x4444ff },
         { name: 'Sydney', lat: -33.9, lon: 151.2, color: 0xffff44 },
-        { name: 'Cairo', lat: 30.0, lon: 31.2, color: 0xff44ff }
+        { name: 'Cairo', lat: 30.0, lon: 31.2, color: 0xff44ff },
+        { name: 'Muscat', lat: 23.6, lon: 58.4, color: 0x44ffff }
       ];
 
       const latLonToVector3 = (lat, lon, radius) => {
@@ -368,9 +381,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         cityMarker.position.copy(pos);
         earth.add(cityMarker);
         
-        // City label - smaller and more subtle, positioned closer to avoid clipping
-        const cityLabel = createTextSprite(city.name, `#${city.color.toString(16).padStart(6, '0')}`, 0.32);
-        const labelPos = latLonToVector3(city.lat, city.lon, 1.10);
+        // City label - even smaller and closer to prevent clipping
+        const cityLabel = createTextSprite(city.name, `#${city.color.toString(16).padStart(6, '0')}`, 0.28);
+        const labelPos = latLonToVector3(city.lat, city.lon, 1.08);
         cityLabel.position.copy(labelPos);
         earth.add(cityLabel);
       });
@@ -620,13 +633,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   .globe-3d {
     position: relative;
-    width: min(600px, 100%);
+    width: min(650px, 100%);
     height: 468px;
     border: 1px solid var(--border-strong);
     background: radial-gradient(circle at 30% 30%, rgba(98,199,255,0.1), transparent 40%), #0c141c;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 24px rgba(0,0,0,0.35);
     margin: 0 auto;
-    overflow: hidden;
+    overflow: visible;
   }
   .globe-status {
     position: absolute;
