@@ -211,9 +211,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     };
 
     try {
-      // Load Three.js from CDN
-      const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.min.js')
+      // Load Three.js and OrbitControls from esm.sh (handles dependencies properly)
+      const THREE = await import('https://esm.sh/three@0.161.0')
         .then(mod => mod.default || mod);
+      
+      const { OrbitControls } = await import('https://esm.sh/three@0.161.0/examples/jsm/controls/OrbitControls.js');
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
@@ -223,6 +225,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setPixelRatio(window.devicePixelRatio || 1);
       host.appendChild(renderer.domElement);
+
+      // Add OrbitControls for interactive rotation
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true; // smooth movement
+      controls.dampingFactor = 0.05;
+      controls.enableZoom = true;
+      controls.enablePan = false; // disable panning
+      controls.minDistance = 1.5;
+      controls.maxDistance = 5;
+      controls.autoRotate = false;
 
       // Earth sphere - WIREFRAME
       const sphereGeo = new THREE.SphereGeometry(1, 32, 32);
@@ -393,12 +405,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         // Only Earth rotates (and meridian is its child)
         earth.rotation.y += dTheta;
         
+        // Update controls for smooth interaction
+        controls.update();
+        
         // axis, poles, and labels stay FIXED in space
         
         renderer.render(scene, camera);
       };
       animate();
-      status.textContent = 'Three.js render';
+      status.textContent = 'Interactive (drag to rotate)';
       status.style.color = 'var(--text-muted)';
     } catch (err) {
       status.textContent = '3D unavailable (fallback to canvas)';
