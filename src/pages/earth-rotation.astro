@@ -25,6 +25,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <h2>3D Globe (Earth rotation)</h2>
         <div id="globe-3d" class="globe-3d">
           <div class="globe-status" id="globe-status">Loading…</div>
+          <button id="fullscreen-btn" class="fullscreen-btn" title="Fullscreen (F)">⛶</button>
         </div>
         
         <div class="globe-info-row">
@@ -32,7 +33,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <div class="legend-title">Legend</div>
             <div class="legend-item">
               <span class="legend-color" style="background: #2c6ead; border: 1px solid #2c6ead;"></span>
-              <span>Wireframe Earth (rotates)</span>
+              <span>Wireframe Earth with 30° grid (rotates)</span>
             </div>
             <div class="legend-item">
               <span class="legend-color" style="background: #f5a524;"></span>
@@ -50,6 +51,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <span class="legend-color" style="background: linear-gradient(90deg, #ff4444 0%, #44ff44 20%, #4444ff 40%, #ffff44 60%, #ff44ff 80%, #44ffff 100%);"></span>
               <span>Major Cities (London, NYC, Tokyo, Sydney, Cairo, Muscat)</span>
             </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #ffcc00; box-shadow: 0 0 8px #ffcc00;"></span>
+              <span>Sun Direction (based on solar angle)</span>
+            </div>
           </div>
           
           <div class="globe-meta" id="globe-meta">
@@ -62,7 +67,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </div>
         </div>
         
-        <p class="note">A 3D wireframe globe showing Earth's rotation around its axis. The prime meridian (gold line) and equator (gold ring) rotate with the Earth. The rotation axis (gray dashed line) with N and S labels remains fixed in space. Six major cities are marked with subtle colored dots to provide geographic reference.</p>
+        <p class="note">A 3D wireframe globe showing Earth's rotation around its axis. The prime meridian (gold line) and equator (gold ring) rotate with the Earth. The rotation axis (gray dashed line) with N and S labels remains fixed in space. Six major cities are marked with subtle colored dots to provide geographic reference. The Sun (yellow sphere) shows the direction of your calculated solar angle and updates as you change the time or longitude.</p>
+        <div class="keyboard-shortcuts">
+          <strong>⌨️ Keyboard Shortcuts:</strong>
+          <span><kbd>Space</kbd> Pause/Resume</span>
+          <span><kbd>R</kbd> Reset view</span>
+          <span><kbd>F</kbd> Fullscreen</span>
+          <span><kbd>🖱️ Click</kbd> City info</span>
+        </div>
       </section>
 
       <section class="calc">
@@ -118,10 +130,118 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <section>
         <h2>UTC & UT1: Context</h2>
         <p>
-          UTC (Coordinated Universal Time) is the modern time standard that keeps atomic clocks (TAI) in sync with Earth’s rotation by adding leap seconds when needed. UT1 tracks Earth’s actual rotation; the difference DUT1 = UT1 − UTC is published by the IERS and kept within ±0.9 s by leap seconds. Historically, GMT (Greenwich Mean Time) served as a mean solar time at Greenwich; UT1 is its modern rotational counterpart, while UTC is what computers and networks use daily.
+          UTC (Coordinated Universal Time) is the modern time standard that keeps atomic clocks (TAI) in sync with Earth's rotation by adding leap seconds when needed. UT1 tracks Earth's actual rotation; the difference DUT1 = UT1 − UTC is published by the IERS and kept within ±0.9 s by leap seconds. Historically, GMT (Greenwich Mean Time) served as a mean solar time at Greenwich; UT1 is its modern rotational counterpart, while UTC is what computers and networks use daily.
         </p>
         <p>
           Key terms: TAI is the continuous atomic time scale with no leap seconds. UTC is TAI with leap seconds to stay close to UT1. UT1 is Earth-rotation time derived from observations; DUT1 is the small offset published to connect UTC to UT1. GMST/GAST are sidereal time measures for pointing telescopes and computing local hour angles; this page uses a simplified solar-angle estimate for illustration.
+        </p>
+      </section>
+
+      <section>
+        <h2>Historical Evolution of Time Standards</h2>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-year">Pre-1884</div>
+            <div class="timeline-content">
+              <h3>Local Mean Time</h3>
+              <p>Each city used its own local solar time based on the sun's position. No global coordination existed.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">1884</div>
+            <div class="timeline-content">
+              <h3>Greenwich Mean Time (GMT)</h3>
+              <p>International Meridian Conference established GMT as the world's time reference, based on mean solar time at Greenwich Observatory. The prime meridian (0° longitude) was set at Greenwich.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">1960</div>
+            <div class="timeline-content">
+              <h3>Universal Time (UT1)</h3>
+              <p>UT1 was defined as a precise measure of Earth's rotation angle, replacing GMT. Based on astronomical observations rather than the sun's apparent motion.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">1972</div>
+            <div class="timeline-content">
+              <h3>Coordinated Universal Time (UTC)</h3>
+              <p>UTC became the global time standard, based on atomic clocks (TAI) with leap seconds added to keep it synchronized with UT1. This allows for stable, precise timekeeping while staying aligned with Earth's rotation.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Sidereal vs Solar Day</h2>
+        <div class="comparison-grid">
+          <div class="comparison-card">
+            <h3>🌟 Sidereal Day</h3>
+            <div class="comparison-value">23h 56m 4.09s</div>
+            <div class="comparison-exact">86,164.09 seconds</div>
+            <p>Time for Earth to rotate 360° relative to distant stars. This is Earth's true rotation period.</p>
+          </div>
+          <div class="comparison-card">
+            <h3>☀️ Solar Day</h3>
+            <div class="comparison-value">24h 0m 0s</div>
+            <div class="comparison-exact">86,400 seconds</div>
+            <p>Time for the Sun to return to the same position in the sky. Longer because Earth moves in its orbit around the Sun.</p>
+          </div>
+        </div>
+        <p class="note">
+          The solar day is approximately 3 minutes 56 seconds longer than the sidereal day. This difference accumulates: after one year (365.25 solar days), Earth completes 366.25 sidereal rotations. The extra rotation is why we have one more sidereal day than solar days per year.
+        </p>
+        <div class="diagram-container">
+          <canvas id="day-comparison-canvas"></canvas>
+        </div>
+      </section>
+
+      <section>
+        <h2>DUT1 History & Variations</h2>
+        <p>DUT1 (the difference between UT1 and UTC) varies over time as Earth's rotation fluctuates. The IERS publishes DUT1 values, and when |DUT1| approaches 0.9 seconds, a leap second is added or removed from UTC.</p>
+        <div class="chart-container">
+          <canvas id="dut1-chart"></canvas>
+        </div>
+        <p class="note">
+          This chart shows approximate DUT1 values over recent years. Earth's rotation is slowing due to tidal friction, causing UT1 to gradually drift behind UTC. Leap seconds are inserted to keep them synchronized.
+        </p>
+      </section>
+
+      <section>
+        <h2>Leap Seconds Timeline</h2>
+        <p>Since 1972, 27 leap seconds have been added to UTC to keep it within 0.9 seconds of UT1. All have been positive (UTC paused for one second), and they typically occur on June 30 or December 31.</p>
+        <div class="leap-seconds-grid" id="leap-seconds-grid"></div>
+        <p class="note">
+          Leap seconds are controversial in computing and telecommunications because they create irregularities in otherwise uniform time. In 2022, the International Telecommunication Union voted to eliminate leap seconds by 2035, allowing UTC and UT1 to drift apart by up to one minute.
+        </p>
+      </section>
+
+      <section>
+        <h2>Earth's Rotation Variations</h2>
+        <p>Earth's rotation is not constant. The length of day (LOD) varies due to multiple factors:</p>
+        <div class="variation-grid">
+          <div class="variation-card">
+            <h3>🌊 Tidal Friction</h3>
+            <p><strong>Effect:</strong> +1.7 ms/century</p>
+            <p>Moon's gravity creates tidal bulges that slow Earth's rotation. Over geological time, days are getting longer.</p>
+          </div>
+          <div class="variation-card">
+            <h3>❄️ Glacial Rebound</h3>
+            <p><strong>Effect:</strong> -0.6 ms/century</p>
+            <p>Post-ice-age crustal rebound redistributes Earth's mass, slightly speeding up rotation (like a spinning ice skater pulling in their arms).</p>
+          </div>
+          <div class="variation-card">
+            <h3>🌍 Core-Mantle Coupling</h3>
+            <p><strong>Effect:</strong> ±1-2 ms/decade</p>
+            <p>Electromagnetic and gravitational interactions between Earth's liquid outer core and solid mantle cause irregular variations.</p>
+          </div>
+          <div class="variation-card">
+            <h3>🌪️ Atmospheric Winds</h3>
+            <p><strong>Effect:</strong> ±0.5 ms/season</p>
+            <p>Seasonal changes in atmospheric circulation transfer angular momentum, causing daily variations in Earth's rotation rate.</p>
+          </div>
+        </div>
+        <p class="note">
+          Current measurements show Earth's rotation is gradually slowing by about 1.1 milliseconds per century on average. However, recent data (2020-2024) shows Earth has been rotating slightly faster than usual, making days shorter by fractions of a millisecond.
         </p>
       </section>
     </article>
@@ -218,6 +338,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const { OrbitControls } = await import('https://esm.sh/three@0.161.0/examples/jsm/controls/OrbitControls.js');
 
       const scene = new THREE.Scene();
+      
+      // Star field background
+      const starGeometry = new THREE.BufferGeometry();
+      const starCount = 1500;
+      const starPositions = new Float32Array(starCount * 3);
+      for (let i = 0; i < starCount; i++) {
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(Math.random() * 2 - 1);
+        const radius = 15 + Math.random() * 10;
+        starPositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+        starPositions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+        starPositions[i * 3 + 2] = radius * Math.cos(phi);
+      }
+      starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+      const starMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.08,
+        transparent: true,
+        opacity: 0.8
+      });
+      const stars = new THREE.Points(starGeometry, starMaterial);
+      scene.add(stars);
+      
       const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
       camera.position.set(2.2, 2.5, 2.8);
       camera.lookAt(0, 0, 0);
@@ -285,6 +428,65 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const equator = new THREE.Line(equatorGeometry, equatorMaterial);
       earth.add(equator);
 
+      // Latitude/longitude grid lines (every 30°)
+      const gridMaterial = new THREE.LineBasicMaterial({
+        color: 0x556677,
+        transparent: true,
+        opacity: 0.15
+      });
+      
+      // Latitude lines (parallels)
+      for (let lat = -60; lat <= 60; lat += 30) {
+        if (lat === 0) continue; // Skip equator (already drawn)
+        const latPoints = [];
+        const latRad = (lat * Math.PI) / 180;
+        const latRadius = sphereRadius * Math.cos(latRad);
+        const y = sphereRadius * Math.sin(latRad);
+        for (let i = 0; i <= 64; i++) {
+          const angle = (i / 64) * Math.PI * 2;
+          latPoints.push(new THREE.Vector3(
+            latRadius * Math.cos(angle),
+            y,
+            latRadius * Math.sin(angle)
+          ));
+        }
+        const latGeometry = new THREE.BufferGeometry().setFromPoints(latPoints);
+        const latLine = new THREE.Line(latGeometry, gridMaterial);
+        earth.add(latLine);
+      }
+      
+      // Longitude lines (meridians)
+      for (let lon = 30; lon < 180; lon += 30) {
+        const lonPoints = [];
+        const lonRad = (lon * Math.PI) / 180;
+        for (let i = 0; i <= 64; i++) {
+          const lat = (i / 64) * Math.PI - Math.PI / 2;
+          lonPoints.push(new THREE.Vector3(
+            sphereRadius * Math.cos(lat) * Math.cos(lonRad),
+            sphereRadius * Math.sin(lat),
+            sphereRadius * Math.cos(lat) * Math.sin(lonRad)
+          ));
+        }
+        const lonGeometry = new THREE.BufferGeometry().setFromPoints(lonPoints);
+        const lonLine = new THREE.Line(lonGeometry, gridMaterial);
+        earth.add(lonLine);
+        
+        // Also add the negative longitude
+        const lonNegPoints = [];
+        const lonNegRad = (-lon * Math.PI) / 180;
+        for (let i = 0; i <= 64; i++) {
+          const lat = (i / 64) * Math.PI - Math.PI / 2;
+          lonNegPoints.push(new THREE.Vector3(
+            sphereRadius * Math.cos(lat) * Math.cos(lonNegRad),
+            sphereRadius * Math.sin(lat),
+            sphereRadius * Math.cos(lat) * Math.sin(lonNegRad)
+          ));
+        }
+        const lonNegGeometry = new THREE.BufferGeometry().setFromPoints(lonNegPoints);
+        const lonNegLine = new THREE.Line(lonNegGeometry, gridMaterial);
+        earth.add(lonNegLine);
+      }
+
       // Rotation axis - DASHED LINE (DOES NOT rotate - stays fixed in space)
       const axisPoints = [];
       axisPoints.push(new THREE.Vector3(0, -1.5, 0));
@@ -348,6 +550,51 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       southLabel.position.set(0, -1.65, 0);
       scene.add(southLabel);
 
+      // Sun indicator (shows solar angle direction) - DOES NOT rotate
+      const sunDistance = 3.5;
+      const sunGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+      const sunMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0xffcc00
+      });
+      const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+      
+      // Add sun glow
+      const sunGlowGeometry = new THREE.SphereGeometry(0.25, 16, 16);
+      const sunGlowMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffcc00,
+        transparent: true,
+        opacity: 0.3
+      });
+      const sunGlow = new THREE.Mesh(sunGlowGeometry, sunGlowMaterial);
+      sun.add(sunGlow);
+      
+      // Sun ray to Earth (shows solar angle connection)
+      const sunRayPoints = [];
+      sunRayPoints.push(new THREE.Vector3(0, 0, 0));
+      sunRayPoints.push(new THREE.Vector3(sunDistance, 0, 0));
+      const sunRayGeometry = new THREE.BufferGeometry().setFromPoints(sunRayPoints);
+      const sunRayMaterial = new THREE.LineBasicMaterial({
+        color: 0xffcc00,
+        transparent: true,
+        opacity: 0.4
+      });
+      const sunRay = new THREE.Line(sunRayGeometry, sunRayMaterial);
+      scene.add(sunRay);
+      
+      sun.position.set(sunDistance, 0, 0);
+      scene.add(sun);
+      
+      // Function to update sun position based on solar angle
+      window.updateSunPosition = (solarAngleDeg) => {
+        const angleRad = solarAngleDeg * Math.PI / 180;
+        sun.position.x = sunDistance * Math.cos(angleRad);
+        sun.position.z = sunDistance * Math.sin(angleRad);
+        
+        // Update sun ray
+        sunRayPoints[1].set(sun.position.x, 0, sun.position.z);
+        sunRay.geometry.setFromPoints(sunRayPoints);
+      };
+
       // Major cities as reference points (rotates with Earth)
       const cities = [
         { name: 'London', lat: 51.5, lon: 0, color: 0xff4444 },
@@ -367,6 +614,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         return new THREE.Vector3(x, y, z);
       };
 
+      const cityMarkers = [];
       cities.forEach(city => {
         const pos = latLonToVector3(city.lat, city.lon, 1.02);
         
@@ -379,7 +627,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         });
         const cityMarker = new THREE.Mesh(cityGeo, cityMat);
         cityMarker.position.copy(pos);
+        cityMarker.userData = { 
+          city: city.name, 
+          lat: city.lat, 
+          lon: city.lon, 
+          color: city.color,
+          originalScale: 1
+        };
         earth.add(cityMarker);
+        cityMarkers.push(cityMarker);
         
         // City label - even smaller and closer to prevent clipping
         const cityLabel = createTextSprite(city.name, `#${city.color.toString(16).padStart(6, '0')}`, 0.28);
@@ -428,6 +684,137 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       animate();
       status.textContent = 'Interactive (drag to rotate)';
       status.style.color = 'var(--text-muted)';
+      
+      // Raycaster for city interactions
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+      let isPaused = false;
+      
+      // City info panel
+      const cityInfo = document.createElement('div');
+      cityInfo.id = 'city-info';
+      cityInfo.style.cssText = `
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background: rgba(12, 20, 28, 0.95);
+        border: 1px solid var(--accent-primary);
+        border-radius: 8px;
+        padding: 0.75rem;
+        color: var(--text-primary);
+        font-size: 0.85rem;
+        display: none;
+        z-index: 10;
+        min-width: 180px;
+      `;
+      host.appendChild(cityInfo);
+      
+      // Click handler for city info
+      renderer.domElement.addEventListener('click', (event) => {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(cityMarkers);
+        
+        if (intersects.length > 0) {
+          const clickedCity = intersects[0].object;
+          const data = clickedCity.userData;
+          const now = new Date();
+          const utcHours = now.getUTCHours();
+          const utcMinutes = now.getUTCMinutes();
+          
+          // Calculate local solar time (simplified)
+          const localHourOffset = data.lon / 15; // 15° per hour
+          const localHour = (utcHours + localHourOffset + 24) % 24;
+          const localMinute = utcMinutes;
+          
+          // Determine day/night
+          const isDaytime = localHour >= 6 && localHour < 18;
+          
+          cityInfo.innerHTML = `
+            <div style="font-weight: 700; color: var(--accent-primary); margin-bottom: 0.4rem;">${data.city}</div>
+            <div><strong>Lat:</strong> ${data.lat.toFixed(2)}°</div>
+            <div><strong>Lon:</strong> ${data.lon.toFixed(2)}°</div>
+            <div><strong>Local solar time:</strong> ${Math.floor(localHour).toString().padStart(2, '0')}:${localMinute.toString().padStart(2, '0')}</div>
+            <div><strong>Status:</strong> ${isDaytime ? '☀️ Daytime' : '🌙 Nighttime'}</div>
+          `;
+          cityInfo.style.display = 'block';
+        }
+      });
+      
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (event) => {
+        // Space: pause/resume rotation
+        if (event.code === 'Space' && event.target.tagName !== 'INPUT') {
+          event.preventDefault();
+          isPaused = !isPaused;
+          status.textContent = isPaused ? 'Paused (Space to resume)' : 'Interactive (drag to rotate)';
+        }
+        
+        // R: reset camera view
+        if (event.code === 'KeyR') {
+          camera.position.set(2.2, 2.5, 2.8);
+          camera.lookAt(0, 0, 0);
+          controls.reset();
+        }
+        
+        // F: toggle fullscreen
+        if (event.code === 'KeyF') {
+          const globeContainer = document.getElementById('globe-3d');
+          if (globeContainer) {
+            try {
+              if (!document.fullscreenElement && 
+                  !document.webkitFullscreenElement && 
+                  !document.mozFullScreenElement) {
+                // Enter fullscreen
+                if (globeContainer.requestFullscreen) {
+                  globeContainer.requestFullscreen();
+                } else if (globeContainer.webkitRequestFullscreen) {
+                  globeContainer.webkitRequestFullscreen();
+                } else if (globeContainer.mozRequestFullScreen) {
+                  globeContainer.mozRequestFullScreen();
+                } else if (globeContainer.msRequestFullscreen) {
+                  globeContainer.msRequestFullscreen();
+                }
+              } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                  document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                  document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                  document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                  document.msExitFullscreen();
+                }
+              }
+            } catch (err) {
+              console.error('Fullscreen error:', err);
+            }
+          }
+        }
+      });
+      
+      // Update animation loop to respect pause
+      const originalAnimate = animate;
+      const pausableAnimate = function() {
+        requestAnimationFrame(pausableAnimate);
+        const delta = clock.getDelta();
+        const dTheta = omega * speedScale * delta;
+        
+        // Only rotate if not paused
+        if (!isPaused) {
+          earth.rotation.y += dTheta;
+        }
+        
+        controls.update();
+        renderer.render(scene, camera);
+      };
+      
+      // Replace the animate function
+      requestAnimationFrame(pausableAnimate);
     } catch (err) {
       status.textContent = '3D unavailable (fallback to canvas)';
       status.style.color = '#e1695d';
@@ -449,6 +836,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const liveIndicator = document.getElementById('live-indicator');
   const presetButtons = Array.from(document.querySelectorAll('.preset-buttons button'));
   let tick;
+  
+  // Load saved longitude from localStorage
+  const savedLongitude = localStorage.getItem('earth-rotation-longitude');
+  if (savedLongitude !== null) {
+    lonInput.value = savedLongitude;
+  }
 
   // Set default UTC to current time (rounded to minutes)
   const now = new Date();
@@ -492,11 +885,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const greenwichAngle = (ut1Hours * 15) % 360;
     const localAngle = ((greenwichAngle + lon) % 360 + 360) % 360;
     angleVal.textContent = `${localAngle.toFixed(2)}° (approx local solar angle)`;
+    
+    // Update sun position in 3D globe if available
+    if (window.updateSunPosition) {
+      window.updateSunPosition(localAngle);
+    }
   }
 
   utcInput.addEventListener('input', compute);
   dut1Input.addEventListener('input', compute);
-  lonInput.addEventListener('input', compute);
+  lonInput.addEventListener('input', () => {
+    // Save longitude to localStorage
+    localStorage.setItem('earth-rotation-longitude', lonInput.value);
+    compute();
+  });
   autoUtc.addEventListener('change', () => {
     if (autoUtc.checked) {
       if (!tick) tick = setInterval(compute, 1000);
@@ -522,9 +924,323 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     compute();
   });
 
+  // Fullscreen button handler
+  const fullscreenBtn = document.getElementById('fullscreen-btn');
+  const globeContainer = document.getElementById('globe-3d');
+  
+  if (fullscreenBtn && globeContainer) {
+    fullscreenBtn.addEventListener('click', async () => {
+      try {
+        if (!document.fullscreenElement && 
+            !document.webkitFullscreenElement && 
+            !document.mozFullScreenElement) {
+          // Enter fullscreen
+          if (globeContainer.requestFullscreen) {
+            await globeContainer.requestFullscreen();
+          } else if (globeContainer.webkitRequestFullscreen) {
+            await globeContainer.webkitRequestFullscreen();
+          } else if (globeContainer.mozRequestFullScreen) {
+            await globeContainer.mozRequestFullScreen();
+          } else if (globeContainer.msRequestFullscreen) {
+            await globeContainer.msRequestFullscreen();
+          }
+        } else {
+          // Exit fullscreen
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            await document.webkitExitFullscreen();
+          } else if (document.mozCancelFullScreen) {
+            await document.mozCancelFullScreen();
+          } else if (document.msExitFullscreen) {
+            await document.msExitFullscreen();
+          }
+        }
+      } catch (err) {
+        console.error('Fullscreen error:', err);
+        alert('Fullscreen not supported or blocked by browser');
+      }
+    });
+  }
+  
   // start ticking
   tick = setInterval(compute, 1000);
   compute();
+
+  // Sidereal vs Solar Day Comparison Diagram
+  const dayCanvas = document.getElementById('day-comparison-canvas');
+  if (dayCanvas) {
+    // High-DPI support
+    const dpr = window.devicePixelRatio || 1;
+    const displayW = 700;
+    const displayH = 350;
+    dayCanvas.width = displayW * dpr;
+    dayCanvas.height = displayH * dpr;
+    dayCanvas.style.width = `${displayW}px`;
+    dayCanvas.style.height = `${displayH}px`;
+    
+    const ctx = dayCanvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    
+    const w = displayW;
+    const h = displayH;
+    
+    ctx.fillStyle = '#0c141c';
+    ctx.fillRect(0, 0, w, h);
+    
+    // Draw orbit
+    const orbitCenterX = w / 2 - 50;
+    const orbitCenterY = h / 2;
+    const orbitRadius = 90;
+    
+    ctx.strokeStyle = '#556677';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.arc(orbitCenterX, orbitCenterY, orbitRadius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Draw Sun at center
+    const sunGradient = ctx.createRadialGradient(orbitCenterX, orbitCenterY, 0, orbitCenterX, orbitCenterY, 18);
+    sunGradient.addColorStop(0, '#ffcc00');
+    sunGradient.addColorStop(1, '#ff8800');
+    ctx.fillStyle = sunGradient;
+    ctx.beginPath();
+    ctx.arc(orbitCenterX, orbitCenterY, 18, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Position 1 - Start (right side of orbit)
+    const pos1X = orbitCenterX + orbitRadius;
+    const pos1Y = orbitCenterY;
+    
+    // Draw Earth at position 1
+    ctx.fillStyle = '#2c6ead';
+    ctx.beginPath();
+    ctx.arc(pos1X, pos1Y, 14, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Arrow pointing to distant star
+    ctx.strokeStyle = '#cccccc';
+    ctx.fillStyle = '#cccccc';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(pos1X + 18, pos1Y - 45);
+    ctx.lineTo(pos1X + 18, pos1Y - 80);
+    ctx.stroke();
+    // Arrowhead
+    ctx.beginPath();
+    ctx.moveTo(pos1X + 18, pos1Y - 80);
+    ctx.lineTo(pos1X + 13, pos1Y - 75);
+    ctx.lineTo(pos1X + 23, pos1Y - 75);
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.font = '13px sans-serif';
+    ctx.fillStyle = '#cccccc';
+    ctx.textAlign = 'center';
+    ctx.fillText('To Star', pos1X + 18, pos1Y - 88);
+    
+    // Position 2 - After sidereal day (360° rotation)
+    const angle2 = (360 / 365.25) * Math.PI / 180; // Earth moves in orbit
+    const pos2X = orbitCenterX + orbitRadius * Math.cos(angle2);
+    const pos2Y = orbitCenterY - orbitRadius * Math.sin(angle2);
+    
+    ctx.fillStyle = '#5588cc';
+    ctx.beginPath();
+    ctx.arc(pos2X, pos2Y, 14, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Arrow to star (parallel to first)
+    ctx.strokeStyle = '#88ccff';
+    ctx.fillStyle = '#88ccff';
+    ctx.beginPath();
+    ctx.moveTo(pos2X + 18, pos2Y - 45);
+    ctx.lineTo(pos2X + 18, pos2Y - 80);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(pos2X + 18, pos2Y - 80);
+    ctx.lineTo(pos2X + 13, pos2Y - 75);
+    ctx.lineTo(pos2X + 23, pos2Y - 75);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Arrow to Sun (slightly different angle)
+    ctx.strokeStyle = '#ffaa00';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(pos2X, pos2Y);
+    ctx.lineTo(orbitCenterX, orbitCenterY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Labels - positioned to right side to avoid overlap
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillStyle = '#f5a524';
+    ctx.textAlign = 'left';
+    
+    // Day 0 label on right
+    ctx.fillText('Day 0', w - 160, 60);
+    
+    // After sidereal day label on right (below Day 0)
+    ctx.fillText('After 1 sidereal day', w - 200, 110);
+    ctx.font = '14px sans-serif';
+    ctx.fillStyle = '#88ccff';
+    ctx.fillText('(23h 56m 4s)', w - 200, 128);
+    
+    // Bottom explanation
+    ctx.fillStyle = '#cccccc';
+    ctx.textAlign = 'center';
+    ctx.font = '14px sans-serif';
+    ctx.fillText('Earth must rotate ~4 more minutes', w / 2, h - 35);
+    ctx.fillText('for Sun to return to same position', w / 2, h - 18);
+  }
+
+  // DUT1 Historical Chart
+  const dut1Canvas = document.getElementById('dut1-chart');
+  if (dut1Canvas) {
+    // High-DPI support
+    const dpr = window.devicePixelRatio || 1;
+    const displayW = 700;
+    const displayH = 350;
+    dut1Canvas.width = displayW * dpr;
+    dut1Canvas.height = displayH * dpr;
+    dut1Canvas.style.width = `${displayW}px`;
+    dut1Canvas.style.height = `${displayH}px`;
+    
+    const ctx = dut1Canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    
+    const w = displayW;
+    const h = displayH;
+    const padding = 50;
+    const graphW = w - 2 * padding;
+    const graphH = h - 2 * padding;
+    
+    // Sample DUT1 data (approximate values from IERS)
+    const data = [
+      { year: 2015, dut1: 0.3 },
+      { year: 2016, dut1: 0.1 },
+      { year: 2017, dut1: -0.2 },
+      { year: 2017.5, dut1: 0.9 }, // Leap second added, jumps back up
+      { year: 2018, dut1: 0.3 },
+      { year: 2019, dut1: 0.0 },
+      { year: 2020, dut1: -0.2 },
+      { year: 2021, dut1: -0.3 },
+      { year: 2022, dut1: -0.5 },
+      { year: 2023, dut1: -0.6 },
+      { year: 2024, dut1: -0.4 },
+      { year: 2025, dut1: -0.2 }
+    ];
+    
+    ctx.fillStyle = '#0c141c';
+    ctx.fillRect(0, 0, w, h);
+    
+    // Draw axes
+    ctx.strokeStyle = '#556677';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, h - padding);
+    ctx.lineTo(w - padding, h - padding);
+    ctx.stroke();
+    
+    // Draw zero line
+    ctx.strokeStyle = '#f5a524';
+    ctx.setLineDash([4, 4]);
+    const zeroY = padding + graphH / 2;
+    ctx.beginPath();
+    ctx.moveTo(padding, zeroY);
+    ctx.lineTo(w - padding, zeroY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Draw +0.9s and -0.9s threshold lines
+    ctx.strokeStyle = '#e1695d';
+    ctx.setLineDash([2, 2]);
+    const posThreshY = padding + graphH * (1 - 0.9) / 2;
+    const negThreshY = padding + graphH * (1 + 0.9) / 2;
+    ctx.beginPath();
+    ctx.moveTo(padding, posThreshY);
+    ctx.lineTo(w - padding, posThreshY);
+    ctx.moveTo(padding, negThreshY);
+    ctx.lineTo(w - padding, negThreshY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Labels
+    ctx.font = '12px sans-serif';
+    ctx.fillStyle = '#cccccc';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('+0.9s', padding - 5, posThreshY);
+    ctx.fillText('0s', padding - 5, zeroY);
+    ctx.fillText('-0.9s', padding - 5, negThreshY);
+    
+    // Draw data line
+    ctx.strokeStyle = '#2c6ead';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    data.forEach((point, i) => {
+      const x = padding + ((point.year - 2015) / (2025 - 2015)) * graphW;
+      const y = padding + graphH / 2 - (point.dut1 * graphH / 2);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    
+    // Draw data points
+    ctx.fillStyle = '#5588cc';
+    data.forEach(point => {
+      const x = padding + ((point.year - 2015) / (2025 - 2015)) * graphW;
+      const y = padding + graphH / 2 - (point.dut1 * graphH / 2);
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    
+    // X-axis labels
+    ctx.fillStyle = '#cccccc';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for (let year = 2015; year <= 2025; year += 2) {
+      const x = padding + ((year - 2015) / (2025 - 2015)) * graphW;
+      ctx.fillText(year.toString(), x, h - padding + 5);
+    }
+    
+    // Title
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('DUT1 (UT1 - UTC) Over Time', w / 2, padding - 20);
+    
+    // Note about leap second
+    ctx.font = '11px sans-serif';
+    ctx.fillStyle = '#f5a524';
+    ctx.textAlign = 'left';
+    ctx.fillText('Leap second added →', padding + graphW * 0.25, posThreshY - 10);
+  }
+
+  // Leap Seconds Grid
+  const leapSecondsGrid = document.getElementById('leap-seconds-grid');
+  if (leapSecondsGrid) {
+    const leapSeconds = [
+      '1972-06-30', '1972-12-31', '1973-12-31', '1974-12-31', '1975-12-31',
+      '1976-12-31', '1977-12-31', '1978-12-31', '1979-12-31', '1981-06-30',
+      '1982-06-30', '1983-06-30', '1985-06-30', '1987-12-31', '1989-12-31',
+      '1990-12-31', '1992-06-30', '1993-06-30', '1994-06-30', '1995-12-31',
+      '1997-06-30', '1998-12-31', '2005-12-31', '2008-12-31', '2012-06-30',
+      '2015-06-30', '2016-12-31'
+    ];
+    
+    leapSeconds.forEach(date => {
+      const item = document.createElement('div');
+      item.className = 'leap-second-item';
+      item.textContent = date;
+      leapSecondsGrid.appendChild(item);
+    });
+  }
 </script>
 
 <style>
@@ -650,6 +1366,52 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     background: rgba(0,0,0,0.5);
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
+    z-index: 10;
+  }
+  .fullscreen-btn {
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border-strong);
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s;
+  }
+  .fullscreen-btn:hover {
+    background: rgba(245, 165, 36, 0.3);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+  }
+  .keyboard-shortcuts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    font-size: 0.85rem;
+  }
+  .keyboard-shortcuts strong {
+    color: var(--accent-primary);
+  }
+  .keyboard-shortcuts kbd {
+    display: inline-block;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+    margin-right: 0.3rem;
   }
   .globe-info-row {
     display: grid;
@@ -720,6 +1482,176 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
     .globe-info-row {
       grid-template-columns: 1fr;
+    }
+  }
+
+  /* Timeline styles */
+  .timeline {
+    display: grid;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-left: 3px solid var(--accent-primary);
+    border-radius: 4px;
+  }
+  .timeline-year {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    text-align: center;
+  }
+  .timeline-content h3 {
+    margin: 0 0 0.5rem;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+  }
+  .timeline-content p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+
+  /* Comparison grid */
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .comparison-card {
+    padding: 1.5rem;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-strong);
+    border-radius: 8px;
+    text-align: center;
+  }
+  .comparison-card h3 {
+    margin: 0 0 0.75rem;
+    color: var(--accent-primary);
+    font-size: 1.2rem;
+  }
+  .comparison-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    margin-bottom: 0.25rem;
+  }
+  .comparison-exact {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    margin-bottom: 1rem;
+  }
+  .comparison-card p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+
+  /* Diagram container */
+  .diagram-container {
+    display: flex;
+    justify-content: center;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+  }
+  .diagram-container canvas {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Chart container */
+  .chart-container {
+    display: flex;
+    justify-content: center;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+  }
+  .chart-container canvas {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Leap seconds grid */
+  .leap-seconds-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+  }
+  .leap-second-item {
+    padding: 0.6rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    transition: all 0.2s;
+  }
+  .leap-second-item:hover {
+    border-color: var(--accent-primary);
+    background: rgba(245, 165, 36, 0.1);
+  }
+
+  /* Variation grid */
+  .variation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .variation-card {
+    padding: 1.25rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+  }
+  .variation-card h3 {
+    margin: 0 0 0.5rem;
+    color: var(--accent-primary);
+    font-size: 1.1rem;
+  }
+  .variation-card p {
+    margin: 0.4rem 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+  .variation-card strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    .timeline-item {
+      grid-template-columns: 80px 1fr;
+      gap: 1rem;
+    }
+    .timeline-year {
+      font-size: 1.2rem;
+    }
+    .comparison-grid {
+      grid-template-columns: 1fr;
+    }
+    .variation-grid {
+      grid-template-columns: 1fr;
+    }
+    .leap-seconds-grid {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     }
   }
 </style>
