@@ -1,53 +1,219 @@
 ---
-title: "Obsidian & MDX Guide"
-description: "A guide to using Obsidian features and manual MDX enhancements."
-date: 2025-11-24
-tags: ["obsidian", "guide", "mdx"]
+title: "Website Architecture & Technology Choices"
+description: "Technical overview of the technology stack, architecture decisions, and rationale behind this website."
+date: 2025-11-01
+tags: ["architecture", "technical", "astro", "mdx", "threejs"]
 ---
 
-import PDFViewer from '../../components/PDFViewer.astro';
-import Mermaid from '../../components/Mermaid.astro';
 
-# Obsidian & MDX Guide
+## Core Technology Stack
 
-This website supports many Obsidian features out of the box, plus the ability to add custom React/Astro components.
+### Astro - Static Site Generator
 
-## Obsidian Features
+**Why Astro?**
 
-### Math Equations
-LaTeX math is supported automatically:
-$$
-e^{i\pi} + 1 = 0
-$$
+Astro was chosen as the primary framework for several compelling reasons:
 
-### Mermaid Diagrams
-Use the `<Mermaid>` component for diagrams:
+1. **Island Architecture**: Astro's component island architecture allows shipping zero JavaScript by default, with the ability to hydrate only interactive components. This is crucial for a content-heavy site where most pages are static but some sections (like 3D models) require interactivity.
 
-<Mermaid chart={`
-graph TD
-    A[Obsidian] -->|Export| B(MDX)
-    B -->|Build| C{Astro}
-    C -->|Deploy| D[Website]
-`} />
+2. **Performance First**: Astro generates static HTML at build time, resulting in extremely fast page loads. Pages load instantly because there's no JavaScript framework overhead - just pure HTML and CSS.
 
-### Callouts
-> [!TIP]
-> This is a tip callout from Obsidian!
+3. **Framework Agnostic**: While this site primarily uses vanilla JavaScript and Astro components, the framework supports React, Vue, Svelte, and others if needed. This flexibility is valuable for future expansion.
 
-## Manual Enhancements
+4. **Content Collections**: Astro's content collections provide type-safe frontmatter validation and automatic routing for markdown files. This makes managing notes, career entries, and projects straightforward and maintainable.
 
-### Embedding PDFs
-You can embed PDF documents directly in your notes:
+5. **Built-in Markdown/MDX Support**: Native support for both Markdown and MDX means content can be written in plain text while still allowing component embeds where needed.
 
-<PDFViewer 
-  src="/pdfs/20000096503.pdf" 
-  title="Sample Document" 
-  height="500px" 
-/>
+**Trade-offs**: Astro is primarily for static sites. Dynamic server-side rendering requires adapters, but this is acceptable since the site is deployed to GitHub Pages as static files.
 
-### Usage
-```astro
-import PDFViewer from '../../components/PDFViewer.astro';
+### MDX - Enhanced Markdown
 
-<PDFViewer src="/pdfs/my-doc.pdf" />
+**Why MDX?**
+
+MDX extends Markdown with the ability to import and use components directly in content files:
+
+1. **Best of Both Worlds**: Write content in Markdown's simple syntax while embedding interactive components (3D models, diagrams, calculators) where needed.
+
+2. **Component Reusability**: Complex features like 3D model viewers, Mermaid diagrams, and math renderers are written once as components and reused across all notes.
+
+3. **Type Safety**: MDX integrates with TypeScript, providing autocomplete and type checking for component props.
+
+4. **Obsidian Compatibility**: MDX files are still readable in Obsidian. While Obsidian doesn't render the components, the markdown content remains fully accessible.
+
+**Example Use Case**: The JWL equation note uses pure Markdown for math equations, while the stress-strain demo could embed an interactive Plotly component - both in the same content system.
+
+### Three.js - 3D Graphics
+
+**Why Three.js?**
+
+Three.js is the de-facto standard for WebGL in browsers:
+
+1. **WebGL Abstraction**: Three.js provides a clean API over raw WebGL, which would require thousands of lines of boilerplate code otherwise.
+
+2. **Ecosystem**: Massive ecosystem of loaders (GLTF, OBJ), controls (OrbitControls), and post-processing effects.
+
+3. **Performance**: Hardware-accelerated 3D rendering runs at 60 FPS even on mobile devices with proper optimization.
+
+4. **Educational Value**: The Earth rotation page demonstrates advanced Three.js techniques:
+   - Procedural geometry generation (sphere, lines, grids)
+   - Custom materials and shaders
+   - Text sprite rendering with high-DPI support
+   - Animation loops with frame-rate independence
+   - Interactive camera controls
+
+**Optimization Strategy**: This site implements aggressive disposal and lazy loading for Three.js scenes to stay within mobile browser WebGL context limits (typically 8-16 contexts).
+
+### KaTeX - Math Rendering
+
+**Why KaTeX over MathJax?**
+
+1. **Speed**: KaTeX is 10-100x faster than MathJax because it doesn't use a full TeX parser.
+
+2. **No JavaScript Required**: KaTeX can render at build time on the server, delivering pre-rendered math as HTML/CSS with zero client-side JavaScript.
+
+3. **Smaller Bundle**: KaTeX's CSS-based rendering results in much smaller bundle sizes compared to MathJax.
+
+4. **SSR Compatible**: Works perfectly with Astro's server-side rendering, generating static HTML for all equations.
+
+**Trade-off**: KaTeX supports ~95% of LaTeX math commands. For the remaining 5% (rare advanced features), MathJax would be needed, but this hasn't been an issue for mechanical engineering equations.
+
+## Architecture Decisions
+
+### Content Structure
+
+The site uses Astro's content collections with MDX:
+
 ```
+src/content/
+├── notes/        # Technical notes and knowledge base
+├── career/       # Professional experience
+└── projects/     # Personal projects
+```
+
+**Benefits**:
+- Type-safe frontmatter (title, date, tags validated at build time)
+- Automatic routing and URL generation
+- Easy querying and filtering by tags or date
+- Clear separation of concerns
+
+### Rendering Strategy
+
+**Build-Time Rendering (SSG)**:
+- All markdown content rendered to static HTML at build time
+- Math equations processed with KaTeX during build
+- Mermaid diagrams converted to SVG
+- Zero JavaScript shipped for pure content pages
+
+**Client-Side Hydration (Islands)**:
+- 3D models hydrated only when visible (IntersectionObserver)
+- Interactive calculators load JavaScript only on relevant pages
+- UTC clock updates in real-time with minimal JavaScript
+
+### Performance Optimizations
+
+1. **WebGL Context Management**: 
+   - Lazy initialization when component enters viewport
+   - Aggressive disposal when scrolling away
+   - Prevents exceeding browser's WebGL context limit on mobile
+
+2. **High-DPI Canvas Rendering**:
+   - All canvas elements scale by `devicePixelRatio`
+   - Ensures crisp rendering on Retina/4K displays
+   - Applied to diagrams, charts, and text sprites
+
+3. **Frame Rate Control**:
+   - 60 FPS cap prevents GPU overload
+   - Delta time-based animations ensure consistent speed
+   - Pause animations for off-screen content
+
+4. **Bundle Optimization**:
+   - Three.js loaded from CDN with local fallback
+   - Code splitting per page (Earth rotation Three.js only loads on that page)
+   - Minimal global JavaScript
+
+### Deployment Pipeline
+
+**GitHub Pages with GitHub Actions**:
+
+The site deploys automatically on every push to main:
+
+1. GitHub Actions triggers on push
+2. Node.js environment set up
+3. Dependencies installed (`npm ci`)
+4. Astro builds static site (`npm run build`)
+5. Output deployed to `gh-pages` branch
+6. GitHub Pages serves the static files
+
+**Why GitHub Pages?**:
+- Free hosting for static sites
+- Automatic HTTPS
+- Global CDN distribution
+- Version control integration
+- No server maintenance required
+
+## Design Philosophy
+
+### Progressive Enhancement
+
+The site works on a spectrum:
+
+1. **Baseline**: Pure HTML/CSS works everywhere (even with JavaScript disabled)
+2. **Enhanced**: JavaScript adds interactivity (3D models, calculators)
+3. **Advanced**: WebGL provides immersive 3D experiences where supported
+
+### Content First
+
+Technology serves the content, not the other way around:
+
+- Notes are written in plain Markdown (readable anywhere)
+- Components enhance but don't replace content
+- Fallbacks ensure degraded functionality on older browsers
+
+### Performance Budget
+
+Every feature is evaluated against performance cost:
+
+- Is this worth the JavaScript bytes?
+- Can it be done at build time instead of runtime?
+- Does it work on mobile devices?
+
+## Future Considerations
+
+### Potential Additions
+
+1. **Search**: Pagefind or Lunr.js for full-text search across notes
+2. **Dark Mode**: CSS custom properties already structured for easy theming
+3. **RSS Feed**: Astro has built-in RSS generation for blog posts
+4. **Analytics**: Privacy-focused analytics (Plausible or GoatCounter)
+
+### Scalability
+
+The current architecture scales well:
+
+- **Content**: Adding notes is just creating new MDX files
+- **Features**: Component-based architecture makes adding features isolated
+- **Performance**: Static generation means page count doesn't affect build time significantly
+
+## Technical Highlights
+
+
+### Obsidian Integration
+
+Custom remark plugin (`remark-wikilinks.mjs`) transforms Obsidian syntax:
+
+```javascript
+// [[Note Name]] → <a href="/notes/note-name">Note Name</a>
+```
+
+This allows writing notes in Obsidian while maintaining full compatibility with the website's routing system.
+
+## Conclusion
+
+This website is built on modern, performant technologies chosen for specific technical reasons:
+
+- **Astro**: Maximum performance through static generation
+- **MDX**: Content flexibility with component power
+- **Three.js**: Professional-grade 3D rendering
+- **KaTeX**: Fast, server-side math rendering
+
+The architecture prioritizes performance, maintainability, and user experience while remaining simple enough for one person to maintain. Each technology choice solves a specific problem without introducing unnecessary complexity.
