@@ -1,0 +1,248 @@
+---
+title: "Hot-spot Theory"
+description: "Detailed examination of the statistical hot spot model for shock initiation and detonation in high explosives, including probabilistic formulation, model parameters, numerical simulation results, and physical interpretation."
+date: 2025-12-10
+tags: [
+  "physics",
+  "explosives",
+  "equation-of-state",
+  "thermodynamics",
+  "detonation",
+  "shock-initiation",
+  "hot-spot-model",
+  "reactive-flow",
+  "hydrodynamics",
+  "numerical-simulation",
+  "statistical-model"
+]
+---
+
+
+## Statistical Hot Spot Reactive Flow Model for High Explosives Initiation
+
+The document presents a comprehensive mathematical framework for modeling shock initiation and detonation in solid high explosives through a statistical hot spot approach developed for the ALE3D hydrodynamic code.
+
+> [!SeeAlso]
+> [JWL Equation of State](/notes/JWL)
+
+### Physical Basis and Motivation
+
+Traditional phenomenological models like Ignition and Growth and Johnson-Tang-Forest (JTF) depend on average compressions and pressures rather than local hot spot temperatures, making them inadequate for phenomena like shock desensitization. The statistical hot spot model addresses this limitation by tracking temperature-dependent chemical decomposition across thousands of individual hot spots, accounting for their formation, growth, or failure through thermal conduction.
+
+### Mathematical Formulation
+
+#### Probabilistic Foundation
+
+The model begins with probability theory to describe the spatial distribution of reacting hot spots. For a single hot spot of radius $R$ in volume $V$, the probability of reaction at a given location is:
+
+$$
+P = \frac{4\pi R^3}{3V}
+$$
+
+For $N_R$ independently distributed hot spots, the probability that a location has **not** reacted becomes:
+
+$$
+P_{nr} = \left(1 - \frac{4\pi R^3}{3V}\right)^{N_R}
+$$
+
+Taking the continuous limit where volume becomes large but hot spot density $\rho(R)$ remains fixed:
+
+$$
+P_{nr}(R) = \exp\left(-\frac{4\pi}{3}R^3\rho(R)\right)
+$$
+
+For multiple hot spot radii, the combined non-reaction probability is:
+
+$$
+P_{nr} = \exp\left(-\frac{4\pi}{3}\int R^3\rho(R)dR\right)
+$$
+
+This probabilistic formulation directly connects to reactive flow models, where the probability of not reacting equals the mass fraction of unreacted explosive.
+
+### Hot Spot Density Evolution
+
+The probability density of hot spots is decomposed into active (growing) and dead (stopped) populations:
+
+$$
+\rho(R,t) = \rho_A(R,t) + \rho_D(R,t)
+$$
+
+where:
+
+$$
+\rho_A(R,t) = \int_0^t d\alpha \, \rho_s(\alpha,t)\delta\left(R - \epsilon - \int_\alpha^t v\right)
+$$
+
+$$
+\rho_D(R,t) = \int_0^t d\alpha \int_\alpha^t d\omega \, \rho_s(\alpha,\omega)\delta\left(R - \epsilon - \int_\alpha^\omega v\right)
+$$
+
+Here $\rho_s(\alpha,\omega)$ is the number density of hot spots that ignited at time $\alpha$ and died at time $\omega$, $\epsilon$ is the initial hot spot size, and $v$ is the burn velocity.
+
+### Governing Differential Equations
+
+Key projections of the density function are defined:
+
+$$
+h(t) = \frac{4\pi}{3}\int_0^\infty dR \, R^3\rho(R,t)
+$$
+
+$$
+g(t) = 4\pi\int_0^\infty dR \, R^2\rho_A(R,t)
+$$
+
+$$
+f(t) = 2\pi\int_0^\infty dR \, R\rho_A(R,t)
+$$
+
+$$
+\rho_A(t) = \int_0^t d\alpha \int_t^\infty d\omega \, \rho_s(\alpha,\omega)
+$$
+
+$$
+\rho_s(t) = \int_t^\infty d\omega \, \rho_s(t,\omega)
+$$
+
+These yield the coupled differential equation system:
+
+$$
+\frac{dh}{dt} = 4v(t)g(t) + \frac{4\pi\epsilon^3\rho_s(t)}{3}
+$$
+
+$$
+\frac{dg}{dt} = 2v(t)f(t) + 4\pi\epsilon^2\rho_s(t) - \mu(t)g(t)
+$$
+
+$$
+\frac{df}{dt} = 2v(t)\rho_A(t) + 2\pi\epsilon\rho_s(t) - \mu(t)f(t)
+$$
+
+$$
+\frac{d\rho_A}{dt} = \rho_s(t) - \mu(t)\rho_A(t)
+$$
+
+where $v(t)$ is the burn velocity and $\mu(t)$ is the hot spot death rate.
+
+### Ignition Model
+
+Hot spot formation requires overcoming material strength. The phenomenological ignition rate is:
+
+$$
+K = \frac{AP(P - P_0)H(P - P_0)}{P^* + P - P_0}
+$$
+
+where $P_0$ is the ignition threshold pressure (related to yield strength), $P^*$ is the saturation pressure, $A$ is the pre-factor, and $H$ is the Heaviside step function.
+
+The evolution of potential hot spots $\rho_p$ and their activation is:
+
+$$
+\frac{d\rho_p}{dt} = -\rho_p K
+$$
+
+$$
+\rho_s = \rho_p(K - D)H(K - D)
+$$
+
+where $D$ is the constant death rate for potential hot spots that fail to ignite.
+
+### Physical Parameter Interpretation
+
+Through heuristic arguments assuming initial hot spot volume equals initial void volume with density $\rho_v$:
+
+$$
+\rho_{p0} \approx \frac{3}{4\pi\epsilon^3\rho_v}
+$$
+
+For complete consumption in reaction zone time $\tau$:
+
+$$
+\rho_{p1} \approx \frac{3}{4\pi(\epsilon + v\tau)^3\rho_v}
+$$
+
+The ignition pre-factor relates to void collapse dynamics. For collapse rate proportional to void radius and particle velocity $u$, using adiabatic compressibility:
+
+$$
+\dot{R} \approx \frac{u}{2\epsilon} \approx \frac{P - P_0}{2\epsilon\rho_0 c}
+$$
+
+yielding:
+
+$$
+A \approx \frac{1}{2\epsilon\rho_0 c}
+$$
+
+where $\rho_0$ is initial density and $c$ is reference sound speed.
+
+### Equation of State
+
+The unreacted explosive is described by the Jones-Wilkins-Lee (JWL) equation of state:
+
+$$
+P = A\left(1 - \frac{\omega}{R_1V}\right)e^{-R_1V} - B\left(1 - \frac{\omega}{R_2V}\right)e^{-R_2V} + \frac{\omega E}{V}
+$$
+
+For HMX-based explosives: initial density = 1.85 g/cm³, $R_1 = 14.1$, $R_2 = 1.41$, $\omega = 0.8938$, $A = 9522$ Mbar, $B = 0.05944$ Mbar. Reaction products use LEOS tables from CHEETAH chemical equilibrium calculations, with pressure equilibrium assumed between unreacted and product phases.
+
+### Model Parameters for HMX
+
+Eight key parameters control the model behavior:
+
+- **$P_0$**: Ignition threshold pressure = 0.1 GPa (related to yield strength)
+- **$P^*$**: Saturation pressure = 10 GPa
+- **$A$**: Ignition pre-factor ≈ 2000 cm-μs/g
+- **$\mu$**: Hot spot death rate = 5 μs⁻¹
+- **$v$**: Burn velocity (pressure-dependent, from strand burner experiments)
+- **$D$**: Potential hot spot death rate = 11.3
+- **$\rho_{p0}$**: Initial potential hot spot density = 1.4 × 10¹⁰ cm⁻³
+- **$\epsilon$**: Initial hot spot diameter = 1.5 × 10⁻⁴ cm (1.5 μm)
+
+
+### Burn Rate Functions
+
+Two experimental burn rate regimes are implemented. Low-pressure strand burner data shows burn rates from 1.016 × 10⁻⁷ cm/μs at 0.0001 GPa to 4.441 × 10⁻³ cm/μs at 1 GPa. High-pressure diamond anvil cell (DAC) measurements yield much faster rates: 2.35 × 10⁻⁷ cm/s at 0.0001 GPa up to 0.9852 cm/s at 200 GPa.
+
+### Computational Results
+
+#### Shock Initiation
+
+Simulations of HMX blocks driven into solid walls at various velocities demonstrate realistic buildup to detonation. For impact velocities from 0.18 to 2.4 mm/μs, reaction completion times ranged from 2.51 to 0.29 μs, with detonation velocity reaching the correct 8.8 mm/μs.
+
+**Sensitivity to parameters**:
+
+- Reducing death rate $\mu$ from 5 to 1 decreased reaction time from 2.51 to 1.76 μs; increasing to 10 prevented full reaction
+- Lowering $D$ from 11.3 to 1.13 accelerated reaction; raising to 22.6 prevented reaction entirely
+
+
+#### Particle Size Effects
+
+The model captures the critical dependence on particle size distributions:
+
+- Decreasing hot spot density by 10× ($\rho_p = 1.4 \times 10^9$ cm⁻³) reduced fraction reacted to 0.0523 after 4.09 μs
+- Increasing density 10× ($\rho_p = 1.4 \times 10^{11}$ cm⁻³) achieved 0.976 fraction reacted in just 0.114 μs
+
+Hot spot diameter effects show smaller sites require longer times:
+
+- 3.0 μm: 0.979 reacted in 0.29 μs
+- 1.5 μm: 0.954 reacted in 1.92 μs
+- 0.6 μm: 0.0322 reacted in 10.52 μs
+
+With DAC burn rates, even 0.15 μm hot spots achieve complete reaction in 2.97 μs.
+
+#### Shock Desensitization
+
+The model successfully reproduces the Campbell-Travis shock desensitization phenomenon. When a weak shock (0.7-2.4 GPa for PBX 9404) preconditions the explosive by collapsing potential hot spots without triggering sustained growth, a subsequent detonation wave fails to propagate through the pre-compressed region. Simulations show pressure waves continuing through desensitized material while reaction fronts halt, matching experimental observations.
+
+### Theoretical Advantages
+
+The statistical approach enables modeling of scenarios impossible for traditional pressure-dependent models:
+
+1. **Initial temperature effects** on sensitivity without reparameterization
+2. **Particle size distribution** variations and their impact on shock sensitivity
+3. **Shock desensitization** and pre-conditioning effects
+4. **Multiple wave interactions** without numerical instabilities at high-pressure collision zones
+
+The model's foundation in hot spot number density and temperature-dependent kinetics provides physically realistic predictions across diverse conditions while maintaining computational efficiency through statistical averaging over thousands of individual hot spots.
+
+
+### Reference
+Nichols, A.L. and Tarver, C.M. (2002). "A Statistical Hot Spot Reactive Flow Model for Shock Initiation and Detonation of Solid High Explosives." UCRL-JC-145031, Lawrence Livermore National Laboratory, presented at 12th International Detonation Symposium, San Diego, California.
