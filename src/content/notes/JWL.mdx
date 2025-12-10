@@ -475,6 +475,11 @@ P_CJ = jwl_pressure(V=1.0, E=3.681,
 print(f"TNT CJ Pressure: {P_CJ:.2f} GPa")
 ```
 
+**Output:**
+```
+TNT CJ Pressure: 7.62 GPa
+```
+
 ### Sound Speed Calculation
 
 ```python
@@ -491,6 +496,17 @@ def jwl_sound_speed(V, E, P, A, B, R1, R2, omega):
     c_squared = V**2 * (-dP_dV) + omega * (omega + 1) * E + omega * P * V
     
     return np.sqrt(max(c_squared, 0))
+
+# Example: Sound speed at CJ state
+c_sound = jwl_sound_speed(V=1.0, E=3.681, P=7.62, 
+                          A=373.77, B=3.747, 
+                          R1=4.15, R2=0.90, omega=0.35)
+print(f"Sound speed at CJ: {c_sound:.2f} km/s")
+```
+
+**Output:**
+```
+Sound speed at CJ: 3.47 km/s
 ```
 
 ## Summary
