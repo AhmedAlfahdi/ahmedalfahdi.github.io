@@ -3,7 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
 const career = await getCollection('career');
-const sortedCareer = career.sort((a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf());
+const timelineCareer = career.filter(job => !job.data.excludeFromTimeline);
+const sortedCareer = timelineCareer.sort((a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf());
 ---
 
 <BaseLayout title="Career & Experience">
@@ -28,6 +29,17 @@ const sortedCareer = career.sort((a, b) => b.data.startDate.valueOf() - a.data.s
           </div>
         </div>
       ))}
+    </div>
+    
+    <div class="additional-section">
+      <h2>Additional Information</h2>
+      <a href="/career/certifications-permits" class="info-card">
+        <div class="card-icon">[+]</div>
+        <div class="card-content">
+          <h3>Certifications & Professional Permits</h3>
+          <p>Safety certifications, technical training, and industry standards compliance documentation.</p>
+        </div>
+      </a>
     </div>
   </div>
 </BaseLayout>
@@ -93,6 +105,59 @@ const sortedCareer = career.sort((a, b) => b.data.startDate.valueOf() - a.data.s
     font-family: var(--font-mono);
   }
 
+  .additional-section {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-light);
+  }
+
+  .additional-section h2 {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 1.2rem;
+  }
+
+  .info-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+  }
+
+  .info-card:hover {
+    border-color: var(--accent-primary);
+    transform: translateX(4px);
+  }
+
+  .card-icon {
+    font-family: var(--font-mono);
+    font-size: 2rem;
+    color: var(--accent-secondary);
+    font-weight: bold;
+    min-width: 3rem;
+    text-align: center;
+  }
+
+  .card-content h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+  }
+
+  .card-content p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
   @media (max-width: 768px) {
     .timeline {
       padding-left: 1.25rem;
@@ -114,6 +179,17 @@ const sortedCareer = career.sort((a, b) => b.data.startDate.valueOf() - a.data.s
     }
     .job-card h2 {
       font-size: 1.05rem;
+    }
+    .additional-section {
+      margin-top: 3rem;
+    }
+    .info-card {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .card-icon {
+      font-size: 1.5rem;
     }
   }
 </style>

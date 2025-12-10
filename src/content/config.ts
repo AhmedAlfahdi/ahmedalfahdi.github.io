@@ -45,6 +45,7 @@ const career = defineCollection({
     endDate: z.date().optional(),
     current: z.boolean().default(false),
     location: z.string().optional(),
+    excludeFromTimeline: z.boolean().default(false),
   }),
 });
 
