@@ -4,6 +4,9 @@ import { getCollection } from 'astro:content';
 
 const notes = await getCollection('notes');
 const sortedNotes = notes.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+// Extract all unique tags
+const allTags = [...new Set(notes.flatMap(note => note.data.tags || []))].sort();
 ---
 
 <BaseLayout title="Notes">
@@ -11,16 +14,38 @@ const sortedNotes = notes.sort((a, b) => b.data.date.valueOf() - a.data.date.val
     <h1>Notes</h1>
     <p class="intro">Personal knowledge base and observations.</p>
     
+    {allTags.length > 0 && (
+      <div class="tag-filter">
+        <div class="filter-label">Filter by tag:</div>
+        <div class="filter-tags">
+          <button class="filter-tag active" data-tag="all">All</button>
+          {allTags.map(tag => (
+            <button class="filter-tag" data-tag={tag}>{tag}</button>
+          ))}
+        </div>
+      </div>
+    )}
+    
     <div class="list">
       {sortedNotes.map(note => (
-        <a href={`/notes/${note.slug}`} class="list-item">
+        <a href={`/notes/${note.slug}`} class="list-item" data-tags={note.data.tags?.join(',') || ''}>
           <div class="item-header">
             <h2>{note.data.title}</h2>
             <time>{note.data.date.toLocaleDateString()}</time>
           </div>
           {note.data.description && <p>{note.data.description}</p>}
+          {note.data.tags && note.data.tags.length > 0 && (
+            <div class="tags">
+              {note.data.tags.map(tag => (
+                <span class="tag" data-tag={tag}>{tag}</span>
+              ))}
+            </div>
+          )}
         </a>
       ))}
+    </div>
+    <div class="no-results" style="display: none;">
+      <p>No notes found with the selected tag.</p>
     </div>
   </div>
 </BaseLayout>
@@ -67,6 +92,98 @@ const sortedNotes = notes.sort((a, b) => b.data.date.valueOf() - a.data.date.val
     color: var(--text-secondary);
   }
 
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 0.25rem 0.65rem;
+    background: var(--bg-primary);
+    color: var(--accent-secondary);
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    border: 1px solid var(--border-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .list-item:hover .tag {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+  }
+
+  .tag:hover {
+    border-color: var(--accent-secondary);
+    color: var(--accent-secondary);
+  }
+
+  .tag-filter {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    border-left: 4px solid var(--accent-secondary);
+  }
+
+  .filter-label {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+  }
+
+  .filter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .filter-tag {
+    padding: 0.4rem 0.8rem;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    border: 1px solid var(--border-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-tag:hover {
+    border-color: var(--accent-secondary);
+    color: var(--accent-secondary);
+  }
+
+  .filter-tag.active {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    border-color: var(--accent-primary);
+    font-weight: 600;
+  }
+
+  .no-results {
+    padding: 2rem;
+    text-align: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    color: var(--text-muted);
+    font-size: 1rem;
+  }
+
+  .list-item.hidden {
+    display: none;
+  }
+
   @media (max-width: 768px) {
     .container {
       padding: 1.25rem;
@@ -84,3 +201,71 @@ const sortedNotes = notes.sort((a, b) => b.data.date.valueOf() - a.data.date.val
     }
   }
 </style>
+
+<script is:inline>
+  // Tag filtering functionality
+  const filterTags = document.querySelectorAll('.filter-tag');
+  const listItems = document.querySelectorAll('.list-item');
+  const noteTags = document.querySelectorAll('.tag');
+  const noResults = document.querySelector('.no-results');
+
+  function filterNotes(selectedTag) {
+    let visibleCount = 0;
+
+    listItems.forEach(item => {
+      const itemTags = item.getAttribute('data-tags');
+      
+      if (selectedTag === 'all' || !itemTags) {
+        if (selectedTag === 'all') {
+          item.classList.remove('hidden');
+          visibleCount++;
+        } else if (!itemTags) {
+          item.classList.add('hidden');
+        }
+      } else {
+        const tags = itemTags.split(',');
+        if (tags.includes(selectedTag)) {
+          item.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          item.classList.add('hidden');
+        }
+      }
+    });
+
+    // Show/hide no results message
+    if (noResults) {
+      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    // Update active state on filter buttons
+    filterTags.forEach(tag => {
+      if (tag.getAttribute('data-tag') === selectedTag) {
+        tag.classList.add('active');
+      } else {
+        tag.classList.remove('active');
+      }
+    });
+  }
+
+  // Add click handlers to filter buttons
+  filterTags.forEach(tag => {
+    tag.addEventListener('click', () => {
+      const selectedTag = tag.getAttribute('data-tag');
+      filterNotes(selectedTag);
+    });
+  });
+
+  // Add click handlers to note tags
+  noteTags.forEach(tag => {
+    tag.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const selectedTag = tag.getAttribute('data-tag');
+      filterNotes(selectedTag);
+      
+      // Scroll to top smoothly
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+</script>
