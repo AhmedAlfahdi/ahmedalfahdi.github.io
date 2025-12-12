@@ -17,20 +17,20 @@ tags: [
 ]
 ---
 
-## Statistical Hot Spot Reactive Flow Model for High Explosives Initiation
+# Statistical Hot Spot Reactive Flow Model for High Explosives Initiation
 
 The document presents a comprehensive mathematical framework for modeling shock initiation and detonation in solid high explosives through a statistical hot spot approach developed for the ALE3D hydrodynamic code.
 
 > [!SeeAlso]
 > [JWL Equation of State](/notes/jwl)
 
-### Physical Basis and Motivation
+## Physical Basis and Motivation
 
 Traditional phenomenological models like Ignition and Growth and Johnson-Tang-Forest (JTF) depend on average compressions and pressures rather than local hot spot temperatures, making them inadequate for phenomena like shock desensitization. The statistical hot spot model addresses this limitation by tracking temperature-dependent chemical decomposition across thousands of individual hot spots, accounting for their formation, growth, or failure through thermal conduction.
 
-### Mathematical Formulation
+## Mathematical Formulation
 
-#### Probabilistic Foundation
+### Probabilistic Foundation
 
 The model begins with probability theory to describe the spatial distribution of reacting hot spots. For a single hot spot of radius $R$ in volume $V$, the probability of reaction at a given location is:
 
@@ -58,7 +58,7 @@ $$
 
 This probabilistic formulation directly connects to reactive flow models, where the probability of not reacting equals the mass fraction of unreacted explosive.
 
-### Hot Spot Density Evolution
+## Hot Spot Density Evolution
 
 The probability density of hot spots is decomposed into active (growing) and dead (stopped) populations:
 
@@ -78,7 +78,7 @@ $$
 
 Here $\rho_s(\alpha,\omega)$ is the number density of hot spots that ignited at time $\alpha$ and died at time $\omega$, $\epsilon$ is the initial hot spot size, and $v$ is the burn velocity.
 
-### Governing Differential Equations
+## Governing Differential Equations
 
 Key projections of the density function are defined:
 
@@ -122,7 +122,7 @@ $$
 
 where $v(t)$ is the burn velocity and $\mu(t)$ is the hot spot death rate.
 
-### Ignition Model
+## Ignition Model
 
 Hot spot formation requires overcoming material strength. The phenomenological ignition rate is:
 
@@ -144,7 +144,7 @@ $$
 
 where $D$ is the constant death rate for potential hot spots that fail to ignite.
 
-### Physical Parameter Interpretation
+## Physical Parameter Interpretation
 
 Through heuristic arguments assuming initial hot spot volume equals initial void volume with density $\rho_v$:
 
@@ -172,7 +172,7 @@ $$
 
 where $\rho_0$ is initial density and $c$ is reference sound speed.
 
-### Equation of State
+## Equation of State
 
 The unreacted explosive is described by the Jones-Wilkins-Lee (JWL) equation of state:
 
@@ -182,7 +182,7 @@ $$
 
 For HMX-based explosives: initial density = 1.85 g/cm³, $R_1 = 14.1$, $R_2 = 1.41$, $\omega = 0.8938$, $A = 9522$ Mbar, $B = 0.05944$ Mbar. Reaction products use LEOS tables from CHEETAH chemical equilibrium calculations, with pressure equilibrium assumed between unreacted and product phases.
 
-### Model Parameters for HMX
+## Model Parameters for HMX
 
 Eight key parameters control the model behavior:
 
@@ -196,13 +196,13 @@ Eight key parameters control the model behavior:
 - **$\epsilon$**: Initial hot spot diameter = 1.5 × 10⁻⁴ cm (1.5 μm)
 
 
-### Burn Rate Functions
+## Burn Rate Functions
 
 Two experimental burn rate regimes are implemented. Low-pressure strand burner data shows burn rates from 1.016 × 10⁻⁷ cm/μs at 0.0001 GPa to 4.441 × 10⁻³ cm/μs at 1 GPa. High-pressure diamond anvil cell (DAC) measurements yield much faster rates: 2.35 × 10⁻⁷ cm/s at 0.0001 GPa up to 0.9852 cm/s at 200 GPa.
 
-### Computational Results
+## Computational Results
 
-#### Shock Initiation
+### Shock Initiation
 
 Simulations of HMX blocks driven into solid walls at various velocities demonstrate realistic buildup to detonation. For impact velocities from 0.18 to 2.4 mm/μs, reaction completion times ranged from 2.51 to 0.29 μs, with detonation velocity reaching the correct 8.8 mm/μs.
 
@@ -212,7 +212,7 @@ Simulations of HMX blocks driven into solid walls at various velocities demonstr
 - Lowering $D$ from 11.3 to 1.13 accelerated reaction; raising to 22.6 prevented reaction entirely
 
 
-#### Particle Size Effects
+### Particle Size Effects
 
 The model captures the critical dependence on particle size distributions:
 
@@ -227,11 +227,11 @@ Hot spot diameter effects show smaller sites require longer times:
 
 With DAC burn rates, even 0.15 μm hot spots achieve complete reaction in 2.97 μs.
 
-#### Shock Desensitization
+### Shock Desensitization
 
 The model successfully reproduces the Campbell-Travis shock desensitization phenomenon. When a weak shock (0.7-2.4 GPa for PBX 9404) preconditions the explosive by collapsing potential hot spots without triggering sustained growth, a subsequent detonation wave fails to propagate through the pre-compressed region. Simulations show pressure waves continuing through desensitized material while reaction fronts halt, matching experimental observations.
 
-### Theoretical Advantages
+## Theoretical Advantages
 
 The statistical approach enables modeling of scenarios impossible for traditional pressure-dependent models:
 
@@ -242,6 +242,5 @@ The statistical approach enables modeling of scenarios impossible for traditiona
 
 The model's foundation in hot spot number density and temperature-dependent kinetics provides physically realistic predictions across diverse conditions while maintaining computational efficiency through statistical averaging over thousands of individual hot spots.
 
-
-### Reference
+## Reference
 Nichols, A.L. and Tarver, C.M. (2002). "A Statistical Hot Spot Reactive Flow Model for Shock Initiation and Detonation of Solid High Explosives." UCRL-JC-145031, Lawrence Livermore National Laboratory, presented at 12th International Detonation Symposium, San Diego, California.
