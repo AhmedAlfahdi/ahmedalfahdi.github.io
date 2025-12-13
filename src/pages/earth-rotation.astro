@@ -196,9 +196,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <p class="note">
           The solar day is approximately 3 minutes 56 seconds longer than the sidereal day. This difference accumulates: after one year (365.25 solar days), Earth completes 366.25 sidereal rotations. The extra rotation is why we have one more sidereal day than solar days per year.
         </p>
-        <div class="diagram-container">
-          <canvas id="day-comparison-canvas"></canvas>
-        </div>
       </section>
 
       <section>
@@ -907,138 +904,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   tick = setInterval(compute, 1000);
   compute();
 
-  // Sidereal vs Solar Day Comparison Diagram
-  const dayCanvas = document.getElementById('day-comparison-canvas');
-  if (dayCanvas) {
-    // High-DPI support
-    const dpr = window.devicePixelRatio || 1;
-    const container = dayCanvas.parentElement;
-    const containerWidth = container ? container.clientWidth - 32 : 700; // minus padding
-    const displayW = Math.min(700, containerWidth);
-    const displayH = displayW * 0.5; // maintain 2:1 aspect ratio
-    dayCanvas.width = displayW * dpr;
-    dayCanvas.height = displayH * dpr;
-    dayCanvas.style.width = `${displayW}px`;
-    dayCanvas.style.height = `${displayH}px`;
-    
-    const ctx = dayCanvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-    
-    const w = displayW;
-    const h = displayH;
-    
-    ctx.fillStyle = '#0c141c';
-    ctx.fillRect(0, 0, w, h);
-    
-    // Draw orbit
-    const orbitCenterX = w / 2 - 50;
-    const orbitCenterY = h / 2;
-    const orbitRadius = 90;
-    
-    ctx.strokeStyle = '#556677';
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.arc(orbitCenterX, orbitCenterY, orbitRadius, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    
-    // Draw Sun at center
-    const sunGradient = ctx.createRadialGradient(orbitCenterX, orbitCenterY, 0, orbitCenterX, orbitCenterY, 18);
-    sunGradient.addColorStop(0, '#ffcc00');
-    sunGradient.addColorStop(1, '#ff8800');
-    ctx.fillStyle = sunGradient;
-    ctx.beginPath();
-    ctx.arc(orbitCenterX, orbitCenterY, 18, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Position 1 - Start (right side of orbit)
-    const pos1X = orbitCenterX + orbitRadius;
-    const pos1Y = orbitCenterY;
-    
-    // Draw Earth at position 1
-    ctx.fillStyle = '#2c6ead';
-    ctx.beginPath();
-    ctx.arc(pos1X, pos1Y, 14, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Arrow pointing to distant star
-    ctx.strokeStyle = '#cccccc';
-    ctx.fillStyle = '#cccccc';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(pos1X + 18, pos1Y - 45);
-    ctx.lineTo(pos1X + 18, pos1Y - 80);
-    ctx.stroke();
-    // Arrowhead
-    ctx.beginPath();
-    ctx.moveTo(pos1X + 18, pos1Y - 80);
-    ctx.lineTo(pos1X + 13, pos1Y - 75);
-    ctx.lineTo(pos1X + 23, pos1Y - 75);
-    ctx.closePath();
-    ctx.fill();
-    
-    ctx.font = '13px sans-serif';
-    ctx.fillStyle = '#cccccc';
-    ctx.textAlign = 'center';
-    ctx.fillText('To Star', pos1X + 18, pos1Y - 88);
-    
-    // Position 2 - After sidereal day (360° rotation)
-    const angle2 = (360 / 365.25) * Math.PI / 180; // Earth moves in orbit
-    const pos2X = orbitCenterX + orbitRadius * Math.cos(angle2);
-    const pos2Y = orbitCenterY - orbitRadius * Math.sin(angle2);
-    
-    ctx.fillStyle = '#5588cc';
-    ctx.beginPath();
-    ctx.arc(pos2X, pos2Y, 14, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Arrow to star (parallel to first)
-    ctx.strokeStyle = '#88ccff';
-    ctx.fillStyle = '#88ccff';
-    ctx.beginPath();
-    ctx.moveTo(pos2X + 18, pos2Y - 45);
-    ctx.lineTo(pos2X + 18, pos2Y - 80);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(pos2X + 18, pos2Y - 80);
-    ctx.lineTo(pos2X + 13, pos2Y - 75);
-    ctx.lineTo(pos2X + 23, pos2Y - 75);
-    ctx.closePath();
-    ctx.fill();
-    
-    // Arrow to Sun (slightly different angle)
-    ctx.strokeStyle = '#ffaa00';
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(pos2X, pos2Y);
-    ctx.lineTo(orbitCenterX, orbitCenterY);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    
-    // Labels - positioned to right side to avoid overlap
-    ctx.font = 'bold 15px sans-serif';
-    ctx.fillStyle = '#f5a524';
-    ctx.textAlign = 'left';
-    
-    // Day 0 label on right
-    ctx.fillText('Day 0', w - 160, 60);
-    
-    // After sidereal day label on right (below Day 0)
-    ctx.fillText('After 1 sidereal day', w - 200, 110);
-    ctx.font = '14px sans-serif';
-    ctx.fillStyle = '#88ccff';
-    ctx.fillText('(23h 56m 4s)', w - 200, 128);
-    
-    // Bottom explanation
-    ctx.fillStyle = '#cccccc';
-    ctx.textAlign = 'center';
-    ctx.font = '14px sans-serif';
-    ctx.fillText('Earth must rotate ~4 more minutes', w / 2, h - 35);
-    ctx.fillText('for Sun to return to same position', w / 2, h - 18);
-  }
-
   // DUT1 Historical Chart
   const dut1Canvas = document.getElementById('dut1-chart');
   if (dut1Canvas) {
@@ -1497,24 +1362,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     margin: 0;
     color: var(--text-secondary);
     font-size: 0.95rem;
-  }
-
-  /* Diagram container */
-  .diagram-container {
-    display: flex;
-    justify-content: center;
-    margin: 1.5rem 0;
-    padding: 1rem;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-strong);
-    border-radius: 4px;
-    overflow-x: auto;
-  }
-  .diagram-container canvas {
-    display: block;
-    width: 100%;
-    max-width: 700px;
-    height: auto;
   }
 
   /* Chart container */
