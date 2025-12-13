@@ -912,8 +912,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   if (dayCanvas) {
     // High-DPI support
     const dpr = window.devicePixelRatio || 1;
-    const displayW = 700;
-    const displayH = 350;
+    const container = dayCanvas.parentElement;
+    const containerWidth = container ? container.clientWidth - 32 : 700; // minus padding
+    const displayW = Math.min(700, containerWidth);
+    const displayH = displayW * 0.5; // maintain 2:1 aspect ratio
     dayCanvas.width = displayW * dpr;
     dayCanvas.height = displayH * dpr;
     dayCanvas.style.width = `${displayW}px`;
@@ -1042,8 +1044,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   if (dut1Canvas) {
     // High-DPI support
     const dpr = window.devicePixelRatio || 1;
-    const displayW = 700;
-    const displayH = 350;
+    const container = dut1Canvas.parentElement;
+    const containerWidth = container ? container.clientWidth - 32 : 700; // minus padding
+    const displayW = Math.min(700, containerWidth);
+    const displayH = displayW * 0.5; // maintain 2:1 aspect ratio
     dut1Canvas.width = displayW * dpr;
     dut1Canvas.height = displayH * dpr;
     dut1Canvas.style.width = `${displayW}px`;
@@ -1504,9 +1508,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     background: var(--bg-tertiary);
     border: 1px solid var(--border-strong);
     border-radius: 4px;
+    overflow-x: auto;
   }
   .diagram-container canvas {
-    max-width: 100%;
+    display: block;
+    width: 100%;
+    max-width: 700px;
     height: auto;
   }
 
@@ -1519,9 +1526,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     background: var(--bg-tertiary);
     border: 1px solid var(--border-strong);
     border-radius: 4px;
+    overflow-x: auto;
   }
   .chart-container canvas {
-    max-width: 100%;
+    display: block;
+    width: 100%;
+    max-width: 700px;
     height: auto;
   }
 
