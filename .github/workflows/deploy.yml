@@ -33,6 +33,11 @@ jobs:
       - name: Install dependencies
         run: npm install
         
+      - name: Generate build info
+        run: |
+          echo "{\"buildDate\":\"$(date -u +%Y-%m-%d)\",\"buildTime\":\"$(date -u +%H:%M:%S)\",\"timestamp\":\"$(date -u +%s)\"}" > build-info.json
+          cat build-info.json
+        
       - name: Build with Astro
         run: npm run build
         
