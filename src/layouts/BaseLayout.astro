@@ -5,7 +5,14 @@ interface Props {
 }
 
 const { title, description = "My Personal Website with 3D Models" } = Astro.props;
-const isHomePage = Astro.url.pathname === '/' || Astro.url.pathname === '';
+
+// Get build date (static at build time)
+const buildDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+const buildTime = new Date().toISOString().split('T')[1].split('.')[0]; // HH:MM:SS format
+
+// Read version from version.json
+import versionData from '../../version.json';
+const siteVersion = versionData.version;
 ---
 
 <!DOCTYPE html>
@@ -406,6 +413,29 @@ const isHomePage = Astro.url.pathname === '/' || Astro.url.pathname === '';
       font-weight: 800;
     }
 
+    ol {
+      list-style: none;
+      padding-left: 0;
+      counter-reset: item;
+    }
+
+    ol li {
+      margin: 0.6rem 0;
+      padding-left: 2rem;
+      position: relative;
+      color: var(--text-secondary);
+      counter-increment: item;
+    }
+
+    ol li::before {
+      content: counter(item) ".";
+      position: absolute;
+      left: 0;
+      color: var(--accent-primary);
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
     a {
       color: var(--accent-secondary);
       text-decoration: none;
@@ -632,14 +662,16 @@ const isHomePage = Astro.url.pathname === '/' || Astro.url.pathname === '';
       font-style: italic;
     }
 
-    .bug-report-link {
+    .bug-report-link,
+    .repo-link {
       color: var(--accent-secondary);
       text-decoration: none;
       transition: color 0.2s ease;
       font-family: var(--font-mono);
     }
 
-    .bug-report-link:hover {
+    .bug-report-link:hover,
+    .repo-link:hover {
       color: var(--accent-primary);
       text-decoration: underline;
     }
@@ -747,12 +779,10 @@ const isHomePage = Astro.url.pathname === '/' || Astro.url.pathname === '';
   </main>
   <div id="scroll-progress" class="scroll-progress" aria-hidden="true">0%</div>
   
-  <!-- Site Info Button (only on homepage) -->
-  {isHomePage && (
-    <button id="site-info-btn" class="site-info-btn" aria-label="Site Information" title="Site Information">
-      <span>!</span>
-    </button>
-  )}
+  <!-- Site Info Button -->
+  <button id="site-info-btn" class="site-info-btn" aria-label="Site Information" title="Site Information">
+    <span>!</span>
+  </button>
   
   <!-- Site Info Modal -->
   <div id="site-info-modal" class="site-info-modal" style="display: none;">
@@ -766,7 +796,17 @@ const isHomePage = Astro.url.pathname === '/' || Astro.url.pathname === '';
       </div>
       <div class="info-section">
         <h4>Version</h4>
-        <p>1.0.0</p>
+        <p>{siteVersion}</p>
+      </div>
+      <div class="info-section">
+        <h4>Last Build</h4>
+        <p>{buildDate} at {buildTime} UTC</p>
+        <p class="info-detail">Static site generated with Astro</p>
+      </div>
+      <div class="info-section">
+        <h4>Source Control</h4>
+        <p><a href="https://github.com/AhmedAlfahdi/ahmedalfahdi.github.io" target="_blank" rel="noopener noreferrer" class="repo-link">View on GitHub</a></p>
+        <p class="info-detail">Branch: main</p>
       </div>
       <div class="info-section">
         <h4>Built With</h4>
