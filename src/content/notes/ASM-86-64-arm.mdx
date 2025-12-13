@@ -1,0 +1,153 @@
+---
+title: "x64,x86, and ARM"
+description: "Detailed notes comparing C++ output and handwritten assembly across x86, x64, and ARM: multiplication instructions, register sets, calling conventions, and optimization trade-offs."
+date: 2024-11-24
+tags: [
+  "obsidian",
+  "assembly",
+  "note",
+  "c++",
+  "comparison",
+  "x86",
+  "x64",
+  "arm",
+  "architecture",
+  "registers",
+  "calling-convention"
+]
+---
+
+Architecture Comparison: x86, x64, and ARM
+
+## Overview
+
+This section summarizes key differences and similarities between x86 (IA-32), x64 (x86-64), and ARM (AArch32/AArch64) architectures—covering registers, instruction sets, calling conventions, data movement, and typical use cases.
+
+---
+
+### 1. Register Sets
+
+| Architecture | General Registers                  | Special/Status Registers                      | SIMD/FPU Registers                  |
+|--------------|------------------------------------|-----------------------------------------------|-------------------------------------|
+| **x86 (IA-32)**  | EAX, EBX, ECX, EDX, ESI, EDI, ESP, EBP | EIP, EFLAGS                                   | x87: ST(0-7), MMX: MM0–MM7, SSE: XMM0–XMM7 |
+| **x64 (AMD64)**  | RAX, RBX, RCX, RDX, RSI, RDI, RSP, RBP, + R8–R15 | RIP, RFLAGS                            | SSE: XMM0–XMM15, AVX: YMM0–YMM15          |
+| **ARM (AArch32)**| R0–R12 (GPRs), SP (R13), LR (R14), PC (R15) | CPSR, SPSR                                  | VFP: S0–S31, D0–D31                        |
+| **ARM (AArch64)**| X0–X30, SP (X31), PC                   | PSTATE, SPSR                                 | SIMD: V0–V31 (128-bit)                      |
+
+---
+
+### 2. Instruction Set Summary
+
+- **x86/x64**: CISC; variable-length instructions (1–15 bytes). Supports extensive legacy and specialized instructions (string ops, BCD).
+- **ARM**: RISC; fixed-length (AArch32: 4 bytes for ARM, 2 bytes for Thumb; AArch64: 4 bytes). Simpler, more regular instruction encoding.
+
+---
+
+### 3. Calling Conventions
+
+#### x86 (cdecl, stdcall, fastcall):
+- Parameters: passed on stack (cdecl), with some conventions using registers (fastcall).
+- Return value: EAX
+- Stack cleanup: Caller (cdecl), callee (stdcall)
+- Alignment: 4 bytes
+
+#### x64 (Microsoft / System V AMD64 ABI):
+- Parameters: first 4 (Windows) or 6 (Unix) in registers (RCX, RDX, R8, R9 in Win; RDI, RSI, RDX, RCX, R8, R9 in System V)
+- Return: RAX
+- Stack aligned to 16 bytes
+
+#### ARM (AAPCS/AAPCS64):
+- Arguments: X0–X7 (AArch64) or R0–R3 (AArch32); rest on stack
+- Return: X0 (AArch64) / R0 (AArch32)
+- Stack 16-byte aligned
+
+---
+
+### 4. Example: Integer Multiplication
+
+**C code:**
+```c
+int mul(int a, int b) { return a * b; }
+```
+
+- **x86 (32-bit):**
+    ```asm
+    mov eax, [esp+4]    ; a
+    imul eax, [esp+8]   ; a * b
+    ret
+    ```
+- **x64 (System V, Unix):**
+    ```asm
+    mov eax, edi        ; a in EDI
+    imul eax, esi       ; b in ESI
+    ret
+    ```
+- **ARM (AArch32):**
+    ```asm
+    MUL r0, r0, r1      ; r0 = r0 * r1 (args in r0, r1)
+    bx  lr
+    ```
+- **ARM (AArch64):**
+    ```asm
+    mul w0, w0, w1      ; w0 = w0 * w1 (args in w0, w1)
+    ret
+    ```
+
+---
+
+### 5. Stack and Data Movement
+
+|                | Stack Growth   | Function Prolog/Epilog | Typical Alignment |
+|----------------|---------------|------------------------|------------------|
+| x86            | Down          | push ebp/mov ebp, esp  | 4 bytes          |
+| x64            | Down          | push rbp/mov rbp, rsp  | 16 bytes         |
+| ARM (A32/A64)  | Down          | push/pop … or stp/ldp  | 8/16 bytes       |
+
+---
+
+### 6. Instruction Syntax
+
+- **x86/x64 (Intel syntax):** dst, src — e.g., `mov eax, ebx`
+- **ARM:** usually dst, src1, src2 — e.g., `add r0, r1, r2` (r0 = r1 + r2)
+
+---
+
+### 7. Notable Differences
+
+- **Endianness:** x86/x64 is little-endian; ARM can be bi-endian, but most modern systems use little-endian.
+- **Conditional Execution:** ARM A32 features conditional suffixes for almost every instruction; x86 uses condition codes + Jcc.
+- **SIMD:** Modern x86 CPUs support AVX/AVX2/AVX-512; ARM supports NEON (AArch32/64 SIMD V0–V31).
+
+---
+
+## Quick Reference Tables
+
+### Register Names
+
+| x86  | x64      | ARM32         | ARM64      |
+|------|----------|---------------|------------|
+| EAX  | RAX      | R0            | X0         |
+| EBX  | RBX      | R1            | X1         |
+| ECX  | RCX      | R2            | X2         |
+| EDX  | RDX      | R3            | X3         |
+| ESI  | RSI      | R4, R5, ...   | X4, X5 ... |
+| EDI  | RDI      | R12           | X28        |
+| ESP  | RSP      | SP (R13)      | SP (X31)   |
+| EBP  | RBP      | LR (R14)      | X30 (LR)   |
+| EIP  | RIP      | PC (R15)      | No named PC|
+
+---
+
+### Use Cases
+
+- **x86**: Legacy, embedded, older Windows/Linux applications, 32-bit.
+- **x64**: Modern desktops, servers, performance critical workloads.
+- **ARM**: Mobile devices, tablets, Internet of Things, increasingly servers and laptops (Apple M-series, Ampere).
+
+---
+
+> [!Note]
+> For more details, see vendor manuals:
+> - Intel® 64 and IA-32 Architectures Software Developer’s Manual
+> - ARM® Architecture Reference Manual (ARMv7, ARMv8)
+
