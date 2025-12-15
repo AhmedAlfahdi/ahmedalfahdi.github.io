@@ -70,4 +70,9 @@ MIT License
 
 ---
 
-Built with [Astro](https://astro.build/) and [Three.js](https://threejs.org/)
+**Main Libraries Used**  
+- [Astro](https://astro.build/) (v4.6.0, MIT License)  
+- [Three.js](https://threejs.org/) (v0.157.0, MIT License)  
+- [MDX](https://mdxjs.com/) (@astrojs/mdx v3.3.0, MIT License)  
+
+<sub>See `package.json` for full dependency versions.</sub>
