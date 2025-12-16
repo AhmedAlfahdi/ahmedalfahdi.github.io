@@ -6,7 +6,8 @@
 <script>
   if (typeof window !== 'undefined') {
     // Configuration - Update this with your API endpoint
-    const API_ENDPOINT = import.meta.env.PUBLIC_ANALYTICS_API || 'https://your-api-endpoint.com/api/track';
+    const API_BASE = import.meta.env.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api';
+    const API_ENDPOINT = `${API_BASE}/track`;
     
     // Only track once per page load
     let tracked = false;
@@ -26,8 +27,11 @@
           language: navigator.language,
         };
         
+        // Debug logging (remove in production if desired)
+        console.log('Tracking visit to:', API_ENDPOINT, pageData);
+        
         // Send to API
-        await fetch(API_ENDPOINT, {
+        const response = await fetch(API_ENDPOINT, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -36,9 +40,15 @@
           // Don't wait for response to avoid blocking page load
           keepalive: true,
         });
+        
+        if (!response.ok) {
+          console.warn('Analytics tracking failed:', response.status, response.statusText);
+        } else {
+          console.log('Visit tracked successfully');
+        }
       } catch (error) {
-        // Silently fail - don't interrupt user experience
-        console.debug('Analytics tracking failed:', error);
+        // Log error for debugging
+        console.error('Analytics tracking error:', error);
       }
     };
     

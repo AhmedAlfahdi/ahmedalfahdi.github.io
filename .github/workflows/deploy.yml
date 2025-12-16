@@ -45,7 +45,7 @@ jobs:
         
       - name: Build with Astro
         env:
-          PUBLIC_ANALYTICS_API: ${{ secrets.PUBLIC_ANALYTICS_API || 'https://your-api-endpoint.com/api' }}
+          PUBLIC_ANALYTICS_API: ${{ secrets.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api' }}
         run: npm run build
         
       - name: Verify build info in dist
