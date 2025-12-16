@@ -211,11 +211,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   
   .stat-hint {
-    color: var(--text-muted);
-    font-size: 0.75rem;
-    margin-top: 0.5rem;
-    font-style: italic;
-    opacity: 0.7;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    font-style: normal;
+    opacity: 1;
+    text-align: center;
+    display: block;
+    line-height: 1.4;
+    font-weight: 400;
   }
   
   .stat-value {
@@ -450,29 +454,150 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       purple: 'rgba(139, 92, 246, 0.7)'
     };
     
-    // Load Chart.js from CDN
+    // Load Chart.js from CDN with timeout and error handling
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+    
+    let chartJsLoaded = false;
+    const chartJsTimeout = setTimeout(() => {
+      if (!chartJsLoaded) {
+        console.warn('Chart.js loading timeout, proceeding anyway');
+        loadStats();
+      }
+    }, 5000); // 5 second timeout for Chart.js
+    
     script.onload = () => {
+      chartJsLoaded = true;
+      clearTimeout(chartJsTimeout);
       loadStats();
     };
+    
+    script.onerror = () => {
+      console.error('Failed to load Chart.js');
+      clearTimeout(chartJsTimeout);
+      // Still try to load stats, charts just won't work
+      loadStats();
+    };
+    
     document.head.appendChild(script);
     
-    const loadStats = async () => {
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 3000; // 3 seconds between retries
+    
+    const loadStats = async (isRetry = false) => {
       const loadingEl = document.getElementById('stats-loading');
       const errorEl = document.getElementById('stats-error');
       const contentEl = document.getElementById('stats-content');
       
-      try {
-        const response = await fetch(API_ENDPOINT);
+      // Show retry message if this is a retry attempt
+      if (isRetry && retryCount > 0) {
+        loadingEl.innerHTML = `Loading statistics... (Retry ${retryCount}/${MAX_RETRIES})`;
+      }
+      
+      // Set a timeout for the API call (fallback in case AbortController doesn't work)
+      let apiTimeout;
+      let timeoutFired = false;
+      let requestInProgress = true;
+      
+      const showTimeoutError = () => {
+        if (!requestInProgress || timeoutFired) return; // Prevent duplicate error messages
+        timeoutFired = true;
+        requestInProgress = false;
         
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
+        // Try to retry if we haven't exceeded max retries
+        if (retryCount < MAX_RETRIES) {
+          retryCount++;
+          loadingEl.innerHTML = `Request timed out. Retrying... (${retryCount}/${MAX_RETRIES})`;
+          setTimeout(() => {
+            requestInProgress = true;
+            timeoutFired = false;
+            loadStats(true);
+          }, RETRY_DELAY);
+          return;
         }
         
-        const data = await response.json();
-        
+        // Max retries reached, show error
         loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        errorEl.innerHTML = '<p>Request timed out after multiple attempts. The analytics API may be unavailable.</p><p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">Please try refreshing the page or check back later.</p><button id="retry-stats-btn" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--accent-primary); color: var(--bg-primary); border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Retry Now</button>';
+        contentEl.style.display = 'none';
+        
+        // Add retry button handler
+        const retryBtn = document.getElementById('retry-stats-btn');
+        if (retryBtn) {
+          retryBtn.onclick = () => {
+            retryCount = 0;
+            requestInProgress = true;
+            timeoutFired = false;
+            errorEl.style.display = 'none';
+            loadingEl.style.display = 'block';
+            loadingEl.innerHTML = 'Loading statistics...';
+            loadStats();
+          };
+        }
+      };
+      
+      apiTimeout = setTimeout(showTimeoutError, 12000); // 12 second fallback timeout (longer than Promise.race timeout)
+      
+      try {
+        // Create a more robust timeout mechanism using Promise.race
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('Request timeout: API took too long to respond'));
+          }, 8000); // 8 second timeout (shorter than fallback)
+        });
+        
+        // Create fetch promise with AbortController as backup
+        const controller = new AbortController();
+        const abortTimeout = setTimeout(() => {
+          controller.abort();
+        }, 8000);
+        
+        const fetchPromise = fetch(API_ENDPOINT, {
+          signal: controller.signal,
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+          cache: 'no-cache', // Prevent caching issues
+          mode: 'cors',
+        }).then(async (response) => {
+          clearTimeout(abortTimeout);
+          
+          if (!response.ok) {
+            throw new Error(`API returned ${response.status}: ${response.statusText}`);
+          }
+          
+          // Add timeout for JSON parsing as well
+          const jsonTimeout = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('JSON parsing timeout')), 3000);
+          });
+          
+          const jsonPromise = response.json();
+          const data = await Promise.race([jsonPromise, jsonTimeout]);
+          
+          return data;
+        });
+        
+        // Race between fetch and timeout
+        const data = await Promise.race([fetchPromise, timeoutPromise]);
+        
+        // Clear all timeouts on success
+        clearTimeout(abortTimeout);
+        if (apiTimeout) {
+          clearTimeout(apiTimeout);
+          apiTimeout = null;
+        }
+        
+        // Mark request as complete
+        requestInProgress = false;
+        timeoutFired = false;
+        
+        // Success! Reset retry count and show content
+        retryCount = 0;
+        loadingEl.style.display = 'none';
+        loadingEl.innerHTML = 'Loading statistics...'; // Reset loading message
         errorEl.style.display = 'none';
         contentEl.style.display = 'block';
         
@@ -839,10 +964,69 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
         
       } catch (error) {
+        // Clear timeouts
+        if (apiTimeout) {
+          clearTimeout(apiTimeout);
+          apiTimeout = null;
+        }
+        
+        // Mark request as complete
+        requestInProgress = false;
+        
+        // Don't show error if timeout already fired
+        if (timeoutFired) {
+          console.error('Failed to load statistics (timeout already handled):', error);
+          return;
+        }
+        
+        // Try to retry if we haven't exceeded max retries
+        if (retryCount < MAX_RETRIES) {
+          retryCount++;
+          const errorMsg = error.name === 'AbortError' || error.message?.includes('timeout') 
+            ? 'Request timed out' 
+            : error.message || 'Network error';
+          loadingEl.innerHTML = `${errorMsg}. Retrying... (${retryCount}/${MAX_RETRIES})`;
+          setTimeout(() => {
+            requestInProgress = true;
+            timeoutFired = false;
+            loadStats(true);
+          }, RETRY_DELAY);
+          console.warn(`Statistics load failed, retrying (${retryCount}/${MAX_RETRIES}):`, error);
+          return;
+        }
+        
+        // Max retries reached, show error
         loadingEl.style.display = 'none';
         errorEl.style.display = 'block';
         contentEl.style.display = 'none';
-        console.error('Failed to load statistics:', error);
+        
+        let errorMessage = 'Unable to load statistics after multiple attempts. ';
+        if (error.name === 'AbortError' || error.message?.includes('timeout')) {
+          errorMessage += 'Request timed out. The analytics API may be slow or unavailable.';
+        } else if (error.message) {
+          errorMessage += error.message;
+        } else if (error.name === 'TypeError' && error.message?.includes('fetch')) {
+          errorMessage += 'Network error. Please check your connection.';
+        } else {
+          errorMessage += 'Please try refreshing the page.';
+        }
+        
+        errorEl.innerHTML = `<p>${errorMessage}</p><p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">You can try refreshing the page or check the browser console for more details.</p><button id="retry-stats-btn" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--accent-primary); color: var(--bg-primary); border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Retry Now</button>`;
+        console.error('Failed to load statistics after retries:', error);
+        
+        // Add retry button handler
+        const retryBtn = document.getElementById('retry-stats-btn');
+        if (retryBtn) {
+          retryBtn.onclick = () => {
+            retryCount = 0;
+            requestInProgress = true;
+            timeoutFired = false;
+            errorEl.style.display = 'none';
+            loadingEl.style.display = 'block';
+            loadingEl.innerHTML = 'Loading statistics...';
+            loadStats();
+          };
+        }
       }
     };
   }

@@ -576,6 +576,7 @@ try {
       padding: 2rem;
       max-height: 80vh;
       overflow-y: auto;
+      overflow-x: visible;
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.04),
         0 20px 40px rgba(0, 0, 0, 0.5);
@@ -628,6 +629,7 @@ try {
 
     .info-section {
       margin-bottom: 1.5rem;
+      overflow: visible;
     }
 
     .info-section h4 {
@@ -703,6 +705,77 @@ try {
     .repo-link:hover {
       color: var(--accent-primary);
       text-decoration: underline;
+    }
+
+    .stat-item {
+      position: relative;
+      overflow: visible;
+    }
+
+    #stats-content {
+      overflow: visible;
+    }
+
+    .stat-label-tooltip {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+      cursor: help;
+      position: relative;
+      display: inline-block;
+    }
+
+    .stat-label-tooltip {
+      position: relative;
+    }
+
+    .stat-label-tooltip::after {
+      content: attr(data-tooltip);
+      position: fixed;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      border: 1px solid var(--border-strong);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 10001;
+      width: 400px;
+      max-width: calc(90vw - 2rem);
+      white-space: normal;
+      text-align: left;
+      line-height: 1.5;
+      font-weight: normal;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      left: var(--tooltip-left, 0);
+      top: var(--tooltip-top, 0);
+      transform: translateX(-50%) translateY(-100%) translateY(-8px);
+    }
+
+    .stat-label-tooltip::before {
+      content: '';
+      position: fixed;
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid var(--bg-primary);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 10002;
+      left: var(--tooltip-left, 0);
+      top: var(--tooltip-top, 0);
+      transform: translateX(-50%) translateY(-2px);
+    }
+
+    .stat-label-tooltip:hover::after,
+    .stat-label-tooltip:hover::before {
+      opacity: 1;
     }
 
     @media (max-width: 768px) {
@@ -843,9 +916,10 @@ try {
         <ul class="tech-list">
           <li><strong>Astro</strong> 5.16.0 <span class="license">(MIT)</span></li>
           <li><strong>Three.js</strong> 0.159.0 <span class="license">(MIT)</span></li>
-          <li><strong>KaTeX</strong> 0.16.9 <span class="license">(MIT)</span></li>
-          <li><strong>Mermaid</strong> 10.6.0 <span class="license">(MIT)</span></li>
+          <li><strong>KaTeX</strong> 0.16.25 <span class="license">(MIT)</span></li>
+          <li><strong>Mermaid</strong> 10.9.5 <span class="license">(MIT)</span></li>
           <li><strong>PDF.js</strong> 5.4.394 <span class="license">(Apache 2.0)</span></li>
+          <li><strong>Vercel</strong> <span class="license">(Analytics API)</span></li>
         </ul>
       </div>
       <div class="info-section">
@@ -858,26 +932,26 @@ try {
         <div id="stats-error" style="display: none; padding: 0.5rem 0; color: #e1695d; font-size: 0.9rem;">Unable to load statistics</div>
         <div id="stats-content" style="display: none;">
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 0.5rem;">
-            <div>
-              <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Total Views</div>
+            <div class="stat-item">
+              <div class="stat-label-tooltip" data-tooltip="Total number of page views across all pages on your website.">Total Views</div>
               <div style="color: var(--accent-primary); font-weight: 600; font-family: var(--font-mono);" id="total-views">-</div>
             </div>
-            <div>
-              <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Distinct IPs</div>
+            <div class="stat-item">
+              <div class="stat-label-tooltip" data-tooltip="Network-level count: Number of unique IP addresses that visited your site. Multiple people behind the same IP (corporate network, NAT) count as one IP.">Distinct IPs</div>
               <div style="color: var(--accent-primary); font-weight: 600; font-family: var(--font-mono);" id="distinct-ips">-</div>
             </div>
-            <div>
-              <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Unique Visitors</div>
+            <div class="stat-item">
+              <div class="stat-label-tooltip" data-tooltip="Browser-level count: Number of unique visitors tracked by browser ID. More accurate than IPs as it identifies actual people, not just network addresses.">Unique Visitors</div>
               <div style="color: var(--accent-primary); font-weight: 600; font-family: var(--font-mono);" id="unique-visitors">-</div>
             </div>
-            <div>
-              <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Top Page</div>
+            <div class="stat-item">
+              <div class="stat-label-tooltip" data-tooltip="The most visited page on your website based on total page views.">Top Page</div>
               <div style="color: var(--accent-secondary); font-size: 0.85rem; font-family: var(--font-mono); word-break: break-all;" id="top-page">-</div>
             </div>
           </div>
           <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
             <a href="/statistics" style="color: var(--accent-secondary); text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem;">
-              View detailed statistics with interactive graphs →
+              View detailed statistics →
             </a>
           </div>
         </div>
@@ -972,7 +1046,13 @@ try {
       });
 
       // Load statistics when modal opens
-      const loadStats = async () => {
+      let modalRetryCount = 0;
+      let currentRequestController = null;
+      const MODAL_MAX_RETRIES = 1; // Reduced to 1 retry for faster failure
+      const MODAL_RETRY_DELAY = 2000;
+      const MODAL_TIMEOUT = 5000; // 5 second timeout (shorter)
+      
+      const loadStats = async (isRetry = false) => {
         const API_BASE = import.meta.env.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api';
         const API_ENDPOINT = `${API_BASE}/stats`;
         const loadingEl = document.getElementById('stats-loading');
@@ -981,17 +1061,129 @@ try {
         
         if (!loadingEl || !errorEl || !contentEl) return;
         
-        try {
-          console.log('Loading stats from:', API_ENDPOINT);
-          const response = await fetch(API_ENDPOINT);
+        // Cancel any previous request
+        if (currentRequestController) {
+          currentRequestController.abort();
+          currentRequestController = null;
+        }
+        
+        // Show retry message if this is a retry
+        if (isRetry && modalRetryCount > 0) {
+          loadingEl.textContent = `Retrying... (${modalRetryCount}/${MODAL_MAX_RETRIES})`;
+        } else {
+          loadingEl.textContent = 'Loading...';
+        }
+        
+        let requestInProgress = true;
+        let timeoutFired = false;
+        let apiTimeout;
+        
+        // Fallback timeout (shorter)
+        const showTimeoutError = () => {
+          if (!requestInProgress || timeoutFired) return;
+          timeoutFired = true;
+          requestInProgress = false;
           
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Stats API error:', response.status, errorText);
-            throw new Error(`API returned ${response.status}`);
+          // Abort the request
+          if (currentRequestController) {
+            currentRequestController.abort();
+            currentRequestController = null;
           }
           
-          const data = await response.json();
+          if (modalRetryCount < MODAL_MAX_RETRIES) {
+            modalRetryCount++;
+            loadingEl.textContent = `Timed out. Retrying... (${modalRetryCount}/${MODAL_MAX_RETRIES})`;
+            setTimeout(() => {
+              requestInProgress = true;
+              timeoutFired = false;
+              loadStats(true);
+            }, MODAL_RETRY_DELAY);
+            return;
+          }
+          
+          // Show error with manual retry option
+          loadingEl.style.display = 'none';
+          errorEl.style.display = 'block';
+          errorEl.innerHTML = 'Unable to load statistics. <button id="modal-retry-btn" style="margin-left: 0.5rem; padding: 0.25rem 0.5rem; background: var(--accent-primary); color: var(--bg-primary); border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">Retry</button>';
+          contentEl.style.display = 'none';
+          
+          // Add retry button handler
+          const retryBtn = document.getElementById('modal-retry-btn');
+          if (retryBtn) {
+            retryBtn.onclick = () => {
+              modalRetryCount = 0;
+              errorEl.style.display = 'none';
+              loadingEl.style.display = 'block';
+              loadingEl.textContent = 'Loading...';
+              loadStats();
+            };
+          }
+        };
+        
+        apiTimeout = setTimeout(showTimeoutError, MODAL_TIMEOUT + 1000); // Slightly longer than fetch timeout
+        
+        try {
+          // Create AbortController for this request
+          currentRequestController = new AbortController();
+          const controller = currentRequestController;
+          
+          // Create timeout promise (shorter timeout)
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+              controller.abort();
+              reject(new Error('Request timeout: API took too long to respond'));
+            }, MODAL_TIMEOUT);
+          });
+          
+          // Create fetch promise
+          const fetchPromise = fetch(API_ENDPOINT, {
+            signal: controller.signal,
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+            },
+            cache: 'no-cache',
+            mode: 'cors',
+            // Add keepalive to help with reliability
+            keepalive: false,
+          }).then(async (response) => {
+            // Check if request was aborted
+            if (controller.signal.aborted) {
+              throw new Error('Request was aborted');
+            }
+            
+            if (!response.ok) {
+              const errorText = await response.text().catch(() => 'Unknown error');
+              console.error('Stats API error:', response.status, errorText);
+              throw new Error(`API returned ${response.status}: ${response.statusText}`);
+            }
+            
+            // Add timeout for JSON parsing (shorter)
+            const jsonTimeout = new Promise((_, reject) => {
+              setTimeout(() => reject(new Error('JSON parsing timeout')), 1500);
+            });
+            
+            const jsonPromise = response.json();
+            const data = await Promise.race([jsonPromise, jsonTimeout]);
+            
+            return data;
+          });
+          
+          // Race between fetch and timeout
+          const data = await Promise.race([fetchPromise, timeoutPromise]);
+          
+          // Clear timeouts on success
+          if (apiTimeout) {
+            clearTimeout(apiTimeout);
+            apiTimeout = null;
+          }
+          
+          // Clear controller reference
+          currentRequestController = null;
+          requestInProgress = false;
+          timeoutFired = false;
+          modalRetryCount = 0;
+          
           console.log('Stats loaded:', data);
           
           loadingEl.style.display = 'none';
@@ -1009,18 +1201,117 @@ try {
           if (topPageEl) topPageEl.textContent = data.topPage || 'N/A';
           
         } catch (error) {
-          console.error('Error loading stats:', error);
+          // Clear timeouts
+          if (apiTimeout) {
+            clearTimeout(apiTimeout);
+            apiTimeout = null;
+          }
+          
+          // Clear controller reference
+          currentRequestController = null;
+          requestInProgress = false;
+          
+          // Don't show error if timeout already fired
+          if (timeoutFired) {
+            console.error('Error loading stats (timeout already handled):', error);
+            return;
+          }
+          
+          // Try to retry if we haven't exceeded max retries
+          if (modalRetryCount < MODAL_MAX_RETRIES) {
+            modalRetryCount++;
+            const errorMsg = error.name === 'AbortError' || error.message?.includes('timeout') 
+              ? 'Request timed out' 
+              : error.message || 'Network error';
+            loadingEl.textContent = `${errorMsg}. Retrying... (${modalRetryCount}/${MODAL_MAX_RETRIES})`;
+            setTimeout(() => {
+              requestInProgress = true;
+              timeoutFired = false;
+              loadStats(true);
+            }, MODAL_RETRY_DELAY);
+            console.warn(`Modal stats load failed, retrying (${modalRetryCount}/${MODAL_MAX_RETRIES}):`, error);
+            return;
+          }
+          
+          // Max retries reached, show error with retry button
+          console.error('Error loading stats after retries:', error);
           loadingEl.style.display = 'none';
           errorEl.style.display = 'block';
+          errorEl.innerHTML = 'Unable to load statistics. <button id="modal-retry-btn" style="margin-left: 0.5rem; padding: 0.25rem 0.5rem; background: var(--accent-primary); color: var(--bg-primary); border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">Retry</button>';
           contentEl.style.display = 'none';
+          
+          // Add retry button handler
+          const retryBtn = document.getElementById('modal-retry-btn');
+          if (retryBtn) {
+            retryBtn.onclick = () => {
+              modalRetryCount = 0;
+              errorEl.style.display = 'none';
+              loadingEl.style.display = 'block';
+              loadingEl.textContent = 'Loading...';
+              loadStats();
+            };
+          }
         }
+      };
+
+      // Setup tooltip positioning for fixed overlay
+      const setupTooltips = () => {
+        const tooltips = document.querySelectorAll('.stat-label-tooltip');
+        tooltips.forEach(tooltip => {
+          const updatePosition = (e) => {
+            const rect = tooltip.getBoundingClientRect();
+            const left = rect.left + (rect.width / 2);
+            const top = rect.top;
+            
+            // Set CSS custom properties for positioning
+            tooltip.style.setProperty('--tooltip-left', `${left}px`);
+            tooltip.style.setProperty('--tooltip-top', `${top}px`);
+          };
+          
+          tooltip.addEventListener('mouseenter', updatePosition);
+          tooltip.addEventListener('mousemove', updatePosition);
+        });
       };
 
       infoBtn.addEventListener('click', () => {
         infoModal.style.display = 'block';
         document.body.style.overflow = 'hidden';
+        // Reset retry count when opening modal
+        modalRetryCount = 0;
         loadStats();
+        // Setup tooltips after modal opens and stats load
+        setTimeout(() => {
+          setupTooltips();
+        }, 500);
       });
+      
+      // Also reload stats when modal is reopened (in case it failed before)
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+            const isVisible = infoModal.style.display === 'block';
+            if (isVisible && !document.getElementById('stats-content')?.style.display) {
+              // Modal opened and stats not loaded, try loading
+              const loadingEl = document.getElementById('stats-loading');
+              const errorEl = document.getElementById('stats-error');
+              if (loadingEl && errorEl && errorEl.style.display === 'block') {
+                // Stats failed before, reset and try again
+                modalRetryCount = 0;
+                errorEl.style.display = 'none';
+                loadingEl.style.display = 'block';
+                loadingEl.textContent = 'Loading...';
+                loadStats();
+              }
+            }
+            // Setup tooltips when stats content becomes visible
+            if (isVisible && document.getElementById('stats-content')?.style.display === 'block') {
+              setTimeout(setupTooltips, 100);
+            }
+          }
+        });
+      });
+      
+      observer.observe(infoModal, { attributes: true, attributeFilter: ['style'] });
     }
 
     // Removed dual-scroll logic; native bottom scrollbars remain
