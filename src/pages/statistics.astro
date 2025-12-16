@@ -20,37 +20,41 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <div id="stats-content" style="display: none;">
       <!-- Overview Cards -->
       <div class="stats-overview">
-        <div class="stat-card">
+        <div class="stat-card" data-stat="views">
           <div class="stat-label">Total Page Views</div>
-          <div class="stat-value" id="total-views">-</div>
+          <div class="stat-value" id="total-views" data-value="0">0</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" data-stat="ips">
           <div class="stat-label">Distinct IP Addresses</div>
-          <div class="stat-value" id="distinct-ips">-</div>
+          <div class="stat-value" id="distinct-ips" data-value="0">0</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" data-stat="visitors">
           <div class="stat-label">Unique Visitors</div>
-          <div class="stat-value" id="unique-visitors">-</div>
+          <div class="stat-value" id="unique-visitors" data-value="0">0</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" data-stat="sessions">
           <div class="stat-label">Total Sessions</div>
-          <div class="stat-value" id="total-sessions">-</div>
+          <div class="stat-value" id="total-sessions" data-value="0">0</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" data-stat="new">
           <div class="stat-label">New Visitors</div>
-          <div class="stat-value" id="new-visitors">-</div>
+          <div class="stat-value" id="new-visitors" data-value="0">0</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" data-stat="returning">
           <div class="stat-label">Returning Visitors</div>
-          <div class="stat-value" id="returning-visitors">-</div>
+          <div class="stat-value" id="returning-visitors" data-value="0">0</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" data-stat="time">
           <div class="stat-label">Avg Time on Page</div>
-          <div class="stat-value" id="avg-time">-</div>
+          <div class="stat-value" id="avg-time" data-value="0">0s</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" data-stat="scroll">
           <div class="stat-label">Avg Scroll Depth</div>
-          <div class="stat-value" id="avg-scroll">-</div>
+          <div class="stat-value" id="avg-scroll" data-value="0">0%</div>
+        </div>
+        <div class="stat-card" data-stat="bounce">
+          <div class="stat-label">Bounce Rate</div>
+          <div class="stat-value" id="bounce-rate" data-value="0">0%</div>
         </div>
       </div>
       
@@ -58,39 +62,58 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <div class="charts-section">
         <h2>Traffic Overview</h2>
         <div class="chart-grid">
-          <div class="chart-container">
-            <canvas id="traffic-sources-chart"></canvas>
+          <div class="chart-wrapper">
+            <h3>Traffic Sources</h3>
+            <div class="chart-container">
+              <canvas id="traffic-sources-chart"></canvas>
+            </div>
           </div>
-          <div class="chart-container">
-            <canvas id="visitor-type-chart"></canvas>
+          <div class="chart-wrapper">
+            <h3>Visitor Type</h3>
+            <div class="chart-container">
+              <canvas id="visitor-type-chart"></canvas>
+            </div>
           </div>
-          <div class="chart-container">
-            <canvas id="device-types-chart"></canvas>
+          <div class="chart-wrapper">
+            <h3>Device Types</h3>
+            <div class="chart-container">
+              <canvas id="device-types-chart"></canvas>
+            </div>
           </div>
         </div>
         
         <h2>Top Pages</h2>
-        <div class="chart-container">
-          <canvas id="top-pages-chart"></canvas>
-        </div>
-        
-        <h2>Technology Breakdown</h2>
-        <div class="chart-grid">
-          <div class="chart-container">
-            <canvas id="browsers-chart"></canvas>
-          </div>
-          <div class="chart-container">
-            <canvas id="os-chart"></canvas>
+        <div class="chart-wrapper">
+          <div class="chart-container chart-container-large">
+            <canvas id="top-pages-chart"></canvas>
           </div>
         </div>
         
-        <h2>Time Patterns</h2>
+        <h2>Technology & Time Patterns</h2>
         <div class="chart-grid">
-          <div class="chart-container">
-            <canvas id="visits-by-hour-chart"></canvas>
+          <div class="chart-wrapper">
+            <h3>Browsers</h3>
+            <div class="chart-container">
+              <canvas id="browsers-chart"></canvas>
+            </div>
           </div>
-          <div class="chart-container">
-            <canvas id="visits-by-day-chart"></canvas>
+          <div class="chart-wrapper">
+            <h3>Operating Systems</h3>
+            <div class="chart-container">
+              <canvas id="os-chart"></canvas>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <h3>Visits by Hour</h3>
+            <div class="chart-container">
+              <canvas id="visits-by-hour-chart"></canvas>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <h3>Visits by Day</h3>
+            <div class="chart-container">
+              <canvas id="visits-by-day-chart"></canvas>
+            </div>
           </div>
         </div>
         
@@ -132,10 +155,50 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .stat-card {
     background: var(--bg-tertiary);
     border: 1px solid var(--border-strong);
+    border-left: 4px solid var(--accent-secondary);
     padding: 1.5rem;
     text-align: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: visible;
   }
+  
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(245, 165, 36, 0.05) 0%, rgba(98, 199, 255, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(245, 165, 36, 0.2), 0 0 0 1px rgba(245, 165, 36, 0.1);
+    border-left-color: var(--accent-primary);
+  }
+  
+  .stat-card:hover::before {
+    opacity: 1;
+  }
+  
+  .stat-card:active {
+    transform: translateY(-2px) scale(1.01);
+  }
+  
+  .stat-card.active {
+    border-left-color: var(--accent-primary);
+    box-shadow: 0 4px 16px rgba(245, 165, 36, 0.3);
+    background: rgba(245, 165, 36, 0.05);
+  }
+  
   
   .stat-label {
     color: var(--text-secondary);
@@ -150,6 +213,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 2rem;
     font-weight: 700;
     font-family: var(--font-mono);
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .stat-card:hover .stat-value {
+    color: var(--accent-primary);
+    transform: scale(1.05);
+    text-shadow: 0 0 10px rgba(245, 165, 36, 0.3);
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+  
+  .stat-value.animating {
+    animation: pulse 0.5s ease-in-out;
   }
   
   .stat-value-small {
@@ -164,25 +249,58 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     margin-top: 3rem;
   }
   
-  .chart-container {
+  .chart-wrapper {
     background: var(--bg-tertiary);
     border: 1px solid var(--border-strong);
-    padding: 1rem;
-    margin: 1rem 0;
-    min-height: 200px;
-    max-height: 250px;
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .chart-wrapper:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .chart-wrapper h3 {
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent-secondary);
+  }
+  
+  .chart-container {
     position: relative;
+    min-height: 250px;
+    max-height: 300px;
+  }
+  
+  .chart-container-large {
+    min-height: 300px;
+    max-height: 400px;
   }
   
   .chart-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
     margin: 1.5rem 0;
   }
   
-  .chart-grid .chart-container {
-    margin: 0;
+  .charts-section h2 {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 3rem 0 1.5rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-strong);
+  }
+  
+  .charts-section h2:first-of-type {
+    margin-top: 2rem;
   }
   
   .pages-table,
@@ -252,17 +370,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const API_BASE = import.meta.env.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api';
     const API_ENDPOINT = `${API_BASE}/stats`;
     
-    // Chart.js configuration for dark theme (compact)
+    // Chart.js configuration for dark theme
     const chartConfig = {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: {
           labels: {
-            color: 'rgba(158, 167, 179, 0.8)',
-            font: { size: 11 }
+            color: 'rgba(158, 167, 179, 0.9)',
+            font: { size: 12 },
+            padding: 12,
+            usePointStyle: true
           },
           position: 'bottom'
+        },
+        tooltip: {
+          backgroundColor: 'rgba(20, 25, 31, 0.95)',
+          titleColor: 'rgba(158, 167, 179, 0.9)',
+          bodyColor: 'rgba(158, 167, 179, 0.9)',
+          borderColor: 'rgba(245, 165, 36, 0.3)',
+          borderWidth: 1,
+          padding: 12,
+          cornerRadius: 6
         }
       },
       scales: {
@@ -270,22 +399,45 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           beginAtZero: true,
           ticks: {
             color: 'rgba(158, 167, 179, 0.8)',
-            font: { size: 10 }
+            font: { size: 11 }
           },
           grid: {
-            color: 'rgba(42, 53, 66, 0.5)'
+            color: 'rgba(42, 53, 66, 0.4)',
+            drawBorder: false
           }
         },
         x: {
           ticks: {
             color: 'rgba(158, 167, 179, 0.8)',
-            font: { size: 10 }
+            font: { size: 11 }
           },
           grid: {
-            color: 'rgba(42, 53, 66, 0.5)'
+            color: 'rgba(42, 53, 66, 0.4)',
+            drawBorder: false
           }
         }
       }
+    };
+    
+    // Color palette
+    const colors = {
+      primary: 'rgba(245, 165, 36, 0.8)',
+      secondary: 'rgba(98, 199, 255, 0.8)',
+      success: 'rgba(74, 222, 128, 0.8)',
+      danger: 'rgba(225, 105, 93, 0.8)',
+      purple: 'rgba(139, 92, 246, 0.8)',
+      pink: 'rgba(236, 72, 153, 0.8)',
+      yellow: 'rgba(251, 191, 36, 0.8)',
+      green: 'rgba(34, 197, 94, 0.8)',
+      blue: 'rgba(59, 130, 246, 0.8)',
+      indigo: 'rgba(168, 85, 247, 0.8)'
+    };
+    
+    const barColors = {
+      primary: 'rgba(245, 165, 36, 0.7)',
+      secondary: 'rgba(98, 199, 255, 0.7)',
+      success: 'rgba(74, 222, 128, 0.7)',
+      purple: 'rgba(139, 92, 246, 0.7)'
     };
     
     // Load Chart.js from CDN
@@ -314,245 +466,325 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         errorEl.style.display = 'none';
         contentEl.style.display = 'block';
         
-        // Update overview stats
-        document.getElementById('total-views').textContent = data.totalViews || '0';
-        document.getElementById('distinct-ips').textContent = data.distinctIPs || '0';
-        document.getElementById('unique-visitors').textContent = data.uniqueVisitors || '0';
-        document.getElementById('total-sessions').textContent = data.totalSessions || '0';
-        document.getElementById('new-visitors').textContent = data.newVisitors || '0';
-        document.getElementById('returning-visitors').textContent = data.returningVisitors || '0';
-        document.getElementById('avg-time').textContent = data.avgTimeOnPage ? `${data.avgTimeOnPage}s` : '0s';
-        document.getElementById('avg-scroll').textContent = data.avgScrollDepth ? `${data.avgScrollDepth}%` : '0%';
+        // Animate numbers with counter effect
+        const animateValue = (element, start, end, duration, suffix = '') => {
+          const startTime = performance.now();
+          const isNumber = typeof end === 'number';
+          
+          const animate = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing function (ease-out)
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            
+            if (isNumber) {
+              const current = Math.floor(start + (end - start) * easeOut);
+              element.textContent = current + suffix;
+              element.setAttribute('data-value', current);
+            } else {
+              // For strings like "159s" or "53%"
+              element.textContent = end;
+              element.setAttribute('data-value', end);
+            }
+            
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              element.classList.remove('animating');
+            }
+          };
+          
+          element.classList.add('animating');
+          requestAnimationFrame(animate);
+        };
+        
+        // Update overview stats with animation
+        const totalViews = data.totalViews || 0;
+        const distinctIPs = data.distinctIPs || 0;
+        const uniqueVisitors = data.uniqueVisitors || 0;
+        const totalSessions = data.totalSessions || 0;
+        const newVisitors = data.newVisitors || 0;
+        const returningVisitors = data.returningVisitors || 0;
+        const avgTime = data.avgTimeOnPage ? `${data.avgTimeOnPage}s` : '0s';
+        const avgScroll = data.avgScrollDepth ? `${data.avgScrollDepth}%` : '0%';
+        const bounceRate = data.bounceRate !== undefined ? `${data.bounceRate}%` : '0%';
+        
+        // Animate each stat with a slight delay for visual effect
+        setTimeout(() => animateValue(document.getElementById('total-views'), 0, totalViews, 1000), 0);
+        setTimeout(() => animateValue(document.getElementById('distinct-ips'), 0, distinctIPs, 1000), 100);
+        setTimeout(() => animateValue(document.getElementById('unique-visitors'), 0, uniqueVisitors, 1000), 200);
+        setTimeout(() => animateValue(document.getElementById('total-sessions'), 0, totalSessions, 1000), 300);
+        setTimeout(() => animateValue(document.getElementById('new-visitors'), 0, newVisitors, 1000), 400);
+        setTimeout(() => animateValue(document.getElementById('returning-visitors'), 0, returningVisitors, 1000), 500);
+        setTimeout(() => animateValue(document.getElementById('avg-time'), '0s', avgTime, 800), 600);
+        setTimeout(() => animateValue(document.getElementById('avg-scroll'), '0%', avgScroll, 800), 700);
+        setTimeout(() => animateValue(document.getElementById('bounce-rate'), '0%', bounceRate, 800), 800);
+        
+        // Add click interaction to highlight related data
+        document.querySelectorAll('.stat-card').forEach(card => {
+          card.addEventListener('click', function() {
+            // Remove active class from all cards
+            document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+            // Add active class to clicked card
+            this.classList.add('active');
+            
+            // Optional: Scroll to charts section
+            const chartsSection = document.querySelector('.charts-section');
+            if (chartsSection) {
+              chartsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          });
+        });
         
         if (!window.Chart) {
           console.error('Chart.js not loaded');
           return;
         }
         
-        // Top Pages Chart
-        if (data.topPages && data.topPages.length > 0) {
-          const ctx1 = document.getElementById('top-pages-chart');
-          if (ctx1) {
-            new Chart(ctx1, {
-              type: 'bar',
-              data: {
-                labels: data.topPages.map(p => p.path),
-                datasets: [{
-                  label: 'Page Views',
-                  data: data.topPages.map(p => p.count),
-                  backgroundColor: 'rgba(245, 165, 36, 0.6)',
-                  borderColor: 'rgba(245, 165, 36, 1)',
-                  borderWidth: 1
-                }]
-              },
-              options: {
-                ...chartConfig,
-                plugins: {
-                  ...chartConfig.plugins,
-                  legend: { display: false }
-                },
-                indexAxis: 'y' // Horizontal bars for compactness
-              }
-            });
-          }
-        }
-        
         // Traffic Sources Chart
-        if (data.trafficSources && data.trafficSources.length > 0) {
-          const ctx2 = document.getElementById('traffic-sources-chart');
-          if (ctx2) {
-            new Chart(ctx2, {
-              type: 'doughnut',
-              data: {
-                labels: data.trafficSources.slice(0, 8).map(s => s.source),
-                datasets: [{
-                  data: data.trafficSources.slice(0, 8).map(s => s.count),
-                  backgroundColor: [
-                    'rgba(245, 165, 36, 0.8)',
-                    'rgba(98, 199, 255, 0.8)',
-                    'rgba(74, 222, 128, 0.8)',
-                    'rgba(225, 105, 93, 0.8)',
-                    'rgba(139, 92, 246, 0.8)',
-                    'rgba(236, 72, 153, 0.8)',
-                    'rgba(251, 191, 36, 0.8)',
-                    'rgba(34, 197, 94, 0.8)'
-                  ]
-                }]
-              },
-              options: {
-                ...chartConfig,
-                plugins: {
-                  ...chartConfig.plugins,
-                  legend: { ...chartConfig.plugins.legend, position: 'bottom' }
+        const ctxTraffic = document.getElementById('traffic-sources-chart');
+        if (ctxTraffic && data.trafficSources && data.trafficSources.length > 0) {
+          new Chart(ctxTraffic, {
+            type: 'doughnut',
+            data: {
+              labels: data.trafficSources.slice(0, 6).map(s => s.source),
+              datasets: [{
+                data: data.trafficSources.slice(0, 6).map(s => s.count),
+                backgroundColor: [
+                  colors.primary,
+                  colors.secondary,
+                  colors.success,
+                  colors.purple,
+                  colors.pink,
+                  colors.blue
+                ],
+                borderWidth: 0
+              }]
+            },
+            options: {
+              ...chartConfig,
+              plugins: {
+                ...chartConfig.plugins,
+                tooltip: {
+                  ...chartConfig.plugins.tooltip,
+                  callbacks: {
+                    label: function(context) {
+                      const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                      const percentage = ((context.parsed / total) * 100).toFixed(1);
+                      return `${context.label}: ${context.parsed} (${percentage}%)`;
+                    }
+                  }
                 }
               }
-            });
-          }
+            }
+          });
+        }
+        
+        // Visitor Type Chart
+        const ctxVisitor = document.getElementById('visitor-type-chart');
+        if (ctxVisitor && data.newVisitors !== undefined && data.returningVisitors !== undefined) {
+          new Chart(ctxVisitor, {
+            type: 'doughnut',
+            data: {
+              labels: ['New Visitors', 'Returning Visitors'],
+              datasets: [{
+                data: [data.newVisitors, data.returningVisitors],
+                backgroundColor: [colors.secondary, colors.primary],
+                borderWidth: 0
+              }]
+            },
+            options: {
+              ...chartConfig,
+              plugins: {
+                ...chartConfig.plugins,
+                tooltip: {
+                  ...chartConfig.plugins.tooltip,
+                  callbacks: {
+                    label: function(context) {
+                      const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                      const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                      return `${context.label}: ${context.parsed} (${percentage}%)`;
+                    }
+                  }
+                }
+              }
+            }
+          });
         }
         
         // Device Types Chart
-        if (data.deviceTypes && data.deviceTypes.length > 0) {
-          const ctx3 = document.getElementById('device-types-chart');
-          if (ctx3) {
-            new Chart(ctx3, {
-              type: 'doughnut',
-              data: {
-                labels: data.deviceTypes.map(d => d.type),
-                datasets: [{
-                  data: data.deviceTypes.map(d => d.count),
-                  backgroundColor: [
-                    'rgba(245, 165, 36, 0.8)',
-                    'rgba(98, 199, 255, 0.8)',
-                    'rgba(74, 222, 128, 0.8)'
-                  ]
-                }]
-              },
-              options: {
-                ...chartConfig,
-                plugins: {
-                  ...chartConfig.plugins,
-                  legend: { ...chartConfig.plugins.legend, position: 'bottom' }
+        const ctxDevice = document.getElementById('device-types-chart');
+        if (ctxDevice && data.deviceTypes && data.deviceTypes.length > 0) {
+          new Chart(ctxDevice, {
+            type: 'pie',
+            data: {
+              labels: data.deviceTypes.map(d => d.type.charAt(0).toUpperCase() + d.type.slice(1)),
+              datasets: [{
+                data: data.deviceTypes.map(d => d.count),
+                backgroundColor: [colors.primary, colors.secondary, colors.success],
+                borderWidth: 0
+              }]
+            },
+            options: {
+              ...chartConfig,
+              plugins: {
+                ...chartConfig.plugins,
+                tooltip: {
+                  ...chartConfig.plugins.tooltip,
+                  callbacks: {
+                    label: function(context) {
+                      const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                      const percentage = ((context.parsed / total) * 100).toFixed(1);
+                      return `${context.label}: ${context.parsed} (${percentage}%)`;
+                    }
+                  }
                 }
               }
-            });
-          }
+            }
+          });
+        }
+        
+        // Top Pages Chart
+        const ctxPages = document.getElementById('top-pages-chart');
+        if (ctxPages && data.topPages && data.topPages.length > 0) {
+          const topPages = data.topPages.slice(0, 10);
+          new Chart(ctxPages, {
+            type: 'bar',
+            data: {
+              labels: topPages.map(p => p.path.length > 30 ? p.path.substring(0, 30) + '...' : p.path),
+              datasets: [{
+                label: 'Page Views',
+                data: topPages.map(p => p.count),
+                backgroundColor: barColors.primary,
+                borderColor: colors.primary.replace('0.8', '1'),
+                borderWidth: 2,
+                borderRadius: 4
+              }]
+            },
+            options: {
+              ...chartConfig,
+              indexAxis: 'y',
+              plugins: {
+                ...chartConfig.plugins,
+                legend: { display: false }
+              }
+            }
+          });
         }
         
         // Browsers Chart
-        if (data.browsers && data.browsers.length > 0) {
-          const ctx4 = document.getElementById('browsers-chart');
-          if (ctx4) {
-            new Chart(ctx4, {
-              type: 'bar',
-              data: {
-                labels: data.browsers.map(b => b.browser),
-                datasets: [{
-                  label: 'Visits',
-                  data: data.browsers.map(b => b.count),
-                  backgroundColor: 'rgba(98, 199, 255, 0.6)',
-                  borderColor: 'rgba(98, 199, 255, 1)',
-                  borderWidth: 1
-                }]
-              },
-              options: {
-                ...chartConfig,
-                plugins: {
-                  ...chartConfig.plugins,
-                  legend: { display: false }
-                },
-                indexAxis: 'y'
+        const ctxBrowsers = document.getElementById('browsers-chart');
+        if (ctxBrowsers && data.browsers && data.browsers.length > 0) {
+          new Chart(ctxBrowsers, {
+            type: 'bar',
+            data: {
+              labels: data.browsers.map(b => b.browser),
+              datasets: [{
+                label: 'Visits',
+                data: data.browsers.map(b => b.count),
+                backgroundColor: barColors.secondary,
+                borderColor: colors.secondary.replace('0.8', '1'),
+                borderWidth: 2,
+                borderRadius: 4
+              }]
+            },
+            options: {
+              ...chartConfig,
+              indexAxis: 'y',
+              plugins: {
+                ...chartConfig.plugins,
+                legend: { display: false }
               }
-            });
-          }
+            }
+          });
         }
         
         // OS Chart
-        if (data.operatingSystems && data.operatingSystems.length > 0) {
-          const ctx5 = document.getElementById('os-chart');
-          if (ctx5) {
-            new Chart(ctx5, {
-              type: 'bar',
-              data: {
-                labels: data.operatingSystems.map(o => o.os),
-                datasets: [{
-                  label: 'Visits',
-                  data: data.operatingSystems.map(o => o.count),
-                  backgroundColor: 'rgba(74, 222, 128, 0.6)',
-                  borderColor: 'rgba(74, 222, 128, 1)',
-                  borderWidth: 1
-                }]
-              },
-              options: {
-                ...chartConfig,
-                plugins: {
-                  ...chartConfig.plugins,
-                  legend: { display: false }
-                },
-                indexAxis: 'y'
+        const ctxOS = document.getElementById('os-chart');
+        if (ctxOS && data.operatingSystems && data.operatingSystems.length > 0) {
+          new Chart(ctxOS, {
+            type: 'bar',
+            data: {
+              labels: data.operatingSystems.map(o => o.os),
+              datasets: [{
+                label: 'Visits',
+                data: data.operatingSystems.map(o => o.count),
+                backgroundColor: barColors.success,
+                borderColor: colors.success.replace('0.8', '1'),
+                borderWidth: 2,
+                borderRadius: 4
+              }]
+            },
+            options: {
+              ...chartConfig,
+              indexAxis: 'y',
+              plugins: {
+                ...chartConfig.plugins,
+                legend: { display: false }
               }
-            });
-          }
+            }
+          });
         }
         
         // Visits by Hour Chart
-        if (data.visitsByHour && data.visitsByHour.length > 0) {
+        const ctxHour = document.getElementById('visits-by-hour-chart');
+        if (ctxHour && data.visitsByHour && data.visitsByHour.length > 0) {
           const sortedHours = data.visitsByHour.sort((a, b) => a.hour - b.hour);
-          const ctx6 = document.getElementById('visits-by-hour-chart');
-          if (ctx6) {
-            new Chart(ctx6, {
-              type: 'line',
-              data: {
-                labels: sortedHours.map(h => `${h.hour}:00`),
-                datasets: [{
-                  label: 'Visits',
-                  data: sortedHours.map(h => h.count),
-                  borderColor: 'rgba(245, 165, 36, 1)',
-                  backgroundColor: 'rgba(245, 165, 36, 0.1)',
-                  tension: 0.4,
-                  fill: true
-                }]
-              },
-              options: chartConfig
-            });
-          }
+          new Chart(ctxHour, {
+            type: 'line',
+            data: {
+              labels: sortedHours.map(h => `${h.hour}:00`),
+              datasets: [{
+                label: 'Visits',
+                data: sortedHours.map(h => h.count),
+                borderColor: colors.primary,
+                backgroundColor: colors.primary.replace('0.8', '0.1'),
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6
+              }]
+            },
+            options: {
+              ...chartConfig,
+              plugins: {
+                ...chartConfig.plugins,
+                legend: { display: false }
+              }
+            }
+          });
         }
         
         // Visits by Day Chart
-        if (data.visitsByDay && data.visitsByDay.length > 0) {
+        const ctxDay = document.getElementById('visits-by-day-chart');
+        if (ctxDay && data.visitsByDay && data.visitsByDay.length > 0) {
           const dayOrder = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
           const sortedDays = data.visitsByDay.sort((a, b) => 
             dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day)
           );
-          const ctx7 = document.getElementById('visits-by-day-chart');
-          if (ctx7) {
-            new Chart(ctx7, {
-              type: 'bar',
-              data: {
-                labels: sortedDays.map(d => d.day.substring(0, 3)), // Abbreviate day names
-                datasets: [{
-                  label: 'Visits',
-                  data: sortedDays.map(d => d.count),
-                  backgroundColor: 'rgba(139, 92, 246, 0.6)',
-                  borderColor: 'rgba(139, 92, 246, 1)',
-                  borderWidth: 1
-                }]
-              },
-              options: {
-                ...chartConfig,
-                plugins: {
-                  ...chartConfig.plugins,
-                  legend: { display: false }
-                }
+          new Chart(ctxDay, {
+            type: 'bar',
+            data: {
+              labels: sortedDays.map(d => d.day.substring(0, 3)),
+              datasets: [{
+                label: 'Visits',
+                data: sortedDays.map(d => d.count),
+                backgroundColor: barColors.purple,
+                borderColor: colors.purple.replace('0.8', '1'),
+                borderWidth: 2,
+                borderRadius: 4
+              }]
+            },
+            options: {
+              ...chartConfig,
+              plugins: {
+                ...chartConfig.plugins,
+                legend: { display: false }
               }
-            });
-          }
-        }
-        
-        // New vs Returning Visitors Chart
-        if (data.newVisitors !== undefined && data.returningVisitors !== undefined) {
-          const ctx8 = document.getElementById('visitor-type-chart');
-          if (ctx8) {
-            new Chart(ctx8, {
-              type: 'doughnut',
-              data: {
-                labels: ['New Visitors', 'Returning Visitors'],
-                datasets: [{
-                  data: [data.newVisitors, data.returningVisitors],
-                  backgroundColor: [
-                    'rgba(98, 199, 255, 0.8)',
-                    'rgba(245, 165, 36, 0.8)'
-                  ]
-                }]
-              },
-              options: {
-                ...chartConfig,
-                plugins: {
-                  ...chartConfig.plugins,
-                  legend: { ...chartConfig.plugins.legend, position: 'bottom' }
-                }
-              }
-            });
-          }
+            }
+          });
         }
         
         // Top Pages Table
