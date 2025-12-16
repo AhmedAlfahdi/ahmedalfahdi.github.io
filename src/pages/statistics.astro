@@ -56,44 +56,42 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       
       <!-- Charts Section -->
       <div class="charts-section">
+        <h2>Traffic Overview</h2>
+        <div class="chart-grid">
+          <div class="chart-container">
+            <canvas id="traffic-sources-chart"></canvas>
+          </div>
+          <div class="chart-container">
+            <canvas id="visitor-type-chart"></canvas>
+          </div>
+          <div class="chart-container">
+            <canvas id="device-types-chart"></canvas>
+          </div>
+        </div>
+        
         <h2>Top Pages</h2>
         <div class="chart-container">
           <canvas id="top-pages-chart"></canvas>
         </div>
         
-        <h2>Traffic Sources</h2>
-        <div class="chart-container">
-          <canvas id="traffic-sources-chart"></canvas>
+        <h2>Technology Breakdown</h2>
+        <div class="chart-grid">
+          <div class="chart-container">
+            <canvas id="browsers-chart"></canvas>
+          </div>
+          <div class="chart-container">
+            <canvas id="os-chart"></canvas>
+          </div>
         </div>
         
-        <h2>Device Types</h2>
-        <div class="chart-container">
-          <canvas id="device-types-chart"></canvas>
-        </div>
-        
-        <h2>Browsers</h2>
-        <div class="chart-container">
-          <canvas id="browsers-chart"></canvas>
-        </div>
-        
-        <h2>Operating Systems</h2>
-        <div class="chart-container">
-          <canvas id="os-chart"></canvas>
-        </div>
-        
-        <h2>Visits by Hour of Day</h2>
-        <div class="chart-container">
-          <canvas id="visits-by-hour-chart"></canvas>
-        </div>
-        
-        <h2>Visits by Day of Week</h2>
-        <div class="chart-container">
-          <canvas id="visits-by-day-chart"></canvas>
-        </div>
-        
-        <h2>New vs Returning Visitors</h2>
-        <div class="chart-container">
-          <canvas id="visitor-type-chart"></canvas>
+        <h2>Time Patterns</h2>
+        <div class="chart-grid">
+          <div class="chart-container">
+            <canvas id="visits-by-hour-chart"></canvas>
+          </div>
+          <div class="chart-container">
+            <canvas id="visits-by-day-chart"></canvas>
+          </div>
         </div>
         
         <h2>Top Pages (Table)</h2>
@@ -169,10 +167,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .chart-container {
     background: var(--bg-tertiary);
     border: 1px solid var(--border-strong);
-    padding: 1.5rem;
-    margin: 1.5rem 0;
-    min-height: 300px;
+    padding: 1rem;
+    margin: 1rem 0;
+    min-height: 200px;
+    max-height: 250px;
     position: relative;
+  }
+  
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  
+  .chart-grid .chart-container {
+    margin: 0;
   }
   
   .pages-table,
@@ -242,22 +252,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const API_BASE = import.meta.env.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api';
     const API_ENDPOINT = `${API_BASE}/stats`;
     
-    // Chart.js configuration for dark theme
+    // Chart.js configuration for dark theme (compact)
     const chartConfig = {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           labels: {
-            color: 'rgba(158, 167, 179, 0.8)'
-          }
+            color: 'rgba(158, 167, 179, 0.8)',
+            font: { size: 11 }
+          },
+          position: 'bottom'
         }
       },
       scales: {
         y: {
           beginAtZero: true,
           ticks: {
-            color: 'rgba(158, 167, 179, 0.8)'
+            color: 'rgba(158, 167, 179, 0.8)',
+            font: { size: 10 }
           },
           grid: {
             color: 'rgba(42, 53, 66, 0.5)'
@@ -265,7 +278,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         },
         x: {
           ticks: {
-            color: 'rgba(158, 167, 179, 0.8)'
+            color: 'rgba(158, 167, 179, 0.8)',
+            font: { size: 10 }
           },
           grid: {
             color: 'rgba(42, 53, 66, 0.5)'
@@ -336,7 +350,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 plugins: {
                   ...chartConfig.plugins,
                   legend: { display: false }
-                }
+                },
+                indexAxis: 'y' // Horizontal bars for compactness
               }
             });
           }
@@ -349,9 +364,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             new Chart(ctx2, {
               type: 'doughnut',
               data: {
-                labels: data.trafficSources.slice(0, 10).map(s => s.source),
+                labels: data.trafficSources.slice(0, 8).map(s => s.source),
                 datasets: [{
-                  data: data.trafficSources.slice(0, 10).map(s => s.count),
+                  data: data.trafficSources.slice(0, 8).map(s => s.count),
                   backgroundColor: [
                     'rgba(245, 165, 36, 0.8)',
                     'rgba(98, 199, 255, 0.8)',
@@ -360,13 +375,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                     'rgba(139, 92, 246, 0.8)',
                     'rgba(236, 72, 153, 0.8)',
                     'rgba(251, 191, 36, 0.8)',
-                    'rgba(34, 197, 94, 0.8)',
-                    'rgba(59, 130, 246, 0.8)',
-                    'rgba(168, 85, 247, 0.8)'
+                    'rgba(34, 197, 94, 0.8)'
                   ]
                 }]
               },
-              options: chartConfig
+              options: {
+                ...chartConfig,
+                plugins: {
+                  ...chartConfig.plugins,
+                  legend: { ...chartConfig.plugins.legend, position: 'bottom' }
+                }
+              }
             });
           }
         }
@@ -376,7 +395,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           const ctx3 = document.getElementById('device-types-chart');
           if (ctx3) {
             new Chart(ctx3, {
-              type: 'pie',
+              type: 'doughnut',
               data: {
                 labels: data.deviceTypes.map(d => d.type),
                 datasets: [{
@@ -388,7 +407,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                   ]
                 }]
               },
-              options: chartConfig
+              options: {
+                ...chartConfig,
+                plugins: {
+                  ...chartConfig.plugins,
+                  legend: { ...chartConfig.plugins.legend, position: 'bottom' }
+                }
+              }
             });
           }
         }
@@ -414,7 +439,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 plugins: {
                   ...chartConfig.plugins,
                   legend: { display: false }
-                }
+                },
+                indexAxis: 'y'
               }
             });
           }
@@ -441,7 +467,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 plugins: {
                   ...chartConfig.plugins,
                   legend: { display: false }
-                }
+                },
+                indexAxis: 'y'
               }
             });
           }
@@ -481,7 +508,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             new Chart(ctx7, {
               type: 'bar',
               data: {
-                labels: sortedDays.map(d => d.day),
+                labels: sortedDays.map(d => d.day.substring(0, 3)), // Abbreviate day names
                 datasets: [{
                   label: 'Visits',
                   data: sortedDays.map(d => d.count),
@@ -517,7 +544,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                   ]
                 }]
               },
-              options: chartConfig
+              options: {
+                ...chartConfig,
+                plugins: {
+                  ...chartConfig.plugins,
+                  legend: { ...chartConfig.plugins.legend, position: 'bottom' }
+                }
+              }
             });
           }
         }
