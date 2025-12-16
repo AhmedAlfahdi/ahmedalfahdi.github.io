@@ -44,6 +44,8 @@ jobs:
           ls -la build-info.json
         
       - name: Build with Astro
+        env:
+          PUBLIC_ANALYTICS_API: ${{ secrets.PUBLIC_ANALYTICS_API || 'https://your-api-endpoint.com/api' }}
         run: npm run build
         
       - name: Verify build info in dist

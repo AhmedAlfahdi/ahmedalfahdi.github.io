@@ -1,0 +1,53 @@
+---
+// Visitor tracking component
+// This component sends page view data to your analytics API
+---
+
+<script>
+  if (typeof window !== 'undefined') {
+    // Configuration - Update this with your API endpoint
+    const API_ENDPOINT = import.meta.env.PUBLIC_ANALYTICS_API || 'https://your-api-endpoint.com/api/track';
+    
+    // Only track once per page load
+    let tracked = false;
+    
+    const trackVisit = async () => {
+      if (tracked) return;
+      tracked = true;
+      
+      try {
+        const pageData = {
+          path: window.location.pathname,
+          referrer: document.referrer || 'direct',
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString(),
+          screenWidth: window.screen.width,
+          screenHeight: window.screen.height,
+          language: navigator.language,
+        };
+        
+        // Send to API
+        await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(pageData),
+          // Don't wait for response to avoid blocking page load
+          keepalive: true,
+        });
+      } catch (error) {
+        // Silently fail - don't interrupt user experience
+        console.debug('Analytics tracking failed:', error);
+      }
+    };
+    
+    // Track on page load
+    if (document.readyState === 'complete') {
+      trackVisit();
+    } else {
+      window.addEventListener('load', trackVisit);
+    }
+  }
+</script>
+

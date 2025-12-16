@@ -1,0 +1,248 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Configuration - Update this with your API endpoint
+const API_ENDPOINT = import.meta.env.PUBLIC_ANALYTICS_API || 'https://your-api-endpoint.com/api/stats';
+---
+
+<BaseLayout title="Website Statistics">
+  <div class="container">
+    <h1>Website Statistics</h1>
+    
+    <div class="stats-section">
+      <h2>Overview</h2>
+      <div id="stats-loading" class="loading-message">
+        Loading statistics...
+      </div>
+      <div id="stats-error" class="error-message" style="display: none;">
+        <p>Unable to load statistics. Please ensure the analytics API is configured.</p>
+        <p class="error-detail">API Endpoint: <code>{API_ENDPOINT}</code></p>
+      </div>
+      <div id="stats-content" style="display: none;">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Page Views</div>
+            <div class="stat-value" id="total-views">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Distinct IP Addresses</div>
+            <div class="stat-value" id="distinct-ips">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Unique Visitors</div>
+            <div class="stat-value" id="unique-visitors">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Most Visited Page</div>
+            <div class="stat-value" id="top-page">-</div>
+          </div>
+        </div>
+        
+        <h2>Top Pages</h2>
+        <div id="top-pages-list" class="pages-list"></div>
+        
+        <h2>Recent Visitors</h2>
+        <div id="recent-visitors" class="visitors-list"></div>
+      </div>
+    </div>
+    
+    <div class="setup-section">
+      <h2>Setup Instructions</h2>
+      <div class="callout callout-info" data-callout="info">
+        To view statistics, you need to set up a backend API endpoint. 
+        See the <code>ANALYTICS-SETUP.md</code> file for instructions.
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .stats-section {
+    margin-bottom: 2rem;
+  }
+  
+  .loading-message,
+  .error-message {
+    padding: 1.5rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    border-left: 4px solid var(--accent-secondary);
+    margin: 1rem 0;
+    color: var(--text-secondary);
+  }
+  
+  .error-message {
+    border-left-color: #e1695d;
+  }
+  
+  .error-detail {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  
+  .stat-card {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  .stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.75rem;
+  }
+  
+  .stat-value {
+    color: var(--accent-primary);
+    font-size: 2rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+  }
+  
+  .pages-list,
+  .visitors-list {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    margin: 1rem 0;
+    padding: 1rem;
+  }
+  
+  .page-item,
+  .visitor-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .page-item:last-child,
+  .visitor-item:last-child {
+    border-bottom: none;
+  }
+  
+  .page-item:hover,
+  .visitor-item:hover {
+    background: rgba(245, 165, 36, 0.05);
+  }
+  
+  .page-path {
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+  }
+  
+  .page-count {
+    color: var(--accent-secondary);
+    font-weight: 600;
+  }
+  
+  .visitor-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .visitor-ip {
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+  
+  .visitor-details {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  
+  .setup-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-strong);
+  }
+</style>
+
+<script>
+  if (typeof window !== 'undefined') {
+    const API_ENDPOINT = import.meta.env.PUBLIC_ANALYTICS_API || 'https://your-api-endpoint.com/api/stats';
+    
+    const loadStats = async () => {
+      const loadingEl = document.getElementById('stats-loading');
+      const errorEl = document.getElementById('stats-error');
+      const contentEl = document.getElementById('stats-content');
+      
+      try {
+        const response = await fetch(API_ENDPOINT);
+        
+        if (!response.ok) {
+          throw new Error(`API returned ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Hide loading, show content
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'none';
+        contentEl.style.display = 'block';
+        
+        // Update statistics
+        document.getElementById('total-views').textContent = data.totalViews || '0';
+        document.getElementById('distinct-ips').textContent = data.distinctIPs || '0';
+        document.getElementById('unique-visitors').textContent = data.uniqueVisitors || '0';
+        document.getElementById('top-page').textContent = data.topPage || 'N/A';
+        
+        // Display top pages
+        const topPagesEl = document.getElementById('top-pages-list');
+        if (data.topPages && data.topPages.length > 0) {
+          topPagesEl.innerHTML = data.topPages.map((page, idx) => `
+            <div class="page-item">
+              <span class="page-path">${page.path}</span>
+              <span class="page-count">${page.count} views</span>
+            </div>
+          `).join('');
+        } else {
+          topPagesEl.innerHTML = '<p style="padding: 1rem; color: var(--text-muted);">No page data available</p>';
+        }
+        
+        // Display recent visitors
+        const recentVisitorsEl = document.getElementById('recent-visitors');
+        if (data.recentVisitors && data.recentVisitors.length > 0) {
+          recentVisitorsEl.innerHTML = data.recentVisitors.map(visitor => `
+            <div class="visitor-item">
+              <div class="visitor-info">
+                <span class="visitor-ip">${visitor.ip}</span>
+                <span class="visitor-details">${visitor.path} • ${new Date(visitor.timestamp).toLocaleString()}</span>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          recentVisitorsEl.innerHTML = '<p style="padding: 1rem; color: var(--text-muted);">No visitor data available</p>';
+        }
+        
+      } catch (error) {
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        contentEl.style.display = 'none';
+        console.error('Failed to load statistics:', error);
+      }
+    };
+    
+    // Load stats on page load
+    if (document.readyState === 'complete') {
+      loadStats();
+    } else {
+      window.addEventListener('load', loadStats);
+    }
+  }
+</script>
+

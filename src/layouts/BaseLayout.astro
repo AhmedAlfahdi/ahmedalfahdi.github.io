@@ -1,4 +1,6 @@
 ---
+import VisitorTracker from '../components/VisitorTracker.astro';
+
 interface Props {
   title: string;
   description?: string;
@@ -804,6 +806,7 @@ try {
   <main>
     <slot />
   </main>
+  <VisitorTracker />
   <div id="scroll-progress" class="scroll-progress" aria-hidden="true">0%</div>
   
   <!-- Site Info Button -->
@@ -848,6 +851,31 @@ try {
       <div class="info-section">
         <h4>Report Bugs</h4>
         <p><a href="https://github.com/AhmedAlfahdi/ahmedalfahdi.github.io/issues" target="_blank" rel="noopener noreferrer" class="bug-report-link">Submit an issue on GitHub</a></p>
+      </div>
+      <div class="info-section">
+        <h4>Website Statistics</h4>
+        <div id="stats-loading" style="padding: 0.5rem 0; color: var(--text-muted); font-size: 0.9rem;">Loading...</div>
+        <div id="stats-error" style="display: none; padding: 0.5rem 0; color: #e1695d; font-size: 0.9rem;">Unable to load statistics</div>
+        <div id="stats-content" style="display: none;">
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 0.5rem;">
+            <div>
+              <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Total Views</div>
+              <div style="color: var(--accent-primary); font-weight: 600; font-family: var(--font-mono);" id="total-views">-</div>
+            </div>
+            <div>
+              <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Distinct IPs</div>
+              <div style="color: var(--accent-primary); font-weight: 600; font-family: var(--font-mono);" id="distinct-ips">-</div>
+            </div>
+            <div>
+              <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Unique Visitors</div>
+              <div style="color: var(--accent-primary); font-weight: 600; font-family: var(--font-mono);" id="unique-visitors">-</div>
+            </div>
+            <div>
+              <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem;">Top Page</div>
+              <div style="color: var(--accent-secondary); font-size: 0.85rem; font-family: var(--font-mono); word-break: break-all;" id="top-page">-</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -918,11 +946,6 @@ try {
     const infoOverlay = document.querySelector('.site-info-overlay');
 
     if (infoBtn && infoModal) {
-      infoBtn.addEventListener('click', () => {
-        infoModal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-      });
-
       const closeModal = () => {
         infoModal.style.display = 'none';
         document.body.style.overflow = '';
@@ -941,6 +964,51 @@ try {
         if (e.key === 'Escape' && infoModal.style.display === 'block') {
           closeModal();
         }
+      });
+
+      // Load statistics when modal opens
+      const loadStats = async () => {
+        const API_ENDPOINT = import.meta.env.PUBLIC_ANALYTICS_API || 'https://your-api-endpoint.com/api/stats';
+        const loadingEl = document.getElementById('stats-loading');
+        const errorEl = document.getElementById('stats-error');
+        const contentEl = document.getElementById('stats-content');
+        
+        if (!loadingEl || !errorEl || !contentEl) return;
+        
+        try {
+          const response = await fetch(API_ENDPOINT);
+          
+          if (!response.ok) {
+            throw new Error(`API returned ${response.status}`);
+          }
+          
+          const data = await response.json();
+          
+          loadingEl.style.display = 'none';
+          errorEl.style.display = 'none';
+          contentEl.style.display = 'block';
+          
+          const totalViewsEl = document.getElementById('total-views');
+          const distinctIPsEl = document.getElementById('distinct-ips');
+          const uniqueVisitorsEl = document.getElementById('unique-visitors');
+          const topPageEl = document.getElementById('top-page');
+          
+          if (totalViewsEl) totalViewsEl.textContent = data.totalViews || '0';
+          if (distinctIPsEl) distinctIPsEl.textContent = data.distinctIPs || '0';
+          if (uniqueVisitorsEl) uniqueVisitorsEl.textContent = data.uniqueVisitors || '0';
+          if (topPageEl) topPageEl.textContent = data.topPage || 'N/A';
+          
+        } catch (error) {
+          loadingEl.style.display = 'none';
+          errorEl.style.display = 'block';
+          contentEl.style.display = 'none';
+        }
+      };
+
+      infoBtn.addEventListener('click', () => {
+        infoModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        loadStats();
       });
     }
 
