@@ -6,6 +6,7 @@
 <script>
   if (typeof window !== 'undefined') {
     // Configuration - Update this with your API endpoint
+    // In Astro, import.meta.env is available at build time for PUBLIC_* vars
     const API_BASE = import.meta.env.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api';
     const API_ENDPOINT = `${API_BASE}/track`;
     
@@ -27,28 +28,37 @@
           language: navigator.language,
         };
         
-        // Debug logging (remove in production if desired)
-        console.log('Tracking visit to:', API_ENDPOINT, pageData);
+        // Debug logging
+        console.log('Tracking visit to:', API_ENDPOINT);
+        console.log('Page data:', pageData);
         
-        // Send to API
+        // Send to API with error handling
         const response = await fetch(API_ENDPOINT, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(pageData),
-          // Don't wait for response to avoid blocking page load
+          mode: 'cors', // Explicitly set CORS mode
           keepalive: true,
         });
         
         if (!response.ok) {
-          console.warn('Analytics tracking failed:', response.status, response.statusText);
+          const errorText = await response.text();
+          console.warn('Analytics tracking failed:', response.status, response.statusText, errorText);
         } else {
-          console.log('Visit tracked successfully');
+          const result = await response.json();
+          console.log('Visit tracked successfully:', result);
         }
       } catch (error) {
-        // Log error for debugging
+        // Log detailed error for debugging
         console.error('Analytics tracking error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          name: error.name,
+          stack: error.stack,
+          endpoint: API_ENDPOINT
+        });
       }
     };
     
