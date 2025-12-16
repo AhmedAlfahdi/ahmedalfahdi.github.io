@@ -40,8 +40,28 @@ const containerId = `mermaid-container-${Math.random().toString(36).substr(2, 9)
 
 <script define:vars={{ containerId }}>
   const wrapper = document.getElementById(containerId);
+  if (!wrapper) return;
+  
   const viewport = wrapper.querySelector('.mermaid-viewport');
   const container = wrapper.querySelector('.mermaid-container');
+  if (!viewport || !container) return;
+  
+  // Ensure mermaid renders if it hasn't already (for dynamically loaded content)
+  const mermaidElement = wrapper.querySelector('.mermaid');
+  if (mermaidElement && window.mermaid) {
+    const checkRender = () => {
+      if (!mermaidElement.querySelector('svg')) {
+        window.mermaid.run({
+          nodes: [mermaidElement],
+        }).catch((err) => {
+          console.error('Mermaid render error:', err);
+        });
+      }
+    };
+    
+    // Try after a short delay to let auto-render happen first
+    setTimeout(checkRender, 200);
+  }
   
   let scale = 1;
   let panning = false;
@@ -127,10 +147,10 @@ const containerId = `mermaid-container-${Math.random().toString(36).substr(2, 9)
 <style>
   .mermaid-wrapper {
     position: relative;
-    background: white;
+    background: var(--bg-tertiary);
     border-radius: 8px;
     margin: 2rem 0;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-strong);
     overflow: hidden;
   }
   
@@ -140,7 +160,7 @@ const containerId = `mermaid-container-${Math.random().toString(36).substr(2, 9)
     margin: 0;
     border-radius: 0;
     border: none;
-    background: #f8f9fa;
+    background: var(--bg-primary);
     display: flex;
     flex-direction: column;
   }
@@ -151,7 +171,7 @@ const containerId = `mermaid-container-${Math.random().toString(36).substr(2, 9)
     margin: 0;
     border-radius: 0;
     border: none;
-    background: #f8f9fa;
+    background: var(--bg-primary);
     display: flex;
     flex-direction: column;
   }
@@ -162,7 +182,7 @@ const containerId = `mermaid-container-${Math.random().toString(36).substr(2, 9)
     margin: 0;
     border-radius: 0;
     border: none;
-    background: #f8f9fa;
+    background: var(--bg-primary);
     display: flex;
     flex-direction: column;
   }
@@ -174,15 +194,17 @@ const containerId = `mermaid-container-${Math.random().toString(36).substr(2, 9)
     display: flex;
     gap: 0.5rem;
     z-index: 10;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(22, 31, 41, 0.95);
+    backdrop-filter: blur(10px);
     padding: 0.5rem;
     border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
   
   .control-btn {
-    background: white;
-    border: 1px solid #d0d7de;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-strong);
     border-radius: 4px;
     padding: 0.5rem;
     cursor: pointer;
@@ -190,16 +212,17 @@ const containerId = `mermaid-container-${Math.random().toString(36).substr(2, 9)
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    color: #24292f;
+    color: var(--text-primary);
   }
   
   .control-btn:hover {
-    background: #f6f8fa;
-    border-color: #24292f;
+    background: var(--bg-tertiary);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
   }
   
   .control-btn:active {
-    background: #e8eaed;
+    background: var(--bg-primary);
   }
 
   .mermaid-container {
@@ -210,6 +233,7 @@ const containerId = `mermaid-container-${Math.random().toString(36).substr(2, 9)
     align-items: center;
     justify-content: center;
     flex: 1;
+    background: var(--bg-tertiary);
   }
   
   .mermaid-wrapper:fullscreen .mermaid-container,
@@ -218,6 +242,7 @@ const containerId = `mermaid-container-${Math.random().toString(36).substr(2, 9)
     width: 100%;
     height: 100%;
     min-height: 100vh;
+    background: var(--bg-primary);
   }
   
   .mermaid-viewport {
@@ -230,13 +255,42 @@ const containerId = `mermaid-container-${Math.random().toString(36).substr(2, 9)
     border: none;
     padding: 0;
     margin: 0;
-    font-family: monospace;
+    font-family: var(--font-mono);
   }
 
   :global(.mermaid svg) {
     max-width: 100%;
     height: auto;
     display: block;
+  }
+
+  /* Override Mermaid text colors for better visibility */
+  :global(.mermaid .nodeLabel),
+  :global(.mermaid .edgeLabel),
+  :global(.mermaid .cluster-label) {
+    color: var(--text-primary) !important;
+    fill: var(--text-primary) !important;
+  }
+
+  :global(.mermaid .node rect),
+  :global(.mermaid .node circle),
+  :global(.mermaid .node ellipse) {
+    fill: var(--bg-secondary) !important;
+    stroke: var(--border-strong) !important;
+  }
+
+  :global(.mermaid .edgePath .path) {
+    stroke: var(--accent-secondary) !important;
+  }
+
+  :global(.mermaid .arrowheadPath) {
+    fill: var(--accent-secondary) !important;
+    stroke: var(--accent-secondary) !important;
+  }
+
+  :global(.mermaid .cluster rect) {
+    fill: var(--bg-primary) !important;
+    stroke: var(--border-strong) !important;
   }
 </style>
 

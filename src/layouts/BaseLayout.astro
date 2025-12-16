@@ -37,9 +37,28 @@ try {
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
     mermaid.initialize({ 
       startOnLoad: true,
-      theme: 'default',
-      securityLevel: 'loose'
+      theme: 'dark',
+      securityLevel: 'loose',
+      themeVariables: {
+        darkMode: true,
+        background: '#0b1015',
+        primaryColor: '#161f29',
+        primaryTextColor: '#e4e7ed',
+        primaryBorderColor: '#2a3542',
+        lineColor: '#62c7ff',
+        secondaryColor: '#101820',
+        tertiaryColor: '#161f29',
+        textColor: '#9ea7b3',
+        mainBkgColor: '#161f29',
+        secondBkgColor: '#101820',
+        tertiaryBkgColor: '#0b1015',
+        noteBkgColor: '#2a3542',
+        noteTextColor: '#e4e7ed',
+        noteBorderColor: '#f5a524',
+      }
     });
+    // Make mermaid available globally for components
+    window.mermaid = mermaid;
   </script>
   <style is:global>
     /* Google Fonts - JetBrains Mono */
