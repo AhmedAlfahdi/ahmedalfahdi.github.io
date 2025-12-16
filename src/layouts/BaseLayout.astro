@@ -968,7 +968,8 @@ try {
 
       // Load statistics when modal opens
       const loadStats = async () => {
-        const API_ENDPOINT = import.meta.env.PUBLIC_ANALYTICS_API || 'https://your-api-endpoint.com/api/stats';
+        const API_BASE = import.meta.env.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api';
+        const API_ENDPOINT = `${API_BASE}/stats`;
         const loadingEl = document.getElementById('stats-loading');
         const errorEl = document.getElementById('stats-error');
         const contentEl = document.getElementById('stats-content');
@@ -976,13 +977,17 @@ try {
         if (!loadingEl || !errorEl || !contentEl) return;
         
         try {
+          console.log('Loading stats from:', API_ENDPOINT);
           const response = await fetch(API_ENDPOINT);
           
           if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Stats API error:', response.status, errorText);
             throw new Error(`API returned ${response.status}`);
           }
           
           const data = await response.json();
+          console.log('Stats loaded:', data);
           
           loadingEl.style.display = 'none';
           errorEl.style.display = 'none';
@@ -999,6 +1004,7 @@ try {
           if (topPageEl) topPageEl.textContent = data.topPage || 'N/A';
           
         } catch (error) {
+          console.error('Error loading stats:', error);
           loadingEl.style.display = 'none';
           errorEl.style.display = 'block';
           contentEl.style.display = 'none';
