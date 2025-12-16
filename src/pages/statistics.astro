@@ -33,8 +33,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <div class="stat-value" id="unique-visitors">-</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Most Visited Page</div>
-          <div class="stat-value-small" id="top-page">-</div>
+          <div class="stat-label">Total Sessions</div>
+          <div class="stat-value" id="total-sessions">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">New Visitors</div>
+          <div class="stat-value" id="new-visitors">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Returning Visitors</div>
+          <div class="stat-value" id="returning-visitors">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Time on Page</div>
+          <div class="stat-value" id="avg-time">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Scroll Depth</div>
+          <div class="stat-value" id="avg-scroll">-</div>
         </div>
       </div>
       
@@ -45,13 +61,46 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <canvas id="top-pages-chart"></canvas>
         </div>
         
-        <h2>Page Views Over Time</h2>
+        <h2>Traffic Sources</h2>
         <div class="chart-container">
-          <canvas id="views-over-time-chart"></canvas>
+          <canvas id="traffic-sources-chart"></canvas>
+        </div>
+        
+        <h2>Device Types</h2>
+        <div class="chart-container">
+          <canvas id="device-types-chart"></canvas>
+        </div>
+        
+        <h2>Browsers</h2>
+        <div class="chart-container">
+          <canvas id="browsers-chart"></canvas>
+        </div>
+        
+        <h2>Operating Systems</h2>
+        <div class="chart-container">
+          <canvas id="os-chart"></canvas>
+        </div>
+        
+        <h2>Visits by Hour of Day</h2>
+        <div class="chart-container">
+          <canvas id="visits-by-hour-chart"></canvas>
+        </div>
+        
+        <h2>Visits by Day of Week</h2>
+        <div class="chart-container">
+          <canvas id="visits-by-day-chart"></canvas>
+        </div>
+        
+        <h2>New vs Returning Visitors</h2>
+        <div class="chart-container">
+          <canvas id="visitor-type-chart"></canvas>
         </div>
         
         <h2>Top Pages (Table)</h2>
         <div id="top-pages-table" class="pages-table"></div>
+        
+        <h2>Traffic Sources (Detailed)</h2>
+        <div id="traffic-sources-table" class="pages-table"></div>
         
         <h2>Recent Visitors</h2>
         <div id="recent-visitors-table" class="visitors-table"></div>
@@ -77,7 +126,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   
   .stats-overview {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
     margin: 2rem 0;
   }
@@ -123,6 +172,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding: 1.5rem;
     margin: 1.5rem 0;
     min-height: 300px;
+    position: relative;
   }
   
   .pages-table,
@@ -192,6 +242,38 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const API_BASE = import.meta.env.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api';
     const API_ENDPOINT = `${API_BASE}/stats`;
     
+    // Chart.js configuration for dark theme
+    const chartConfig = {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          labels: {
+            color: 'rgba(158, 167, 179, 0.8)'
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: 'rgba(158, 167, 179, 0.8)'
+          },
+          grid: {
+            color: 'rgba(42, 53, 66, 0.5)'
+          }
+        },
+        x: {
+          ticks: {
+            color: 'rgba(158, 167, 179, 0.8)'
+          },
+          grid: {
+            color: 'rgba(42, 53, 66, 0.5)'
+          }
+        }
+      }
+    };
+    
     // Load Chart.js from CDN
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
@@ -222,10 +304,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         document.getElementById('total-views').textContent = data.totalViews || '0';
         document.getElementById('distinct-ips').textContent = data.distinctIPs || '0';
         document.getElementById('unique-visitors').textContent = data.uniqueVisitors || '0';
-        document.getElementById('top-page').textContent = data.topPage || 'N/A';
+        document.getElementById('total-sessions').textContent = data.totalSessions || '0';
+        document.getElementById('new-visitors').textContent = data.newVisitors || '0';
+        document.getElementById('returning-visitors').textContent = data.returningVisitors || '0';
+        document.getElementById('avg-time').textContent = data.avgTimeOnPage ? `${data.avgTimeOnPage}s` : '0s';
+        document.getElementById('avg-scroll').textContent = data.avgScrollDepth ? `${data.avgScrollDepth}%` : '0%';
         
-        // Create Top Pages Chart
-        if (data.topPages && data.topPages.length > 0 && window.Chart) {
+        if (!window.Chart) {
+          console.error('Chart.js not loaded');
+          return;
+        }
+        
+        // Top Pages Chart
+        if (data.topPages && data.topPages.length > 0) {
           const ctx1 = document.getElementById('top-pages-chart');
           if (ctx1) {
             new Chart(ctx1, {
@@ -241,99 +332,197 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 }]
               },
               options: {
-                responsive: true,
-                maintainAspectRatio: true,
+                ...chartConfig,
                 plugins: {
-                  legend: {
-                    display: false
-                  }
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    ticks: {
-                      color: 'rgba(158, 167, 179, 0.8)'
-                    },
-                    grid: {
-                      color: 'rgba(42, 53, 66, 0.5)'
-                    }
-                  },
-                  x: {
-                    ticks: {
-                      color: 'rgba(158, 167, 179, 0.8)'
-                    },
-                    grid: {
-                      color: 'rgba(42, 53, 66, 0.5)'
-                    }
-                  }
+                  ...chartConfig.plugins,
+                  legend: { display: false }
                 }
               }
             });
           }
         }
         
-        // Create Views Over Time Chart (grouped by date)
-        if (data.recentVisitors && data.recentVisitors.length > 0 && window.Chart) {
-          // Group visits by date
-          const visitsByDate = {};
-          data.recentVisitors.forEach(visitor => {
-            const date = new Date(visitor.timestamp).toLocaleDateString();
-            visitsByDate[date] = (visitsByDate[date] || 0) + 1;
-          });
-          
-          const dates = Object.keys(visitsByDate).sort();
-          const counts = dates.map(date => visitsByDate[date]);
-          
-          const ctx2 = document.getElementById('views-over-time-chart');
-          if (ctx2 && dates.length > 0) {
+        // Traffic Sources Chart
+        if (data.trafficSources && data.trafficSources.length > 0) {
+          const ctx2 = document.getElementById('traffic-sources-chart');
+          if (ctx2) {
             new Chart(ctx2, {
+              type: 'doughnut',
+              data: {
+                labels: data.trafficSources.slice(0, 10).map(s => s.source),
+                datasets: [{
+                  data: data.trafficSources.slice(0, 10).map(s => s.count),
+                  backgroundColor: [
+                    'rgba(245, 165, 36, 0.8)',
+                    'rgba(98, 199, 255, 0.8)',
+                    'rgba(74, 222, 128, 0.8)',
+                    'rgba(225, 105, 93, 0.8)',
+                    'rgba(139, 92, 246, 0.8)',
+                    'rgba(236, 72, 153, 0.8)',
+                    'rgba(251, 191, 36, 0.8)',
+                    'rgba(34, 197, 94, 0.8)',
+                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(168, 85, 247, 0.8)'
+                  ]
+                }]
+              },
+              options: chartConfig
+            });
+          }
+        }
+        
+        // Device Types Chart
+        if (data.deviceTypes && data.deviceTypes.length > 0) {
+          const ctx3 = document.getElementById('device-types-chart');
+          if (ctx3) {
+            new Chart(ctx3, {
+              type: 'pie',
+              data: {
+                labels: data.deviceTypes.map(d => d.type),
+                datasets: [{
+                  data: data.deviceTypes.map(d => d.count),
+                  backgroundColor: [
+                    'rgba(245, 165, 36, 0.8)',
+                    'rgba(98, 199, 255, 0.8)',
+                    'rgba(74, 222, 128, 0.8)'
+                  ]
+                }]
+              },
+              options: chartConfig
+            });
+          }
+        }
+        
+        // Browsers Chart
+        if (data.browsers && data.browsers.length > 0) {
+          const ctx4 = document.getElementById('browsers-chart');
+          if (ctx4) {
+            new Chart(ctx4, {
+              type: 'bar',
+              data: {
+                labels: data.browsers.map(b => b.browser),
+                datasets: [{
+                  label: 'Visits',
+                  data: data.browsers.map(b => b.count),
+                  backgroundColor: 'rgba(98, 199, 255, 0.6)',
+                  borderColor: 'rgba(98, 199, 255, 1)',
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                ...chartConfig,
+                plugins: {
+                  ...chartConfig.plugins,
+                  legend: { display: false }
+                }
+              }
+            });
+          }
+        }
+        
+        // OS Chart
+        if (data.operatingSystems && data.operatingSystems.length > 0) {
+          const ctx5 = document.getElementById('os-chart');
+          if (ctx5) {
+            new Chart(ctx5, {
+              type: 'bar',
+              data: {
+                labels: data.operatingSystems.map(o => o.os),
+                datasets: [{
+                  label: 'Visits',
+                  data: data.operatingSystems.map(o => o.count),
+                  backgroundColor: 'rgba(74, 222, 128, 0.6)',
+                  borderColor: 'rgba(74, 222, 128, 1)',
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                ...chartConfig,
+                plugins: {
+                  ...chartConfig.plugins,
+                  legend: { display: false }
+                }
+              }
+            });
+          }
+        }
+        
+        // Visits by Hour Chart
+        if (data.visitsByHour && data.visitsByHour.length > 0) {
+          const sortedHours = data.visitsByHour.sort((a, b) => a.hour - b.hour);
+          const ctx6 = document.getElementById('visits-by-hour-chart');
+          if (ctx6) {
+            new Chart(ctx6, {
               type: 'line',
               data: {
-                labels: dates,
+                labels: sortedHours.map(h => `${h.hour}:00`),
                 datasets: [{
-                  label: 'Page Views',
-                  data: counts,
-                  borderColor: 'rgba(98, 199, 255, 1)',
-                  backgroundColor: 'rgba(98, 199, 255, 0.1)',
+                  label: 'Visits',
+                  data: sortedHours.map(h => h.count),
+                  borderColor: 'rgba(245, 165, 36, 1)',
+                  backgroundColor: 'rgba(245, 165, 36, 0.1)',
                   tension: 0.4,
                   fill: true
                 }]
               },
+              options: chartConfig
+            });
+          }
+        }
+        
+        // Visits by Day Chart
+        if (data.visitsByDay && data.visitsByDay.length > 0) {
+          const dayOrder = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+          const sortedDays = data.visitsByDay.sort((a, b) => 
+            dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day)
+          );
+          const ctx7 = document.getElementById('visits-by-day-chart');
+          if (ctx7) {
+            new Chart(ctx7, {
+              type: 'bar',
+              data: {
+                labels: sortedDays.map(d => d.day),
+                datasets: [{
+                  label: 'Visits',
+                  data: sortedDays.map(d => d.count),
+                  backgroundColor: 'rgba(139, 92, 246, 0.6)',
+                  borderColor: 'rgba(139, 92, 246, 1)',
+                  borderWidth: 1
+                }]
+              },
               options: {
-                responsive: true,
-                maintainAspectRatio: true,
+                ...chartConfig,
                 plugins: {
-                  legend: {
-                    labels: {
-                      color: 'rgba(158, 167, 179, 0.8)'
-                    }
-                  }
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    ticks: {
-                      color: 'rgba(158, 167, 179, 0.8)'
-                    },
-                    grid: {
-                      color: 'rgba(42, 53, 66, 0.5)'
-                    }
-                  },
-                  x: {
-                    ticks: {
-                      color: 'rgba(158, 167, 179, 0.8)'
-                    },
-                    grid: {
-                      color: 'rgba(42, 53, 66, 0.5)'
-                    }
-                  }
+                  ...chartConfig.plugins,
+                  legend: { display: false }
                 }
               }
             });
           }
         }
         
-        // Display Top Pages Table
+        // New vs Returning Visitors Chart
+        if (data.newVisitors !== undefined && data.returningVisitors !== undefined) {
+          const ctx8 = document.getElementById('visitor-type-chart');
+          if (ctx8) {
+            new Chart(ctx8, {
+              type: 'doughnut',
+              data: {
+                labels: ['New Visitors', 'Returning Visitors'],
+                datasets: [{
+                  data: [data.newVisitors, data.returningVisitors],
+                  backgroundColor: [
+                    'rgba(98, 199, 255, 0.8)',
+                    'rgba(245, 165, 36, 0.8)'
+                  ]
+                }]
+              },
+              options: chartConfig
+            });
+          }
+        }
+        
+        // Top Pages Table
         const topPagesEl = document.getElementById('top-pages-table');
         if (data.topPages && data.topPages.length > 0) {
           topPagesEl.innerHTML = data.topPages.map(page => `
@@ -346,13 +535,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           topPagesEl.innerHTML = '<p style="padding: 1rem; color: var(--text-muted);">No page data available</p>';
         }
         
-        // Display Recent Visitors
+        // Traffic Sources Table
+        const trafficSourcesEl = document.getElementById('traffic-sources-table');
+        if (data.trafficSources && data.trafficSources.length > 0) {
+          trafficSourcesEl.innerHTML = data.trafficSources.map(source => `
+            <div class="table-row">
+              <span class="table-path">${source.source}</span>
+              <span class="table-count">${source.count} visits</span>
+            </div>
+          `).join('');
+        } else {
+          trafficSourcesEl.innerHTML = '<p style="padding: 1rem; color: var(--text-muted);">No traffic source data available</p>';
+        }
+        
+        // Recent Visitors Table
         const recentVisitorsEl = document.getElementById('recent-visitors-table');
         if (data.recentVisitors && data.recentVisitors.length > 0) {
           recentVisitorsEl.innerHTML = data.recentVisitors.map(visitor => `
             <div class="visitor-row">
               <div class="visitor-ip">${visitor.ip}</div>
-              <div class="visitor-details">${visitor.path} • ${new Date(visitor.timestamp).toLocaleString()}</div>
+              <div class="visitor-details">
+                ${visitor.path} • ${visitor.deviceType || 'unknown'} • ${visitor.browser || 'unknown'} • ${visitor.sourceType || 'unknown'} • ${new Date(visitor.timestamp).toLocaleString()}
+              </div>
             </div>
           `).join('');
         } else {

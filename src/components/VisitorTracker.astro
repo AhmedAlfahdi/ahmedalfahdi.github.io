@@ -5,41 +5,233 @@
 
 <script>
   if (typeof window !== 'undefined') {
-    // Configuration - Update this with your API endpoint
-    // In Astro, import.meta.env is available at build time for PUBLIC_* vars
+    // Analytics helper functions (inlined for Astro compatibility)
+    function parseUserAgent(userAgent) {
+      const ua = userAgent.toLowerCase();
+      
+      let deviceType = 'desktop';
+      if (/mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(ua)) {
+        deviceType = 'mobile';
+      } else if (/tablet|ipad|playbook|silk/i.test(ua)) {
+        deviceType = 'tablet';
+      }
+      
+      let browser = 'unknown';
+      let browserVersion = '';
+      
+      if (ua.includes('chrome') && !ua.includes('edg') && !ua.includes('opr')) {
+        browser = 'chrome';
+        const match = ua.match(/chrome\/([\d.]+)/);
+        browserVersion = match ? match[1] : '';
+      } else if (ua.includes('firefox')) {
+        browser = 'firefox';
+        const match = ua.match(/firefox\/([\d.]+)/);
+        browserVersion = match ? match[1] : '';
+      } else if (ua.includes('safari') && !ua.includes('chrome')) {
+        browser = 'safari';
+        const match = ua.match(/version\/([\d.]+)/);
+        browserVersion = match ? match[1] : '';
+      } else if (ua.includes('edg')) {
+        browser = 'edge';
+        const match = ua.match(/edg\/([\d.]+)/);
+        browserVersion = match ? match[1] : '';
+      } else if (ua.includes('opr') || ua.includes('opera')) {
+        browser = 'opera';
+        const match = ua.match(/(?:opr|opera)\/([\d.]+)/);
+        browserVersion = match ? match[1] : '';
+      }
+      
+      let os = 'unknown';
+      if (ua.includes('windows')) {
+        os = 'windows';
+        if (ua.includes('windows nt 10')) os = 'windows 10/11';
+        else if (ua.includes('windows nt 6.3')) os = 'windows 8.1';
+        else if (ua.includes('windows nt 6.2')) os = 'windows 8';
+        else if (ua.includes('windows nt 6.1')) os = 'windows 7';
+      } else if (ua.includes('mac os x') || ua.includes('macintosh')) {
+        os = 'macos';
+      } else if (ua.includes('linux')) {
+        os = 'linux';
+      } else if (ua.includes('android')) {
+        os = 'android';
+      } else if (ua.includes('iphone') || ua.includes('ipad')) {
+        os = 'ios';
+      }
+      
+      return { deviceType, browser, browserVersion, os };
+    }
+    
+    function parseTrafficSource(referrer) {
+      if (!referrer || referrer === 'direct') {
+        return { sourceType: 'direct', source: 'direct', referrerDomain: null };
+      }
+      
+      try {
+        const url = new URL(referrer);
+        const domain = url.hostname.replace('www.', '');
+        
+        const searchEngines = {
+          'google.com': 'Google', 'google.': 'Google', 'bing.com': 'Bing',
+          'yahoo.com': 'Yahoo', 'duckduckgo.com': 'DuckDuckGo',
+          'baidu.com': 'Baidu', 'yandex.com': 'Yandex'
+        };
+        
+        for (const [key, name] of Object.entries(searchEngines)) {
+          if (domain.includes(key)) {
+            return { sourceType: 'search', source: name, referrerDomain: domain };
+          }
+        }
+        
+        const socialPlatforms = {
+          'twitter.com': 'Twitter', 'x.com': 'Twitter', 'facebook.com': 'Facebook',
+          'linkedin.com': 'LinkedIn', 'reddit.com': 'Reddit', 'instagram.com': 'Instagram',
+          'youtube.com': 'YouTube', 'tiktok.com': 'TikTok', 'pinterest.com': 'Pinterest'
+        };
+        
+        for (const [key, name] of Object.entries(socialPlatforms)) {
+          if (domain.includes(key)) {
+            return { sourceType: 'social', source: name, referrerDomain: domain };
+          }
+        }
+        
+        if (domain.includes('github.com')) {
+          return { sourceType: 'social', source: 'GitHub', referrerDomain: domain };
+        }
+        
+        return { sourceType: 'referral', source: domain, referrerDomain: domain };
+      } catch (e) {
+        return { sourceType: 'unknown', source: 'unknown', referrerDomain: referrer };
+      }
+    }
+    
+    function getSessionId() {
+      const SESSION_KEY = 'analytics_session_id';
+      const SESSION_DURATION = 30 * 60 * 1000;
+      
+      let sessionId = localStorage.getItem(SESSION_KEY);
+      let sessionTimestamp = localStorage.getItem(`${SESSION_KEY}_time`);
+      
+      if (sessionId && sessionTimestamp) {
+        const timeSinceLastVisit = Date.now() - parseInt(sessionTimestamp);
+        if (timeSinceLastVisit > SESSION_DURATION) {
+          sessionId = null;
+        }
+      }
+      
+      if (!sessionId) {
+        sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem(SESSION_KEY, sessionId);
+      }
+      
+      localStorage.setItem(`${SESSION_KEY}_time`, Date.now().toString());
+      return sessionId;
+    }
+    
+    function getVisitorType() {
+      const VISITOR_KEY = 'analytics_visitor_id';
+      let visitorId = localStorage.getItem(VISITOR_KEY);
+      const isNew = !visitorId;
+      
+      if (!visitorId) {
+        visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem(VISITOR_KEY, visitorId);
+      }
+      
+      return { visitorId, isNew };
+    }
+    
+    function getTimePatterns(timestamp) {
+      const date = new Date(timestamp);
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      return {
+        hour: date.getHours(),
+        dayOfWeek: date.getDay(),
+        dayName: dayNames[date.getDay()],
+        date: date.toISOString().split('T')[0]
+      };
+    }
+    
+    // Configuration
     const API_BASE = import.meta.env.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api';
     const API_ENDPOINT = `${API_BASE}/track`;
     
-    // Only track once per page load
     let tracked = false;
+    let pageStartTime = Date.now();
+    let maxScrollDepth = 0;
+    
+    const trackScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = docHeight > 0 ? Math.round((scrollTop / docHeight) * 100) : 0;
+      maxScrollDepth = Math.max(maxScrollDepth, scrollPercent);
+    };
+    
+    window.addEventListener('scroll', trackScroll, { passive: true });
+    
+    const trackPageExit = async (pageData) => {
+      const timeOnPage = Math.round((Date.now() - pageStartTime) / 1000);
+      
+      try {
+        await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...pageData,
+            eventType: 'page_exit',
+            timeOnPage,
+            scrollDepth: maxScrollDepth
+          }),
+          mode: 'cors',
+          keepalive: true,
+        });
+      } catch (e) {
+        // Silently fail
+      }
+    };
     
     const trackVisit = async () => {
       if (tracked) return;
       tracked = true;
       
       try {
+        const timestamp = new Date().toISOString();
+        const userAgent = navigator.userAgent;
+        const referrer = document.referrer || 'direct';
+        
+        const deviceInfo = parseUserAgent(userAgent);
+        const trafficSource = parseTrafficSource(referrer);
+        const sessionId = getSessionId();
+        const visitorInfo = getVisitorType();
+        const timePatterns = getTimePatterns(timestamp);
+        
         const pageData = {
           path: window.location.pathname,
-          referrer: document.referrer || 'direct',
-          userAgent: navigator.userAgent,
-          timestamp: new Date().toISOString(),
+          referrer: referrer,
+          userAgent: userAgent,
+          timestamp: timestamp,
           screenWidth: window.screen.width,
           screenHeight: window.screen.height,
+          viewportWidth: window.innerWidth,
+          viewportHeight: window.innerHeight,
           language: navigator.language,
+          ...deviceInfo,
+          ...trafficSource,
+          sessionId: sessionId,
+          visitorId: visitorInfo.visitorId,
+          isNewVisitor: visitorInfo.isNew,
+          ...timePatterns,
+          timeOnPage: 0,
+          scrollDepth: 0
         };
         
-        // Debug logging
         console.log('Tracking visit to:', API_ENDPOINT);
         console.log('Page data:', pageData);
         
-        // Send to API with error handling
         const response = await fetch(API_ENDPOINT, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(pageData),
-          mode: 'cors', // Explicitly set CORS mode
+          mode: 'cors',
           keepalive: true,
         });
         
@@ -50,19 +242,20 @@
           const result = await response.json();
           console.log('Visit tracked successfully:', result);
         }
-      } catch (error) {
-        // Log detailed error for debugging
-        console.error('Analytics tracking error:', error);
-        console.error('Error details:', {
-          message: error.message,
-          name: error.name,
-          stack: error.stack,
-          endpoint: API_ENDPOINT
+        
+        window.addEventListener('beforeunload', () => trackPageExit(pageData));
+        window.addEventListener('pagehide', () => trackPageExit(pageData));
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'hidden') {
+            trackPageExit(pageData);
+          }
         });
+        
+      } catch (error) {
+        console.error('Analytics tracking error:', error);
       }
     };
     
-    // Track on page load
     if (document.readyState === 'complete') {
       trackVisit();
     } else {
