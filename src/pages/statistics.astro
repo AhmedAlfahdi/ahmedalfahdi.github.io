@@ -326,6 +326,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     border: 1px solid var(--border-strong);
   }
 
+  /* Ensure Leaflet marker icons are not affected by global img styles (borders, shadows, filters) */
+  :global(.world-map .leaflet-container img.leaflet-marker-icon),
+  :global(.world-map .leaflet-container img.leaflet-marker-shadow) {
+    max-width: none;
+    height: auto;
+    border: none;
+    box-shadow: none;
+    filter: none;
+    background: transparent;
+  }
+
   /* Ensure Leaflet layers stay behind fixed navigation/header */
   :global(.world-map .leaflet-pane),
   :global(.world-map .leaflet-top),
