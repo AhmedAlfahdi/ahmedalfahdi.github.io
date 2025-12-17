@@ -410,7 +410,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     // Forward declaration so it can be used in onload callback and later
     function renderWorldMap(data) {
       if (!leafletLoaded || !window.L) return;
-      if (!data || !data.recentVisitors || data.recentVisitors.length === 0) return;
+      if (!data || !data.recentVisitors || data.recentVisitors.length === 0) {
+        const mapEl = document.getElementById('world-map');
+        if (mapEl && !worldMapInstance) {
+          mapEl.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:0.9rem;">No visitor location data available yet. Deploy the analytics API to Vercel or enable IP geolocation to see markers here.</div>';
+        }
+        return;
+      }
 
       const mapEl = document.getElementById('world-map');
       if (!mapEl) return;
@@ -438,6 +444,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       );
 
       if (points.length === 0) {
+        const mapEl = document.getElementById('world-map');
+        if (mapEl && !worldMapInstance) {
+          mapEl.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:0.9rem;">Recent visitors do not include geolocation coordinates. Make sure the analytics API is running on Vercel (with geo headers) or another IP geolocation service.</div>';
+        }
         return;
       }
 
