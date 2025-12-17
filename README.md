@@ -9,11 +9,13 @@ A modern personal website built with Astro and Three.js, featuring interactive 3
 - **Obsidian Notes Integration** - Wikilinks, Mermaid diagrams, LaTeX math rendering
 - **Career & Experience** - Professional timeline and documentation
 - **Technical Notes** - Engineering and physics content with interactive visualizations
+- **Privacy-Friendly Analytics** - Custom tracking API with MapLibre-powered world map and recent visitors
 
 ## Tech Stack
 
 - **Astro** - Static site generator
 - **Three.js** - 3D graphics
+- **MapLibre GL JS** - Token-free vector world map for statistics
 - **MDX** - Markdown with React components
 - **Mermaid.js** - Diagrams
 - **KaTeX** - Math rendering
@@ -73,6 +75,7 @@ MIT License
 **Main Libraries Used**  
 - [Astro](https://astro.build/) (v4.6.0, MIT License)  
 - [Three.js](https://threejs.org/) (v0.157.0, MIT License)  
+- [MapLibre GL JS](https://maplibre.org/projects/maplibre-gl-js/) (Apache-2.0 License)  
 - [MDX](https://mdxjs.com/) (@astrojs/mdx v3.3.0, MIT License)  
 
 <sub>See `package.json` for full dependency versions.</sub>
