@@ -127,9 +127,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         
         <h2>Traffic Sources (Detailed)</h2>
         <div id="traffic-sources-table" class="pages-table"></div>
-        
-        <h2>Recent Visitors</h2>
-        <div id="recent-visitors-table" class="visitors-table"></div>
       </div>
     </div>
   </div>
@@ -328,6 +325,63 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     overflow: hidden;
     border: 1px solid var(--border-strong);
   }
+
+  /* Pulsating marker for visitor locations */
+  .visitor-marker {
+    position: relative;
+  }
+
+  .visitor-marker .visitor-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: #f5a524;
+    box-shadow: 0 0 12px rgba(245, 165, 36, 0.8);
+    transform: translate(-50%, -50%);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    animation: visitor-pulse 1.6s ease-out infinite;
+  }
+
+  .visitor-marker .visitor-dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 2px solid rgba(245, 165, 36, 0.7);
+    animation: visitor-pulse-ring 1.6s ease-out infinite;
+  }
+
+  @keyframes visitor-pulse {
+    0% {
+      transform: translate(-50%, -50%) scale(0.85);
+      opacity: 1;
+    }
+    70% {
+      transform: translate(-50%, -50%) scale(1.2);
+      opacity: 0.6;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(0.85);
+      opacity: 1;
+    }
+  }
+
+  @keyframes visitor-pulse-ring {
+    0% {
+      transform: scale(0.9);
+      opacity: 0.9;
+    }
+    70% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(0.9);
+      opacity: 0;
+    }
+  }
   
   .pages-table,
   .visitors-table {
@@ -365,6 +419,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-weight: 600;
   }
   
+  /* Recent visitors list styles are kept in case we want to re-enable the list later */
   .visitor-row {
     padding: 0.75rem;
     border-bottom: 1px solid var(--border-light);
@@ -406,6 +461,51 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     leafletCss.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
     leafletCss.crossOrigin = '';
     document.head.appendChild(leafletCss);
+
+    // Build structured popup HTML for the world map
+    const buildVisitorPopupHtml = (visitor) => {
+      if (!visitor) return '';
+
+      const locationBits = [];
+      if (visitor.city) locationBits.push(visitor.city);
+      if (visitor.regionCode) locationBits.push(visitor.regionCode);
+      if (visitor.countryCode) locationBits.push(visitor.countryCode);
+      const location = locationBits.join(', ') || 'Unknown';
+
+      const lines = [
+        `<li><strong>Path:</strong> ${visitor.path || '/'}</li>`,
+        `<li><strong>Location:</strong> ${location}</li>`,
+      ];
+
+      if (visitor.deviceType) {
+        lines.push(`<li><strong>Device:</strong> ${visitor.deviceType}</li>`);
+      }
+      if (visitor.browser || visitor.os) {
+        const techParts = [];
+        if (visitor.browser) techParts.push(visitor.browser);
+        if (visitor.os) techParts.push(visitor.os);
+        lines.push(`<li><strong>Tech:</strong> ${techParts.join(' · ')}</li>`);
+      }
+      if (visitor.source || visitor.sourceType) {
+        lines.push(`<li><strong>Source:</strong> ${visitor.source || visitor.sourceType}</li>`);
+      }
+      if (visitor.timestamp) {
+        try {
+          lines.push(`<li><strong>Time:</strong> ${new Date(visitor.timestamp).toLocaleString()}</li>`);
+        } catch {
+          // ignore malformed timestamp
+        }
+      }
+
+      return `
+        <div style="min-width: 220px; font-family: var(--font-mono); font-size: 0.8rem;">
+          <div style="font-weight: 600; margin-bottom: 0.35rem;">${visitor.ip}</div>
+          <ul style="padding-left: 1.1rem; margin: 0;">
+            ${lines.join('')}
+          </ul>
+        </div>
+      `;
+    };
 
     // Forward declaration so it can be used in onload callback and later
     function renderWorldMap(data) {
@@ -453,18 +553,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       const layer = window.L.layerGroup();
       points.forEach(visitor => {
-        const marker = window.L.circleMarker([visitor.latitude, visitor.longitude], {
-          radius: 5,
-          color: '#f5a524',
-          fillColor: '#f5a524',
-          fillOpacity: 0.85,
-          weight: 1,
-        }).bindPopup(`
-          <div style="min-width: 200px; font-family: var(--font-mono); font-size: 0.8rem;">
-            <div style="font-weight: 600; margin-bottom: 0.25rem;">${visitor.ip}</div>
-            <div>${formatVisitorDetails(visitor)}</div>
-          </div>
-        `);
+        const marker = window.L.marker([visitor.latitude, visitor.longitude], {
+          icon: window.L.divIcon({
+            className: 'visitor-marker',
+            html: '<span class="visitor-dot"></span>',
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+          }),
+        }).bindPopup(buildVisitorPopupHtml(visitor));
 
         layer.addLayer(marker);
       });
@@ -1107,21 +1203,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           trafficSourcesEl.innerHTML = '<p style="padding: 1rem; color: var(--text-muted);">No traffic source data available</p>';
         }
         
-        // Recent Visitors Table
-        const recentVisitorsEl = document.getElementById('recent-visitors-table');
-        if (data.recentVisitors && data.recentVisitors.length > 0) {
-          recentVisitorsEl.innerHTML = data.recentVisitors.map(visitor => `
-            <div class="visitor-row">
-              <div class="visitor-ip">${visitor.ip}</div>
-              <div class="visitor-details">
-                ${formatVisitorDetails(visitor)}
-              </div>
-            </div>
-          `).join('');
-        } else {
-          recentVisitorsEl.innerHTML = '<p style="padding: 1rem; color: var(--text-muted);">No visitor data available</p>';
-        }
-
         // World map: store data globally for when Leaflet is ready and render
         window.__statsDataForMap = data;
         if (leafletLoaded && window.L) {
