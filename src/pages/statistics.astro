@@ -326,12 +326,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     border: 1px solid var(--border-strong);
   }
 
-  /* Pulsating marker for visitor locations */
-  .visitor-marker {
+  /* Pulsating marker for visitor locations (global so Leaflet-created elements are styled) */
+  :global(.visitor-marker) {
     position: relative;
   }
-
-  .visitor-marker .visitor-dot {
+ 
+  :global(.visitor-marker .visitor-dot) {
     width: 14px;
     height: 14px;
     border-radius: 999px;
@@ -344,7 +344,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     animation: visitor-pulse 1.6s ease-out infinite;
   }
 
-  .visitor-marker .visitor-dot::after {
+  :global(.visitor-marker .visitor-dot::after) {
     content: '';
     position: absolute;
     inset: 0;
