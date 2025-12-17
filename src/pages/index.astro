@@ -5,7 +5,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <BaseLayout title="Ahmed N. Alfahdi - Mechanical Engineer">
   <div class="container home-wrap">
     <a class="utc-badge" id="home-utc" href="/earth-rotation">UTC —</a>
-    <h1>Ahmed N. Alfahdi</h1>
+    <span class="utc-badge-border-left"></span>
+    <span class="utc-badge-border-right"></span>
+    <h1>Ahmed <span class="h1-n-wrapper">N<span class="h1-dot">.</span></span> Alfahdi</h1>
     <p class="subtitle">
       <span class="subtitle-role">Mechanical Engineer</span>
       <span class="subtitle-separator">|</span>
@@ -71,7 +73,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <div class="contact-links">
         <a href="https://github.com/AhmedAlfahdi" target="_blank" class="contact-link" style="font-family: var(--font-mono);">
           <span class="link-label">[GH]</span>
-          GitHub
+          Github.com/AhmedAlfahdi/
         </a>
         <!--
         <a href="https://linkedin.com/in/AhmedAlfahdi" target="_blank" class="contact-link">
@@ -80,6 +82,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </a>
         <a href="mailto:Ahmed_N_Alfahdi@outlook.com" class="contact-link">
           <span class="link-label">[EM]</span> Ahmed_N_Alfahdi@outlook.com
+        </a>
+        <a href="https://wa.me/96897019529" target="_blank" class="contact-link">
+          <span class="link-label">[WA]</span> +968 9701 9529
         </a>
         <!-- End of Selection -->
 
@@ -97,12 +102,99 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const d = new Date();
     const date = `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
     const ms = pad3(d.getUTCMilliseconds());
-    homeUtc.innerHTML = `UTC ${date} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}.${ms} <span style="font-size: 0.8em; opacity: 0.7;">(DUT1 ±0.9s)</span>`;
+    const hours = pad(d.getUTCHours());
+    const minutes = pad(d.getUTCMinutes());
+    const seconds = pad(d.getUTCSeconds());
+    
+    // Only update if the time has changed (to preserve animations)
+    const timeString = `${hours}:${minutes}:${seconds}`;
+    const lastTime = homeUtc.dataset.lastTime;
+    const lastHour = lastTime ? lastTime.split(':')[0] : null;
+    const lastMinute = lastTime ? lastTime.split(':')[1] : null;
+    const hourChanged = lastHour !== null && lastHour !== hours;
+    const minuteChanged = lastMinute !== null && lastMinute !== minutes;
+    
+    if (lastTime !== timeString) {
+      const colon1 = document.createElement('span');
+      colon1.className = 'utc-colon';
+      colon1.textContent = ':';
+      colon1.style.display = 'inline-block';
+      colon1.style.animation = 'colon-blink 1s step-end infinite';
+      colon1.style.color = 'rgba(245, 165, 36, 0.71)';
+      colon1.style.fontWeight = '700';
+      
+      const colon2 = document.createElement('span');
+      colon2.className = 'utc-colon';
+      colon2.textContent = ':';
+      colon2.style.display = 'inline-block';
+      colon2.style.animation = 'colon-blink 1s step-end infinite';
+      colon2.style.color = 'rgba(245, 165, 36, 0.71)';
+      colon2.style.fontWeight = '700';
+      
+      // Create hours span with animation if hour changed
+      const hoursSpan = document.createElement('span');
+      hoursSpan.textContent = hours;
+      if (hourChanged) {
+        hoursSpan.className = 'time-change-pulse';
+        hoursSpan.style.display = 'inline-block';
+        hoursSpan.style.animation = 'time-change 0.6s ease-out';
+      }
+      
+      // Create minutes span with animation if minute changed
+      const minutesSpan = document.createElement('span');
+      minutesSpan.textContent = minutes;
+      if (minuteChanged) {
+        minutesSpan.className = 'time-change-pulse';
+        minutesSpan.style.display = 'inline-block';
+        minutesSpan.style.animation = 'time-change 0.6s ease-out';
+      }
+      
+      // Clear and rebuild
+      homeUtc.innerHTML = '';
+      homeUtc.appendChild(document.createTextNode(`UTC ${date}`));
+      // Add space between date and clock
+      const spaceSpan = document.createElement('span');
+      spaceSpan.style.display = 'inline-block';
+      spaceSpan.style.width = '1rem';
+      homeUtc.appendChild(spaceSpan);
+      homeUtc.appendChild(hoursSpan);
+      homeUtc.appendChild(colon1);
+      homeUtc.appendChild(minutesSpan);
+      homeUtc.appendChild(colon2);
+      homeUtc.appendChild(document.createTextNode(`${seconds}.${ms} `));
+      const dutSpan = document.createElement('span');
+      dutSpan.style.fontSize = '0.8em';
+      dutSpan.style.opacity = '0.7';
+      dutSpan.textContent = '(DUT1 ±0.9s)';
+      homeUtc.appendChild(dutSpan);
+      
+      homeUtc.dataset.lastTime = timeString;
+    } else {
+      // Only update milliseconds
+      const textNodes = Array.from(homeUtc.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
+      if (textNodes.length > 0) {
+        const lastTextNode = textNodes[textNodes.length - 1];
+        if (lastTextNode.textContent.includes('.')) {
+          lastTextNode.textContent = lastTextNode.textContent.replace(/\d{2}\.\d{3}/, `${seconds}.${ms} `);
+        }
+      }
+    }
   };
   if (homeUtc) {
     updateUtc();
     // Update every 10ms for smooth millisecond display
     setInterval(updateUtc, 10);
+    
+    // Debug: Check if colon elements exist
+    setTimeout(() => {
+      const colons = homeUtc.querySelectorAll('.utc-colon');
+      console.log('Colon elements found:', colons.length);
+      if (colons.length > 0) {
+        colons.forEach((colon, i) => {
+          console.log(`Colon ${i}:`, colon, 'computed style:', window.getComputedStyle(colon).animation);
+        });
+      }
+    }, 1000);
   }
 
   // Animate skill list items on scroll
@@ -127,63 +219,244 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .home-wrap {
     position: relative;
   }
-  .utc-badge {
-    display: block;
+
+  .home-wrap h1 {
+    margin-top: 1.5rem;
     text-align: center;
-    margin: 0 auto 2rem;
+    animation: h1-fade-in 0.8s ease-out;
+    opacity: 0;
+    animation-fill-mode: forwards;
+    word-spacing: -0.2em;
+    letter-spacing: -0.02em;
+  }
+
+  .h1-n-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+
+  .h1-dot {
+    display: inline-block;
+    position: relative;
+    transition: color 0.3s ease;
+  }
+
+  .h1-dot::after {
+    content: '⚙';
+    display: inline-block;
+    position: absolute;
+    left: 50%;
+    top: calc(50% + 0.15em);
+    transform: translate(-50%, -50%);
+    font-size: 0.85em;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    color: var(--accent-primary);
+    z-index: 10;
+  }
+
+  .home-wrap h1:hover .h1-dot {
+    color: transparent;
+  }
+
+  .home-wrap h1:hover .h1-dot::after {
+    opacity: 1 !important;
+    animation: gear-spin 1.5s linear infinite;
+  }
+
+  .home-wrap h1:not(:hover) .h1-dot::after {
+    opacity: 0;
+    animation: none;
+  }
+
+  @keyframes gear-spin {
+    0% {
+      transform: translate(-50%, calc(-50% + 0.15em)) rotate(0deg);
+    }
+    100% {
+      transform: translate(-50%, calc(-50% + 0.15em)) rotate(360deg);
+    }
+  }
+
+
+  @keyframes h1-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Make container's dashed border wrap around UTC badge */
+  .home-wrap.container {
+    position: relative;
+    overflow: visible;
+    padding-top: 2.5rem;
+  }
+
+  /* Hide top border where badge sits */
+  .home-wrap.container::before {
+    border-top: none;
+    top: 12px;
+    height: calc(100% - 24px);
+  }
+
+  /* Add top border segments on left and right of badge */
+  .utc-badge-border-left,
+  .utc-badge-border-right {
+    position: absolute;
+    top: 12px;
+    height: 1px;
+    opacity: 0.45;
+    pointer-events: none;
+    z-index: 0;
+    border-top: 1px dashed var(--accent-primary);
+  }
+
+  .utc-badge-border-left {
+    left: 12px;
+    width: calc(50% - 142px);
+  }
+
+  .utc-badge-border-right {
+    right: 12px;
+    width: calc(50% - 142px);
+  }
+  .utc-badge {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    text-align: center;
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
     width: fit-content;
+    height: fit-content;
+    min-height: 0;
     font-size: 1rem;
     letter-spacing: 1.2px;
-    color: var(--accent-primary);
+    color: rgba(245, 165, 36, 0.71);
     text-decoration: none;
-    padding: 0.65rem 1.2rem;
-    border: 2px solid var(--accent-primary);
-    border-radius: 6px;
-    background: rgba(245, 165, 36, 0.08);
+    padding: 10px 1.2rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(26, 33, 42, 0.92), rgba(16, 24, 32, 0.92));
+    backdrop-filter: blur(11.35px);
+    -webkit-background-clip: unset;
+    background-clip: unset;
     font-family: var(--font-mono);
     font-weight: 600;
-    box-shadow: 0 2px 8px rgba(245, 165, 36, 0.15);
-    transition: all 0.2s ease;
-    position: relative;
-    animation: utc-pulse 3s ease-in-out infinite;
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 4px 12px rgba(0, 0, 0, 0.25);
+    vertical-align: bottom;
+    animation: utc-pulse-subtle 4s ease-in-out infinite;
+    z-index: 10;
+    overflow: visible;
+    transition: all 0.3s ease;
   }
 
+  .utc-badge:hover {
+    text-shadow: 
+      0 0 8px rgba(245, 165, 36, 0.8),
+      0 0 16px rgba(245, 165, 36, 0.6),
+      0 0 24px rgba(245, 165, 36, 0.4);
+    color: rgba(245, 165, 36, 1);
+  }
+
+  .utc-badge:hover * {
+    text-shadow: 
+      0 0 8px rgba(245, 165, 36, 0.8),
+      0 0 16px rgba(245, 165, 36, 0.6),
+      0 0 24px rgba(245, 165, 36, 0.4);
+    color: rgba(245, 165, 36, 1);
+  }
+
+  /* Outer dashed border - wraps around like wristband */
   .utc-badge::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: -2px;
-    border: 2px solid var(--accent-primary);
-    border-radius: inherit;
-    opacity: 0;
-    animation: utc-border-pulse 3s ease-in-out infinite;
+    border: 1px dashed var(--accent-primary);
+    border-radius: 10px;
+    opacity: 0.45;
+    pointer-events: none;
+    overflow: visible;
   }
 
-  @keyframes utc-pulse {
+  /* Inner dashed border - wraps around like wristband */
+  .utc-badge::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border: 1px dashed var(--accent-primary);
+    border-radius: 12px;
+    opacity: 0.45;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  @keyframes utc-pulse-subtle {
     0%, 100% {
-      box-shadow: 0 2px 8px rgba(245, 165, 36, 0.15);
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 4px 12px rgba(0, 0, 0, 0.25);
     }
     50% {
-      box-shadow: 0 2px 12px rgba(245, 165, 36, 0.3);
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 4px 16px rgba(0, 0, 0, 0.3);
     }
   }
 
-  @keyframes utc-border-pulse {
-    0%, 100% {
+  /* Colon separators - Casio watch style blink (no fade) */
+  .utc-colon {
+    display: inline-block;
+    animation: colon-blink 1s step-end infinite;
+    color: rgba(245, 165, 36, 0.71);
+    font-weight: 700;
+    vertical-align: middle;
+  }
+
+  @keyframes colon-blink {
+    0%, 49% {
+      opacity: 1;
+      visibility: visible;
+    }
+    50%, 100% {
       opacity: 0;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.3;
-      transform: scale(1.02);
+      visibility: hidden;
     }
   }
-  .utc-badge:hover,
-  .utc-badge:focus {
-    color: #fff;
-    background: rgba(245, 165, 36, 0.15);
-    border-color: #f5a524;
-    box-shadow: 0 4px 12px rgba(245, 165, 36, 0.25);
-    transform: translateY(-1px);
+
+  /* Animation for hour/minute change */
+  .time-change-pulse {
+    display: inline-block !important;
+    animation: time-change 0.6s ease-out !important;
+  }
+
+  @keyframes time-change {
+    0% {
+      transform: scale(1);
+      color: rgba(245, 165, 36, 0.71);
+    }
+    50% {
+      transform: scale(1.2);
+      color: rgba(245, 165, 36, 1);
+      text-shadow: 0 0 12px rgba(245, 165, 36, 0.8);
+    }
+    100% {
+      transform: scale(1);
+      color: rgba(245, 165, 36, 0.71);
+    }
   }
   .subtitle {
     font-size: 1rem;
@@ -596,11 +869,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   .contact-link:hover {
-    background: var(--accent-primary);
-    color: var(--bg-primary);
-    border-color: var(--accent-primary);
     transform: scale(1.05);
-    box-shadow: 0 4px 16px rgba(245, 165, 36, 0.4);
+    text-shadow: 
+      0 0 8px rgba(245, 165, 36, 0.8),
+      0 0 16px rgba(245, 165, 36, 0.6),
+      0 0 24px rgba(245, 165, 36, 0.4);
+    color: rgba(245, 165, 36, 1);
   }
 
   .contact-link:hover::before {
@@ -608,7 +882,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   .contact-link:hover .link-label {
-    color: var(--bg-primary);
+    color: rgba(98, 199, 255, 1);
+    text-shadow: 
+      0 0 8px rgba(98, 199, 255, 0.8),
+      0 0 16px rgba(98, 199, 255, 0.6);
   }
 
   .link-label {
@@ -633,4 +910,5 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
   }
 </style>
+
 

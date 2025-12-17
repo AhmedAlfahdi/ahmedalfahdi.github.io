@@ -183,29 +183,19 @@ try {
       position: relative;
     }
     nav a::after {
-      content: '';
-      position: absolute;
-      left: 1.2rem;
-      right: 1.2rem;
-      bottom: 0.6rem;
-      height: 2px;
-      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-      transform: scaleX(0);
-      transform-origin: center;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 0 8px rgba(245, 165, 36, 0.4);
+      display: none;
     }
 
     nav a:hover,
     nav a:focus {
       color: var(--accent-primary);
       background: rgba(245, 165, 36, 0.06);
+      text-shadow: 
+        0 0 8px rgba(245, 165, 36, 0.8),
+        0 0 16px rgba(245, 165, 36, 0.6),
+        0 0 24px rgba(245, 165, 36, 0.4);
     }
 
-    nav a:hover::after,
-    nav a:focus::after {
-      transform: scaleX(1);
-    }
 
     main {
       max-width: 1350px;
@@ -1158,6 +1148,7 @@ try {
 
       codeBlocks.forEach(block => codeObserver.observe(block));
     }
+
 
     // Site info modal functionality
     const infoBtn = document.getElementById('site-info-btn');
