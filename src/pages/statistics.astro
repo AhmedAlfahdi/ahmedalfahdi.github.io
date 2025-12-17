@@ -118,6 +118,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             </div>
           </div>
         </div>
+
+        <h2>World Map - Recent Visitors</h2>
+        <div id="world-map" class="world-map"></div>
         
         <h2>Top Pages (Table)</h2>
         <div id="top-pages-table" class="pages-table"></div>
@@ -316,6 +319,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .charts-section h2:first-of-type {
     margin-top: 2rem;
   }
+
+  .world-map {
+    margin: 1.5rem 0;
+    height: 420px;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+  }
   
   .pages-table,
   .visitors-table {
@@ -383,6 +395,91 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   if (typeof window !== 'undefined') {
     const API_BASE = import.meta.env.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api';
     const API_ENDPOINT = `${API_BASE}/stats`;
+
+    // --- Leaflet setup for world map ---
+    let leafletLoaded = false;
+    let worldMapInstance = null;
+
+    // Load Leaflet CSS
+    const leafletCss = document.createElement('link');
+    leafletCss.rel = 'stylesheet';
+    leafletCss.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    leafletCss.crossOrigin = '';
+    document.head.appendChild(leafletCss);
+
+    // Forward declaration so it can be used in onload callback and later
+    function renderWorldMap(data) {
+      if (!leafletLoaded || !window.L) return;
+      if (!data || !data.recentVisitors || data.recentVisitors.length === 0) return;
+
+      const mapEl = document.getElementById('world-map');
+      if (!mapEl) return;
+
+      // Create map once
+      if (!worldMapInstance) {
+        worldMapInstance = window.L.map(mapEl, {
+          worldCopyJump: true,
+        }).setView([20, 0], 2);
+
+        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 6,
+          attribution: '&copy; OpenStreetMap contributors',
+        }).addTo(worldMapInstance);
+      }
+
+      // Clear previous visitor layer if present
+      if (worldMapInstance._visitorLayer) {
+        worldMapInstance.removeLayer(worldMapInstance._visitorLayer);
+      }
+
+      const points = data.recentVisitors.filter(v => 
+        typeof v.latitude === 'number' &&
+        typeof v.longitude === 'number'
+      );
+
+      if (points.length === 0) {
+        return;
+      }
+
+      const layer = window.L.layerGroup();
+      points.forEach(visitor => {
+        const marker = window.L.circleMarker([visitor.latitude, visitor.longitude], {
+          radius: 5,
+          color: '#f5a524',
+          fillColor: '#f5a524',
+          fillOpacity: 0.85,
+          weight: 1,
+        }).bindPopup(`
+          <div style="min-width: 200px; font-family: var(--font-mono); font-size: 0.8rem;">
+            <div style="font-weight: 600; margin-bottom: 0.25rem;">${visitor.ip}</div>
+            <div>${formatVisitorDetails(visitor)}</div>
+          </div>
+        `);
+
+        layer.addLayer(marker);
+      });
+
+      layer.addTo(worldMapInstance);
+      worldMapInstance._visitorLayer = layer;
+
+      // Fit map bounds to markers (with reasonable zoom)
+      const latLngs = points.map(v => [v.latitude, v.longitude]);
+      if (latLngs.length > 0) {
+        worldMapInstance.fitBounds(latLngs, { padding: [20, 20], maxZoom: 4 });
+      }
+    }
+
+    // Load Leaflet JS
+    const leafletScript = document.createElement('script');
+    leafletScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    leafletScript.crossOrigin = '';
+    leafletScript.onload = () => {
+      leafletLoaded = true;
+      if (window.__statsDataForMap) {
+        renderWorldMap(window.__statsDataForMap);
+      }
+    };
+    document.head.appendChild(leafletScript);
     
     // Chart.js configuration for dark theme
     const chartConfig = {
@@ -485,6 +582,58 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const MAX_RETRIES = 3;
     const RETRY_DELAY = 3000; // 3 seconds between retries
     
+    // Helper to format the "recent visitors" line so we don't spam "unknown" values
+    const formatVisitorDetails = (visitor) => {
+      if (!visitor) return '';
+
+      const parts = [];
+
+      // Always show path if we have it
+      if (visitor.path) {
+        parts.push(visitor.path);
+      }
+
+      const meta = [];
+
+      // Location (city / region / country) if available
+      const locationBits = [];
+      if (visitor.city) locationBits.push(visitor.city);
+      if (visitor.regionCode) locationBits.push(visitor.regionCode);
+      if (visitor.countryCode) locationBits.push(visitor.countryCode);
+      const location = locationBits.join(', ');
+      if (location) {
+        meta.push(location);
+      }
+
+      // Only include fields that actually exist
+      if (visitor.deviceType) meta.push(visitor.deviceType);
+      if (visitor.browser) meta.push(visitor.browser);
+      if (visitor.os) meta.push(visitor.os);
+      if (visitor.source || visitor.sourceType) {
+        meta.push(visitor.source || visitor.sourceType);
+      }
+
+      if (meta.length > 0) {
+        parts.push(meta.join(' • '));
+      }
+
+      // Time is always useful context
+      if (visitor.timestamp) {
+        try {
+          parts.push(new Date(visitor.timestamp).toLocaleString());
+        } catch {
+          // If timestamp is malformed, just skip it
+        }
+      }
+
+      // Fallback if we somehow have nothing
+      if (parts.length === 0) {
+        return 'Unknown visitor';
+      }
+
+      return parts.join(' • ');
+    };
+
     const loadStats = async (isRetry = false) => {
       const loadingEl = document.getElementById('stats-loading');
       const errorEl = document.getElementById('stats-error');
@@ -955,12 +1104,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <div class="visitor-row">
               <div class="visitor-ip">${visitor.ip}</div>
               <div class="visitor-details">
-                ${visitor.path} • ${visitor.deviceType || 'unknown'} • ${visitor.browser || 'unknown'} • ${visitor.sourceType || 'unknown'} • ${new Date(visitor.timestamp).toLocaleString()}
+                ${formatVisitorDetails(visitor)}
               </div>
             </div>
           `).join('');
         } else {
           recentVisitorsEl.innerHTML = '<p style="padding: 1rem; color: var(--text-muted);">No visitor data available</p>';
+        }
+
+        // World map: store data globally for when Leaflet is ready and render
+        window.__statsDataForMap = data;
+        if (leafletLoaded && window.L) {
+          renderWorldMap(data);
         }
         
       } catch (error) {
