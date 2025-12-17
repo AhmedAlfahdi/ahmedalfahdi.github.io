@@ -20,6 +20,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <h2>About Me</h2>
       <p>
         I am a mechanical engineer with hands-on experience in the Oil & Gas industry—specifically upstream (Wireline & Tubing Conveyed Perforation, TCP) and midstream (pipeline) sectors. My practical background includes both field operations (TCP/Wireline support, pipeline integrity) and design/simulation tasks. Notably, I used Ansys extensively for my Bachelor's degree thesis, as well as SolidWorks for technical design and modeling.
+      </p>
       <p>
         Outside of engineering, I'm passionate about software development and reverse engineering, frequently using automation, scripting, and process optimization to streamline tasks and deepen my technical knowledge.
       </p>
@@ -303,11 +304,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding-top: 2.5rem;
   }
 
-  /* Hide top border where badge sits */
+  /* Hide top border where badge sits (desktop only) */
   .home-wrap.container::before {
     border-top: none;
     top: 12px;
     height: calc(100% - 24px);
+  }
+
+  /* Restore top border on mobile */
+  @media (max-width: 768px) {
+    .home-wrap.container::before {
+      border-top: 1px dashed var(--accent-primary) !important;
+      top: 12px !important;
+      height: calc(100% - 24px) !important;
+    }
   }
 
   /* Add top border segments on left and right of badge */
@@ -384,6 +394,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       border-radius: 6px !important;
       display: block !important;
       text-align: center !important;
+      border-top: 1px dashed var(--accent-primary) !important;
+      border-bottom: 1px dashed var(--accent-primary) !important;
+      border-left: 1px dashed var(--accent-primary) !important;
+      border-right: 1px dashed var(--accent-primary) !important;
     }
 
     .utc-badge::before,
@@ -397,6 +411,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     .home-wrap.container {
       padding-top: 1.5rem !important;
+      overflow: visible !important;
     }
   }
 
@@ -660,6 +675,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .about-section {
     margin-bottom: 3rem;
   }
+
 
   .skills {
     margin-top: 2rem;
@@ -983,7 +999,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     .home-wrap.container {
-      padding-top: 2rem;
+      padding-top: 2rem !important;
+      overflow: visible !important;
     }
 
     /* Subtitle mobile optimization */
