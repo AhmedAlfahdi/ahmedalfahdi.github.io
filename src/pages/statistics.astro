@@ -517,10 +517,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         return;
       }
 
+      // Build a fresh layer of simple, clean circular markers
       const layer = window.L.layerGroup();
       points.forEach(visitor => {
-        const marker = window.L.marker([visitor.latitude, visitor.longitude])
-          .bindPopup(buildVisitorPopupHtml(visitor));
+        const marker = window.L.circleMarker([visitor.latitude, visitor.longitude], {
+          radius: 5,
+          color: '#f5a524',          // stroke color
+          weight: 1.5,
+          fillColor: '#f5a524',      // fill color
+          fillOpacity: 0.85,
+        }).bindPopup(buildVisitorPopupHtml(visitor));
 
         layer.addLayer(marker);
       });
