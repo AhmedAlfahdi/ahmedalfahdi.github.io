@@ -473,9 +473,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       // Create map once
       if (!worldMapInstance) {
-        worldMapInstance = window.L.map(mapEl, {
-          worldCopyJump: true,
-        }).setView([20, 0], 2);
+        worldMapInstance = window.L.map(mapEl).setView([20, 0], 2);
 
         window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 6,
