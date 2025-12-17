@@ -73,7 +73,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <div class="contact-links">
         <a href="https://github.com/AhmedAlfahdi" target="_blank" class="contact-link" style="font-family: var(--font-mono);">
           <span class="link-label">[GH]</span>
-          Github.com/AhmedAlfahdi/
+          <span class="link-text">Github.com/AhmedAlfahdi/</span>
         </a>
         <!--
         <a href="https://linkedin.com/in/AhmedAlfahdi" target="_blank" class="contact-link">
@@ -81,10 +81,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         -->
         </a>
         <a href="mailto:Ahmed_N_Alfahdi@outlook.com" class="contact-link">
-          <span class="link-label">[EM]</span> Ahmed_N_Alfahdi@outlook.com
+          <span class="link-label">[EM]</span>
+          <span class="link-text">Ahmed_N_Alfahdi@outlook.com</span>
         </a>
         <a href="https://wa.me/96897019529" target="_blank" class="contact-link">
-          <span class="link-label">[WA]</span> +968 9701 9529
+          <span class="link-label">[WA]</span>
+          <span class="link-text">+968 9701 9529</span>
         </a>
         <!-- End of Selection -->
 
@@ -154,6 +156,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       homeUtc.appendChild(document.createTextNode(`UTC ${date}`));
       // Add space between date and clock
       const spaceSpan = document.createElement('span');
+      spaceSpan.className = 'utc-space';
       spaceSpan.style.display = 'inline-block';
       spaceSpan.style.width = '1rem';
       homeUtc.appendChild(spaceSpan);
@@ -163,6 +166,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       homeUtc.appendChild(colon2);
       homeUtc.appendChild(document.createTextNode(`${seconds}.${ms} `));
       const dutSpan = document.createElement('span');
+      dutSpan.className = 'utc-dut';
       dutSpan.style.fontSize = '0.8em';
       dutSpan.style.opacity = '0.7';
       dutSpan.textContent = '(DUT1 ±0.9s)';
@@ -362,6 +366,61 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     z-index: 10;
     overflow: visible;
     transition: all 0.3s ease;
+  }
+
+  @media (max-width: 768px) {
+    .utc-badge {
+      position: relative !important;
+      top: 0 !important;
+      left: auto !important;
+      transform: none !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 auto 1rem !important;
+      font-size: 0.7rem !important;
+      padding: 8px 1rem !important;
+      letter-spacing: 0.5px !important;
+      line-height: 1.4 !important;
+      border-radius: 6px !important;
+      display: block !important;
+      text-align: center !important;
+    }
+
+    .utc-badge::before,
+    .utc-badge::after {
+      display: none !important;
+    }
+
+    .utc-badge .utc-space {
+      width: 0.5rem !important;
+    }
+
+    .home-wrap.container {
+      padding-top: 1.5rem !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .utc-badge {
+      font-size: 0.65rem !important;
+      padding: 6px 0.8rem !important;
+      letter-spacing: 0.3px !important;
+    }
+
+    .utc-badge .utc-space {
+      width: 0.3rem !important;
+    }
+
+    .utc-badge .utc-dut {
+      display: none !important;
+    }
+
+    /* Simplify time display on very small screens */
+    .utc-badge {
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
   }
 
   .utc-badge:hover {
@@ -853,10 +912,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid var(--border-light);
     text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 1px;
+    font-size: clamp(0.6rem, 2.5vw, 0.85rem);
+    letter-spacing: clamp(0.2px, 0.3vw, 1px);
     position: relative;
     overflow: hidden;
+    word-break: break-word;
+    hyphens: auto;
   }
 
   .contact-link::before {
@@ -889,10 +950,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   .link-label {
-    font-size: 0.9rem;
+    font-size: clamp(0.55rem, 2.2vw, 0.9rem);
     font-weight: 700;
     color: var(--accent-secondary);
     transition: color 0.2s;
+    flex-shrink: 0;
   }
 
   @media (max-width: 768px) {
@@ -902,11 +964,64 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     .contact-links {
       flex-direction: column;
+      gap: 0.8rem;
     }
 
     .contact-link {
-      width: 100%;
-      justify-content: center;
+      width: 100% !important;
+      justify-content: center !important;
+      padding: clamp(0.6rem, 2vw, 0.75rem) clamp(0.8rem, 3vw, 1rem) !important;
+      gap: 0.5rem !important;
+      text-align: center;
+      line-height: 1.4;
+      flex-wrap: wrap;
+    }
+
+    .utc-badge-border-left,
+    .utc-badge-border-right {
+      display: none !important;
+    }
+
+    .home-wrap.container {
+      padding-top: 2rem;
+    }
+
+    /* Subtitle mobile optimization */
+    .subtitle {
+      font-size: 0.9rem;
+      padding: 0.6rem 0.5rem;
+      line-height: 1.6;
+    }
+
+    .subtitle-separator {
+      display: none;
+    }
+
+    .subtitle-role {
+      display: block;
+      margin: 0.3rem 0;
+    }
+
+    .subtitle-role:first-child {
+      margin-top: 0;
+    }
+
+    .subtitle-role:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .contact-link {
+      padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.6rem, 3vw, 1rem) !important;
+    }
+
+    .contact-link .link-text {
+      display: none !important;
+    }
+
+    .contact-link .link-label {
+      font-size: clamp(0.7rem, 3vw, 0.9rem) !important;
     }
   }
 </style>
