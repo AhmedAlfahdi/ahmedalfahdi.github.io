@@ -73,7 +73,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <p class="note">A 3D wireframe globe showing Earth's rotation around its axis. The prime meridian (gold line) and equator (gold ring) rotate with the Earth. The rotation axis (gray dashed line) with N and S labels remains fixed in space. Six major cities are marked with subtle colored dots to provide geographic reference. The Sun (yellow sphere) shows the direction of your calculated solar angle and updates as you change the time or longitude.</p>
         <div class="keyboard-shortcuts">
           <strong>Keyboard Shortcuts:</strong>
-          <span><kbd>Space</kbd> Pause/Resume</span>
           <span><kbd>R</kbd> Reset view</span>
           <span><kbd>F</kbd> Fullscreen</span>
         </div>
@@ -88,13 +87,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </label>
           <label>
             DUT1 (seconds, from IERS)
-            <input id="dut1-input" type="number" step="0.1" value="0.0" />
+            <input id="dut1-input" type="number" step="0.1" value="-0.1" />
             <div class="small-note">Example: -0.1 (see IERS Bulletin A)</div>
             <button id="dut1-reset" type="button" class="pill">Reset DUT1</button>
           </label>
           <label>
             Longitude (degrees, east + / west -)
-            <input id="lon-input" type="number" step="0.01" value="0" />
+            <input id="lon-input" type="number" step="0.01" value="57.5" />
           </label>
         </div>
         <label class="inline">
@@ -780,13 +779,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     lonInput.value = savedLongitude;
   }
 
-  // Set default UTC to current time (rounded to minutes)
+  // Set default UTC to current UTC time (rounded to minutes)
   const now = new Date();
   now.setSeconds(0, 0);
-  const isoLocal = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
-  utcInput.value = isoLocal;
+  // Get UTC time directly
+  const year = now.getUTCFullYear();
+  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(now.getUTCDate()).padStart(2, '0');
+  const hours = String(now.getUTCHours()).padStart(2, '0');
+  const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+  utcInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
 
   function fmtDateWithSeconds(d) {
     const pad = (n) => String(n).padStart(2, '0');
