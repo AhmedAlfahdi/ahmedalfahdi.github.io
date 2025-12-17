@@ -319,11 +319,35 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .world-map {
     margin: 1.5rem 0;
-    height: 420px;
+    height: 620px; /* taller for more immersive global view */
     width: 100%;
     border-radius: 8px;
     overflow: hidden;
     border: 1px solid var(--border-strong);
+    background: #050910;
+  }
+
+  /* Themed MapLibre canvas to better match the site's dark styling */
+  :global(.world-map .maplibregl-canvas) {
+    filter: brightness(0.75) contrast(1.15) saturate(0.9);
+  }
+
+  /* Style map controls to blend with the site's UI */
+  :global(.world-map .maplibregl-ctrl-group) {
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  }
+
+  :global(.world-map .maplibregl-ctrl-group button) {
+    background: rgba(11, 16, 21, 0.95);
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
+  }
+
+  :global(.world-map .maplibregl-ctrl-group button:hover) {
+    background: rgba(24, 34, 46, 0.95);
+    color: var(--accent-primary);
   }
 
   /* Ensure Leaflet marker icons are not affected by global img styles (borders, shadows, filters) */
@@ -412,18 +436,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const API_BASE = import.meta.env.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api';
     const API_ENDPOINT = `${API_BASE}/stats`;
 
-    // --- Leaflet setup for world map ---
-    let leafletLoaded = false;
-    let worldMapInstance = null;
+    // --- MapLibre GL JS setup for world map (no tokens required) ---
+    let mapLibreLoaded = false;
+    let mapInstance = null;
+    let mapMarkers = [];
 
-    // Load Leaflet CSS
-    const leafletCss = document.createElement('link');
-    leafletCss.rel = 'stylesheet';
-    leafletCss.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-    leafletCss.crossOrigin = '';
-    document.head.appendChild(leafletCss);
+    // Load MapLibre GL JS CSS
+    const mapLibreCss = document.createElement('link');
+    mapLibreCss.rel = 'stylesheet';
+    mapLibreCss.href = 'https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css';
+    mapLibreCss.crossOrigin = '';
+    document.head.appendChild(mapLibreCss);
 
-    // Build structured popup HTML for the world map
+    // Build structured popup HTML for the world map / globe
     const buildVisitorPopupHtml = (visitor) => {
       if (!visitor) return '';
 
@@ -470,88 +495,70 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     // Forward declaration so it can be used in onload callback and later
     function renderWorldMap(data) {
-      if (!leafletLoaded || !window.L) return;
-      if (!data || !data.recentVisitors || data.recentVisitors.length === 0) {
-        const mapEl = document.getElementById('world-map');
-        if (mapEl && !worldMapInstance) {
-          mapEl.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:0.9rem;">No visitor location data available yet. Deploy the analytics API to Vercel or enable IP geolocation to see markers here.</div>';
-        }
-        return;
-      }
+      if (!mapLibreLoaded || !window.maplibregl) return;
 
       const mapEl = document.getElementById('world-map');
       if (!mapEl) return;
 
-      // Create map once
-      if (!worldMapInstance) {
-        worldMapInstance = window.L.map(mapEl, {
-          worldCopyJump: false,
-        }).setView([20, 0], 2);
-
-        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 6,
-          attribution: '&copy; OpenStreetMap contributors',
-          noWrap: true,
-          bounds: [
-            [-85, -180],
-            [85, 180],
-          ],
-        }).addTo(worldMapInstance);
+      if (!data || !data.recentVisitors || data.recentVisitors.length === 0) {
+        mapEl.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:0.9rem;">No visitor location data available yet.</div>';
+        return;
       }
 
-      // Clear previous visitor layer if present
-      if (worldMapInstance._visitorLayer) {
-        worldMapInstance.removeLayer(worldMapInstance._visitorLayer);
-      }
-
-      const points = data.recentVisitors.filter(v => 
+      const points = data.recentVisitors.filter(v =>
         typeof v.latitude === 'number' &&
         typeof v.longitude === 'number'
       );
 
       if (points.length === 0) {
-        const mapEl = document.getElementById('world-map');
-        if (mapEl && !worldMapInstance) {
-          mapEl.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:0.9rem;">Recent visitors do not include geolocation coordinates. Make sure the analytics API is running on Vercel (with geo headers) or another IP geolocation service.</div>';
-        }
+        mapEl.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:0.9rem;">Recent visitors do not include geolocation coordinates.</div>';
         return;
       }
 
-      // Build a fresh layer of simple, clean circular markers
-      const layer = window.L.layerGroup();
-      points.forEach(visitor => {
-        const marker = window.L.circleMarker([visitor.latitude, visitor.longitude], {
-          radius: 5,
-          color: '#f5a524',          // stroke color
-          weight: 1.5,
-          fillColor: '#f5a524',      // fill color
-          fillOpacity: 0.85,
-        }).bindPopup(buildVisitorPopupHtml(visitor));
+      // Create map once
+      if (!mapInstance) {
+        mapInstance = new window.maplibregl.Map({
+          container: 'world-map',
+          style: 'https://demotiles.maplibre.org/style.json',
+          center: [0, 20],
+          zoom: 1.4,
+        });
+      }
 
-        layer.addLayer(marker);
+      // Remove previous markers
+      mapMarkers.forEach(m => m.remove());
+      mapMarkers = [];
+
+      const bounds = new window.maplibregl.LngLatBounds();
+
+      points.forEach(visitor => {
+        const lngLat = [visitor.longitude, visitor.latitude];
+        bounds.extend(lngLat);
+
+        const marker = new window.maplibregl.Marker({ color: '#f5a524' })
+          .setLngLat(lngLat)
+          .setPopup(new window.maplibregl.Popup({ offset: 12 }).setHTML(buildVisitorPopupHtml(visitor)));
+
+        marker.addTo(mapInstance);
+        mapMarkers.push(marker);
       });
 
-      layer.addTo(worldMapInstance);
-      worldMapInstance._visitorLayer = layer;
-
-      // Fit map bounds to markers (with reasonable zoom)
-      const latLngs = points.map(v => [v.latitude, v.longitude]);
-      if (latLngs.length > 0) {
-        worldMapInstance.fitBounds(latLngs, { padding: [20, 20], maxZoom: 4 });
+      if (!bounds.isEmpty()) {
+        mapInstance.fitBounds(bounds, { padding: 40, maxZoom: 4 });
       }
     }
 
-    // Load Leaflet JS
-    const leafletScript = document.createElement('script');
-    leafletScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    leafletScript.crossOrigin = '';
-    leafletScript.onload = () => {
-      leafletLoaded = true;
+    // Load MapLibre GL JS
+    const mapLibreScript = document.createElement('script');
+    mapLibreScript.src = 'https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js';
+    mapLibreScript.crossOrigin = '';
+    mapLibreScript.onload = () => {
+      mapLibreLoaded = true;
       if (window.__statsDataForMap) {
         renderWorldMap(window.__statsDataForMap);
       }
     };
-    document.head.appendChild(leafletScript);
+    document.head.appendChild(mapLibreScript);
     
     // Chart.js configuration for dark theme
     const chartConfig = {
@@ -1169,9 +1176,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           trafficSourcesEl.innerHTML = '<p style="padding: 1rem; color: var(--text-muted);">No traffic source data available</p>';
         }
         
-        // World map: store data globally for when Leaflet is ready and render
+        // World map: store data globally for when MapLibre is ready and render
         window.__statsDataForMap = data;
-        if (leafletLoaded && window.L) {
+        if (mapLibreLoaded && window.maplibregl) {
           renderWorldMap(data);
         }
         
@@ -1243,3 +1250,4 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     };
   }
 </script>
+
