@@ -508,13 +508,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       const layer = window.L.layerGroup();
       points.forEach(visitor => {
-        const marker = window.L.circleMarker([visitor.latitude, visitor.longitude], {
-          radius: 6,
-          color: '#f5a524',
-          fillColor: '#f5a524',
-          fillOpacity: 0.85,
-          weight: 1.5,
-        }).bindPopup(buildVisitorPopupHtml(visitor));
+        const marker = window.L.marker([visitor.latitude, visitor.longitude])
+          .bindPopup(buildVisitorPopupHtml(visitor));
 
         layer.addLayer(marker);
       });
