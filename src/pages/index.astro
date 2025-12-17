@@ -6,7 +6,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <div class="container home-wrap">
     <a class="utc-badge" id="home-utc" href="/earth-rotation">UTC —</a>
     <h1>Ahmed N. Alfahdi</h1>
-    <p class="subtitle">Mechanical Engineer | Oil & Gas Trainee | Software & Reverse Engineering Enthusiast</p>
+    <p class="subtitle">
+      <span class="subtitle-role">Mechanical Engineer</span>
+      <span class="subtitle-separator">|</span>
+      <span class="subtitle-role">Oil & Gas Trainee</span>
+      <span class="subtitle-separator">|</span>
+      <span class="subtitle-role">Software & Reverse Engineering Enthusiast</span>
+    </p>
     
     <div class="about-section">
       <h2>About Me</h2>
@@ -98,6 +104,23 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     // Update every 10ms for smooth millisecond display
     setInterval(updateUtc, 10);
   }
+
+  // Animate skill list items on scroll
+  const skillItems = document.querySelectorAll('.skills-list li');
+  if (skillItems.length > 0) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, index * 100);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    skillItems.forEach(item => observer.observe(item));
+  }
 </script>
 
 <style>
@@ -121,6 +144,38 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-weight: 600;
     box-shadow: 0 2px 8px rgba(245, 165, 36, 0.15);
     transition: all 0.2s ease;
+    position: relative;
+    animation: utc-pulse 3s ease-in-out infinite;
+  }
+
+  .utc-badge::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border: 2px solid var(--accent-primary);
+    border-radius: inherit;
+    opacity: 0;
+    animation: utc-border-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes utc-pulse {
+    0%, 100% {
+      box-shadow: 0 2px 8px rgba(245, 165, 36, 0.15);
+    }
+    50% {
+      box-shadow: 0 2px 12px rgba(245, 165, 36, 0.3);
+    }
+  }
+
+  @keyframes utc-border-pulse {
+    0%, 100% {
+      opacity: 0;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.3;
+      transform: scale(1.02);
+    }
   }
   .utc-badge:hover,
   .utc-badge:focus {
@@ -139,6 +194,135 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-family: var(--font-mono);
     border-left: 2px solid var(--accent-primary);
     padding-left: 1rem;
+    position: relative;
+    overflow: hidden;
+    animation: subtitle-fade-in 1s ease-out;
+    text-align: center;
+    border-left: none;
+    padding-left: 0;
+    border-top: 2px solid var(--accent-primary);
+    border-bottom: 2px solid var(--accent-primary);
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .subtitle::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+    opacity: 0.6;
+    animation: border-glow-top 3s ease-in-out infinite;
+  }
+
+  .subtitle::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+    opacity: 0.6;
+    animation: border-glow-bottom 3s ease-in-out infinite;
+    animation-delay: 1.5s;
+  }
+
+  .subtitle-role {
+    display: inline-block;
+    position: relative;
+    background: linear-gradient(90deg, var(--text-secondary), var(--accent-secondary), var(--text-secondary));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: role-gradient 4s ease infinite;
+    transition: all 0.3s ease;
+  }
+
+  .subtitle-role:nth-child(1) {
+    animation-delay: 0s;
+  }
+
+  .subtitle-role:nth-child(3) {
+    animation-delay: 1.3s;
+  }
+
+  .subtitle-role:nth-child(5) {
+    animation-delay: 2.6s;
+  }
+
+  .subtitle-separator {
+    display: inline-block;
+    margin: 0 0.75rem;
+    color: var(--accent-primary);
+    opacity: 0.5;
+    animation: separator-pulse 2.5s ease-in-out infinite;
+    font-weight: 300;
+  }
+
+  .subtitle-separator:nth-child(2) {
+    animation-delay: 0s;
+  }
+
+  .subtitle-separator:nth-child(4) {
+    animation-delay: 1.25s;
+  }
+
+  @keyframes subtitle-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes border-glow-top {
+    0%, 100% {
+      opacity: 0.4;
+      box-shadow: 0 -2px 4px rgba(245, 165, 36, 0.3);
+    }
+    50% {
+      opacity: 0.8;
+      box-shadow: 0 -2px 8px rgba(245, 165, 36, 0.5);
+    }
+  }
+
+  @keyframes border-glow-bottom {
+    0%, 100% {
+      opacity: 0.4;
+      box-shadow: 0 2px 4px rgba(245, 165, 36, 0.3);
+    }
+    50% {
+      opacity: 0.8;
+      box-shadow: 0 2px 8px rgba(245, 165, 36, 0.5);
+    }
+  }
+
+  @keyframes role-gradient {
+    0%, 100% {
+      background-position: 0% center;
+    }
+    50% {
+      background-position: 100% center;
+    }
+  }
+
+  @keyframes separator-pulse {
+    0%, 100% {
+      opacity: 0.4;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
   }
 
   .about-section {
@@ -187,6 +371,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding-left: 1.5rem;
     position: relative;
     color: var(--text-secondary);
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.4s ease;
+  }
+
+  .skills-list li.visible {
+    opacity: 1;
+    transform: translateX(0);
   }
 
   .skills-list li::before {
@@ -225,6 +417,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     transition: all 0.2s;
     position: relative;
     overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: card-entrance 0.6s ease-out forwards;
+  }
+
+  .section-card:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+
+  .section-card:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .section-card:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  .section-card:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes card-entrance {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .section-card::after {
@@ -359,17 +577,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--text-secondary);
     text-decoration: none;
     font-weight: 600;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid var(--border-light);
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .contact-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(98, 199, 255, 0.1), rgba(245, 165, 36, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
   .contact-link:hover {
     background: var(--accent-primary);
     color: var(--bg-primary);
     border-color: var(--accent-primary);
+    transform: scale(1.05);
+    box-shadow: 0 4px 16px rgba(245, 165, 36, 0.4);
+  }
+
+  .contact-link:hover::before {
+    opacity: 1;
   }
 
   .contact-link:hover .link-label {

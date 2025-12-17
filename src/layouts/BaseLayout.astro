@@ -189,10 +189,11 @@ try {
       right: 1.2rem;
       bottom: 0.6rem;
       height: 2px;
-      background: var(--accent-primary);
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
       transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.2s ease;
+      transform-origin: center;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 8px rgba(245, 165, 36, 0.4);
     }
 
     nav a:hover,
@@ -308,6 +309,18 @@ try {
       white-space: pre;
       word-break: normal;
       overflow-wrap: normal;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: all 0.5s ease-out;
+    }
+
+    pre.code-visible {
+      opacity: 1;
+      transform: translateX(0);
+      border-left-color: var(--accent-primary);
+      box-shadow: 
+        inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+        0 0 12px rgba(245, 165, 36, 0.15);
     }
 
     /* Neutralize per-line shading from syntax highlighters */
@@ -1130,6 +1143,21 @@ try {
     window.addEventListener('scroll', updateProgress, { passive: true });
     window.addEventListener('resize', updateProgress);
     window.addEventListener('load', updateProgress);
+
+    // Animate code blocks on scroll
+    const codeBlocks = document.querySelectorAll('pre');
+    if (codeBlocks.length > 0) {
+      const codeObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('code-visible');
+            codeObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+      codeBlocks.forEach(block => codeObserver.observe(block));
+    }
 
     // Site info modal functionality
     const infoBtn = document.getElementById('site-info-btn');

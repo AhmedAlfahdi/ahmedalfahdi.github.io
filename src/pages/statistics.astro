@@ -165,6 +165,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     cursor: pointer;
     position: relative;
     overflow: visible;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    animation: stat-card-entrance 0.6s ease-out forwards;
+  }
+
+  .stat-card:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+
+  .stat-card:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .stat-card:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  .stat-card:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+
+  .stat-card:nth-child(5) {
+    animation-delay: 0.5s;
+  }
+
+  @keyframes stat-card-entrance {
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
   
   .stat-card::before {
