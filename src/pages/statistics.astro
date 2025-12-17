@@ -326,61 +326,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     border: 1px solid var(--border-strong);
   }
 
-  /* Pulsating marker for visitor locations (global so Leaflet-created elements are styled) */
-  :global(.visitor-marker) {
-    position: relative;
-  }
- 
-  :global(.visitor-marker .visitor-dot) {
-    width: 14px;
-    height: 14px;
-    border-radius: 999px;
-    background: #f5a524;
-    box-shadow: 0 0 12px rgba(245, 165, 36, 0.8);
-    transform: translate(-50%, -50%);
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    animation: visitor-pulse 1.6s ease-out infinite;
-  }
-
-  :global(.visitor-marker .visitor-dot::after) {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    border: 2px solid rgba(245, 165, 36, 0.7);
-    animation: visitor-pulse-ring 1.6s ease-out infinite;
-  }
-
-  @keyframes visitor-pulse {
-    0% {
-      transform: translate(-50%, -50%) scale(0.85);
-      opacity: 1;
-    }
-    70% {
-      transform: translate(-50%, -50%) scale(1.2);
-      opacity: 0.6;
-    }
-    100% {
-      transform: translate(-50%, -50%) scale(0.85);
-      opacity: 1;
-    }
-  }
-
-  @keyframes visitor-pulse-ring {
-    0% {
-      transform: scale(0.9);
-      opacity: 0.9;
-    }
-    70% {
-      transform: scale(1.6);
-      opacity: 0;
-    }
-    100% {
-      transform: scale(0.9);
-      opacity: 0;
-    }
+  /* Ensure Leaflet layers stay behind fixed navigation/header */
+  :global(.world-map .leaflet-pane),
+  :global(.world-map .leaflet-top),
+  :global(.world-map .leaflet-bottom) {
+    z-index: 0;
   }
   
   .pages-table,
@@ -553,13 +503,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       const layer = window.L.layerGroup();
       points.forEach(visitor => {
-        const marker = window.L.marker([visitor.latitude, visitor.longitude], {
-          icon: window.L.divIcon({
-            className: 'visitor-marker',
-            html: '<span class="visitor-dot"></span>',
-            iconSize: [18, 18],
-            iconAnchor: [9, 9],
-          }),
+        const marker = window.L.circleMarker([visitor.latitude, visitor.longitude], {
+          radius: 6,
+          color: '#f5a524',
+          fillColor: '#f5a524',
+          fillOpacity: 0.85,
+          weight: 1.5,
         }).bindPopup(buildVisitorPopupHtml(visitor));
 
         layer.addLayer(marker);
