@@ -6,15 +6,12 @@ description: "Reviving an old laptop for personal journaling and writing"
 
 <div class="container">
 
-# Voidpad
 
-A project focused on reviving an old, dying laptop to create a dedicated device for writing personal entries and journaling.
-
-## Overview
+# Overview
 
 This project documents the process of bringing an old laptop back to life, transforming it into a minimalist writing machine dedicated to personal journaling. The goal is to create a distraction-free environment for capturing thoughts, ideas, and daily reflections.
 
-## Goals
+# Goals
 
 - Create a dedicated device for personal writing
 - Maintain privacy with offline storage
@@ -22,7 +19,7 @@ This project documents the process of bringing an old laptop back to life, trans
 - Reduce digital distractions
 - Establish a consistent journaling habit
 
-## The Challenge
+# The Challenge
 
 The laptop in question was showing signs of failure:
 - Slow performance and frequent crashes
@@ -31,9 +28,9 @@ The laptop in question was showing signs of failure:
 - Limited storage capacity
 - Battery degradation
 
-## The Solution
+# The Solution
 
-### Hardware Revival
+## Hardware Revival
 
 - Hardware cleaning and thermal paste replacement
 - RAM upgrade from 6GB DDR2 to 8GB DDR3
@@ -41,7 +38,7 @@ The laptop in question was showing signs of failure:
 - Battery replacement or removal for desktop use
 - Cleaning and CPU thermal paste replacement
 
-### Software Optimization
+## Software Optimization
 
 - Lightweight Linux distribution installation
 - Minimal desktop environment setup
@@ -49,11 +46,13 @@ The laptop in question was showing signs of failure:
 - Offline-first approach for privacy
 - Custom configuration for optimal performance
 
-### Choosing the Operating System: Arch vs Debian vs Debian Forks vs Void Linux
+## Choosing the Operating System
 
 Selecting the right Linux distribution was crucial for maximizing performance on old hardware. Several options were considered:
 
-#### Arch Linux (Vanilla)
+### 1. Arch Linux (Vanilla)
+
+
 
 **Pros:**
 - **Rolling release**: Always up-to-date packages
@@ -73,7 +72,7 @@ Selecting the right Linux distribution was crucial for maximizing performance on
 - **More maintenance**: Rolling releases require more frequent updates and attention
 - **Installation complexity**: Manual installation process can be time-consuming
 
-#### Debian (Vanilla)
+### 2. Debian (Vanilla)
 
 **Pros:**
 - **Stability**: Extremely stable and reliable, perfect for a dedicated writing machine
@@ -90,7 +89,7 @@ Selecting the right Linux distribution was crucial for maximizing performance on
 - **Larger base installation**: More packages in base system compared to minimal distros
 - **Less cutting-edge**: May lack latest features or hardware support
 
-#### Debian Forks (BunsenLabs, MX Linux, AntiX)
+### 3. Debian Forks (BunsenLabs, MX Linux, AntiX)
 
 **Pros:**
 - **Debian stability**: Inherits Debian's stability and package ecosystem
@@ -105,7 +104,7 @@ Selecting the right Linux distribution was crucial for maximizing performance on
 - **Package maintenance burden**: Similar to Debian, installing newer software requires manual compilation or third-party repositories
 - **Still older packages**: Most forks inherit Debian's conservative package versioning approach
 
-#### Void Linux
+### 4. Void Linux
 
 **Pros:**
 - **Lightweight and Minimal**: Designed to be lightweight and minimal by default
@@ -122,7 +121,7 @@ Selecting the right Linux distribution was crucial for maximizing performance on
 - **Less documentation**: While good, not as extensive as Arch Wiki or Debian docs
 - **Learning curve**: Different package manager and init system require some learning
 
-### Why Void Linux?
+## Why Void Linux?
 
 After comparing the available options, Void Linux was chosen as the operating system for this project. While Arch offers cutting-edge packages and Debian provides rock-solid stability, Void Linux provides the best balance for this specific use case. Key reasons for the selection:
 
@@ -140,11 +139,11 @@ After comparing the available options, Void Linux was chosen as the operating sy
 
 - **Community and Documentation**: Despite being a smaller distribution, Void Linux has excellent documentation and a helpful community for troubleshooting issues during setup.
 
-## Desktop Environment: XFCE
+# Desktop Environment: XFCE
 
 For the desktop environment, XFCE was chosen as the default option for Void Linux. This decision aligns perfectly with the project's goals of creating a lightweight, efficient writing machine.
 
-### Why XFCE?
+## Why XFCE?
 
 - **Lightweight Performance**: XFCE is known for its minimal resource usage, making it ideal for older hardware with limited RAM and processing power
 - **Familiar Interface**: Provides a traditional desktop experience that's intuitive and doesn't require a learning curve
@@ -153,7 +152,7 @@ For the desktop environment, XFCE was chosen as the default option for Void Linu
 - **Good Hardware Support**: Works well with older graphics cards and hardware configurations
 - **Minimal Dependencies**: Fewer background processes compared to heavier desktop environments like GNOME or KDE
 
-### XFCE Configuration for Writing
+## XFCE Configuration for Writing
 
 The XFCE desktop is configured with a retro aesthetic for a nostalgic writing experience:
 
@@ -165,7 +164,7 @@ The XFCE desktop is configured with a retro aesthetic for a nostalgic writing ex
 - **Classic Theme**: Carefully chosen color palette and fonts that evoke the golden age of personal computing and dedicated writing machines
 
 
-## Writing Environment
+# Writing Environment
 
 The laptop is configured with a minimal, distraction-free writing setup:
 
@@ -175,11 +174,11 @@ The laptop is configured with a minimal, distraction-free writing setup:
 - Custom keyboard shortcuts
 - Focus mode configurations
 
-### Choosing the Writing Application: Obsidian vs LazyVim vs Emacs vs neovim-obsidian vs ekphos
+## Choosing the Writing Application
 
 Selecting the right writing application was crucial for this project. Five options were considered:
 
-#### Obsidian
+### 1. Obsidian
 
 **Pros:**
 - Beautiful, modern interface with excellent markdown support
@@ -195,7 +194,7 @@ Selecting the right writing application was crucial for this project. Five optio
 - More features than needed for simple journaling
 - Requires more setup and configuration
 
-#### LazyVim
+### 2. LazyVim
 
 **Pros:**
 - Extremely lightweight (Neovim-based)
@@ -213,7 +212,7 @@ Selecting the right writing application was crucial for this project. Five optio
 - May be overkill if you just want to write
 - **Arabic configuration**: Requires additional setup for optimal RTL text editing experience
 
-#### Emacs
+### 3. Emacs
 
 **Pros:**
 - Extremely powerful and customizable
@@ -232,7 +231,7 @@ Selecting the right writing application was crucial for this project. Five optio
 - Org-mode is less widely adopted than standard markdown
 - **Arabic setup**: While powerful, Arabic support requires some configuration to enable full bidirectional editing features
 
-#### neovim-obsidian
+### 4. neovim-obsidian
 
 **Pros:**
 - Best of both worlds: Obsidian's linking features in lightweight Neovim
@@ -252,7 +251,7 @@ Selecting the right writing application was crucial for this project. Five optio
 - Requires plugin setup and configuration
 - **Arabic configuration**: Needs additional setup for optimal RTL text editing, similar to LazyVim
 
-#### [ekphos](https://www.ekphos.xyz/)
+### 5. [ekphos](https://www.ekphos.xyz/)
 
 **Pros:**
 - **Extremely lightweight**: Written in Rust, native performance with minimal resource usage
@@ -272,7 +271,7 @@ Selecting the right writing application was crucial for this project. Five optio
 - **Arabic configuration**: Terminal-based RTL support may require additional terminal configuration
 - Less mature ecosystem compared to established editors
 
-#### The Decision
+### The Decision
 
 After testing all options, **Obsidian** was selected as the primary note-taking application for the Voidpad project.
 
@@ -289,7 +288,7 @@ After testing all options, **Obsidian** was selected as the primary note-taking 
 
 While the other options (LazyVim, Emacs, neovim-obsidian, ekphos) each have their strengths, Obsidian provides the best balance of functionality, ease of use, Arabic language support, and feature completeness for a dedicated writing device.
 
-### Local AI Integration
+## Local AI Integration
 
 To enhance the writing experience while maintaining the offline-first approach, a local uncensored 3B parameter language model was integrated into the system. This provides AI assistance without compromising privacy or requiring internet connectivity.
 
