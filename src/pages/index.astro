@@ -28,7 +28,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <div class="skills">
         <h3>Skills & Expertise</h3>
         <ul class="skills-list">
-          <li><strong>Wireline & TCP Engineering:</strong> Logging support, TCP string assembly, fiber-optic perforation readiness.</li>
+          <li><strong>Wireline & TCP Engineering:</strong> Logging support, TCP string assembly, fiber-optic perforation readiness, and explosive materials handling and operations.</li>
           <li><strong>Pipeline Engineering:</strong> Hydrotesting and NDT coordination, design calculations (B31.4/B31.8), buckling/buoyancy assessments, alignment drawings, integrity reviews.</li>
           <li><strong>Engineering Software:</strong> Ansys (simulation), SolidWorks (CAD/CAM/CAE).</li>
           <li><strong>Software & Automation:</strong> PowerShell, Bash, PLC programming, SBC prototyping; enthusiastic about software development and reverse engineering.</li>
@@ -84,10 +84,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <a href="mailto:Ahmed_N_Alfahdi@outlook.com" class="contact-link">
           <span class="link-label">[EM]</span>
           <span class="link-text">Ahmed_N_Alfahdi@outlook.com</span>
-        </a>
-        <a href="https://wa.me/96897019529" target="_blank" class="contact-link">
-          <span class="link-label">[WA]</span>
-          <span class="link-text">+968 9701 9529</span>
         </a>
         <!-- End of Selection -->
 
@@ -202,22 +198,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }, 1000);
   }
 
-  // Animate skill list items on scroll
-  const skillItems = document.querySelectorAll('.skills-list li');
-  if (skillItems.length > 0) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry, index) => {
-        if (entry.isIntersecting) {
-          setTimeout(() => {
-            entry.target.classList.add('visible');
-          }, index * 100);
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
-    skillItems.forEach(item => observer.observe(item));
-  }
+  // Skills animation removed - items are visible by default
 </script>
 
 <style>
@@ -543,7 +524,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding-left: 1rem;
     position: relative;
     overflow: hidden;
-    animation: subtitle-fade-in 1s ease-out;
     text-align: center;
     border-left: none;
     padding-left: 0;
@@ -719,12 +699,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding-left: 1.5rem;
     position: relative;
     color: var(--text-secondary);
-    opacity: 0;
-    transform: translateX(-10px);
-    transition: all 0.4s ease;
-  }
-
-  .skills-list li.visible {
     opacity: 1;
     transform: translateX(0);
   }

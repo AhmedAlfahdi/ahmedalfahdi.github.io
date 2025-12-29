@@ -83,10 +83,11 @@ const sortedCareer = timelineCareer.sort((a, b) => b.data.startDate.valueOf() - 
     padding: 1.5rem;
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.2s;
+    cursor: pointer;
   }
   .job-card:hover {
     border-color: var(--accent-primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   }
   .job-card h2 {
     margin: 0;
@@ -128,12 +129,10 @@ const sortedCareer = timelineCareer.sort((a, b) => b.data.startDate.valueOf() - 
     padding: 1.5rem;
     text-decoration: none;
     color: inherit;
-    transition: all 0.2s;
   }
 
   .info-card:hover {
     border-color: var(--accent-primary);
-    transform: translateX(4px);
   }
 
   .card-icon {

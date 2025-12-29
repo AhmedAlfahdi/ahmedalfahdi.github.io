@@ -14,6 +14,27 @@ const allTags = [...new Set(notes.flatMap(note => note.data.tags || []))].sort()
     <h1>Notes</h1>
     <p class="intro">Personal knowledge base and observations.</p>
     
+    <div class="notes-stats">
+      <div class="stat-item">
+        <span class="stat-label">Total Notes:</span>
+        <span class="stat-value">{notes.length}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Tags:</span>
+        <span class="stat-value">{allTags.length}</span>
+      </div>
+    </div>
+    
+    <div class="search-filter">
+      <input 
+        type="text" 
+        id="search-input" 
+        class="search-input" 
+        placeholder="Search notes by title or description..."
+        autocomplete="off"
+      />
+    </div>
+    
     {allTags.length > 0 && (
       <div class="tag-filter">
         <div class="filter-label">Filter by tag:</div>
@@ -28,7 +49,14 @@ const allTags = [...new Set(notes.flatMap(note => note.data.tags || []))].sort()
     
     <div class="list">
       {sortedNotes.map(note => (
-        <a href={`/notes/${note.slug}`} class="list-item" data-tags={note.data.tags?.join(',') || ''}>
+        <a
+          href={`/notes/${note.slug}`}
+          class="list-item"
+          data-tags={note.data.tags?.join(',') || ''}
+          data-title={note.data.title.toLowerCase()}
+          data-description={(note.data.description || '').toLowerCase()}
+          data-body={note.body.toLowerCase()}
+        >
           <div class="item-header">
             <h2>{note.data.title}</h2>
             <time>{note.data.date.toLocaleDateString()}</time>
@@ -55,6 +83,63 @@ const allTags = [...new Set(notes.flatMap(note => note.data.tags || []))].sort()
     color: var(--text-secondary);
     margin-bottom: 2rem;
   }
+
+  .notes-stats {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    border-left: 4px solid var(--accent-primary);
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-value {
+    color: var(--accent-primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+  }
+
+  .search-filter {
+    margin-bottom: 1.5rem;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    border-left: 4px solid var(--accent-secondary);
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    border-left-color: var(--accent-primary);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+
   .list {
     display: flex;
     flex-direction: column;
@@ -188,6 +273,15 @@ const allTags = [...new Set(notes.flatMap(note => note.data.tags || []))].sort()
     .container {
       padding: 1.25rem;
     }
+    .notes-stats {
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+    }
+    .search-input {
+      font-size: 0.85rem;
+      padding: 0.65rem 0.85rem;
+    }
     .list {
       gap: 0.75rem;
     }
@@ -203,33 +297,68 @@ const allTags = [...new Set(notes.flatMap(note => note.data.tags || []))].sort()
 </style>
 
 <script is:inline>
-  // Tag filtering functionality
+  // Tag filtering and search functionality
   const filterTags = document.querySelectorAll('.filter-tag');
   const listItems = document.querySelectorAll('.list-item');
   const noteTags = document.querySelectorAll('.tag');
   const noResults = document.querySelector('.no-results');
+  const searchInput = document.getElementById('search-input');
+  
+  let currentTag = 'all';
+  let currentSearch = '';
 
-  function filterNotes(selectedTag) {
+  function fuzzyMatch(text, query) {
+    if (!query) return true;
+    const q = query.toLowerCase().trim();
+    const t = text.toLowerCase();
+
+    // Simple subsequence fuzzy match: all query chars appear in order
+    let ti = 0;
+    for (let qi = 0; qi < q.length; qi++) {
+      const qc = q[qi];
+      let found = false;
+      while (ti < t.length) {
+        if (t[ti] === qc) {
+          found = true;
+          ti++;
+          break;
+        }
+        ti++;
+      }
+      if (!found) return false;
+    }
+    return true;
+  }
+
+  function filterNotes(selectedTag, searchTerm = '') {
+    currentTag = selectedTag;
+    currentSearch = searchTerm;
     let visibleCount = 0;
 
     listItems.forEach(item => {
       const itemTags = item.getAttribute('data-tags');
+      const itemTitle = item.getAttribute('data-title') || '';
+      const itemDescription = item.getAttribute('data-description') || '';
+      const itemBody = item.getAttribute('data-body') || '';
       
+      // Check tag filter
+      let tagMatch = false;
       if (selectedTag === 'all' || !itemTags) {
-        if (selectedTag === 'all') {
-          item.classList.remove('hidden');
-          visibleCount++;
-        } else if (!itemTags) {
-          item.classList.add('hidden');
-        }
+        tagMatch = selectedTag === 'all';
       } else {
         const tags = itemTags.split(',');
-        if (tags.includes(selectedTag)) {
-          item.classList.remove('hidden');
-          visibleCount++;
-        } else {
-          item.classList.add('hidden');
-        }
+        tagMatch = tags.includes(selectedTag);
+      }
+      
+      // Check search filter (title + description + body content)
+      const haystack = `${itemTitle} ${itemDescription} ${itemBody}`;
+      const searchMatch = fuzzyMatch(haystack, currentSearch);
+      
+      if (tagMatch && searchMatch) {
+        item.classList.remove('hidden');
+        visibleCount++;
+      } else {
+        item.classList.add('hidden');
       }
     });
 
@@ -252,7 +381,7 @@ const allTags = [...new Set(notes.flatMap(note => note.data.tags || []))].sort()
   filterTags.forEach(tag => {
     tag.addEventListener('click', () => {
       const selectedTag = tag.getAttribute('data-tag');
-      filterNotes(selectedTag);
+      filterNotes(selectedTag, currentSearch);
     });
   });
 
@@ -262,10 +391,18 @@ const allTags = [...new Set(notes.flatMap(note => note.data.tags || []))].sort()
       e.preventDefault();
       e.stopPropagation();
       const selectedTag = tag.getAttribute('data-tag');
-      filterNotes(selectedTag);
+      filterNotes(selectedTag, currentSearch);
       
       // Scroll to top smoothly
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
+
+  // Add search input handler
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value;
+      filterNotes(currentTag, searchTerm);
+    });
+  }
 </script>
