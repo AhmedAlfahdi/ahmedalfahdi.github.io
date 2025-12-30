@@ -448,7 +448,7 @@ try {
     }
 
     pre:hover {
-      animation: code-border-pulse 2s ease-in-out infinite;
+      animation: code-border-pulse 1.5s ease-in-out infinite;
       will-change: border-left-color, box-shadow;
       transform: translateZ(0);
       backface-visibility: hidden;
@@ -456,12 +456,12 @@ try {
 
     @keyframes code-border-pulse {
       0%, 100% {
-        border-left-color: var(--accent-primary);
-        box-shadow: 0 0 12px rgba(245, 165, 36, 0.15);
+        border-left-color: rgba(245, 165, 36, 0.7);
+        box-shadow: 0 0 12px rgba(245, 165, 36, 0.12);
       }
       50% {
-        border-left-color: rgba(245, 165, 36, 0.6);
-        box-shadow: 0 0 20px rgba(245, 165, 36, 0.4);
+        border-left-color: rgba(245, 165, 36, 0.65);
+        box-shadow: 0 0 16px rgba(245, 165, 36, 0.18);
       }
     }
 
