@@ -308,6 +308,8 @@ try {
       overflow-wrap: normal;
       box-shadow: 0 0 12px rgba(245, 165, 36, 0.15);
       position: relative;
+      transform: translateZ(0);
+      backface-visibility: hidden;
     }
 
     pre .code-language {
@@ -447,6 +449,9 @@ try {
 
     pre:hover {
       animation: code-border-pulse 2s ease-in-out infinite;
+      will-change: border-left-color, box-shadow;
+      transform: translateZ(0);
+      backface-visibility: hidden;
     }
 
     @keyframes code-border-pulse {
@@ -1248,7 +1253,6 @@ try {
           <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light); text-align: center;">
             <a href="/statistics" class="stats-link-creative" style="color: var(--accent-secondary); text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem; position: relative; padding: 0.5rem 1rem; border-radius: 4px; transition: all 0.3s ease;">
               <span class="stats-link-text">View detailed statistics</span>
-              <span class="stats-link-arrow">→</span>
             </a>
           </div>
         </div>
