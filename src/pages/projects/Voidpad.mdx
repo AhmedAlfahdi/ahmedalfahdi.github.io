@@ -4,16 +4,29 @@ title: "Voidpad"
 description: "Reviving an old laptop for personal journaling and writing"
 ---
 
+import { Image } from 'astro:assets';
+import desktopImg from '../../assets/images/projects/voidpad/desktop.png';
+import terminalImg from '../../assets/images/projects/voidpad/terminal.png';
+import desktop2Img from '../../assets/images/projects/voidpad/desktop_2.png';
+import obsidianImg from '../../assets/images/projects/voidpad/obsidian.png';
+import neovimImg from '../../assets/images/projects/voidpad/neovim.png';
+import emacsImg from '../../assets/images/projects/voidpad/emacs.png';
+import oldGamesImg from '../../assets/images/projects/voidpad/old-games.png';
+import screensaverImg from '../../assets/images/projects/voidpad/screensaver.png';
+import thermalsImg from '../../assets/images/projects/voidpad/thermals.png';
+import upateImg from '../../assets/images/projects/voidpad/upate.png';
+import webBImg from '../../assets/images/projects/voidpad/web-b.png';
+
 <div class="container">
 
 
 # Overview
 
-This project documents the process of bringing an old laptop back to life, transforming it into a minimalist writing machine dedicated to personal journaling. The goal is to create a distraction-free environment for capturing thoughts, ideas, and daily reflections.
+This project documents the process of bringing an old laptop back to life, transforming it into a minimalist writing machine dedicated to personal journaling. The goal is to create a distraction-free environment for capturing thoughts, ideas, and daily reflections. The final setup is shown in [Figure 1](#figure-1).
 
-<figure>
-  <img src="/images/projects/voidpad/desktop.png" alt="XFCE Desktop Setup" />
-  <figcaption>XFCE Desktop Setup</figcaption>
+<figure id="figure-1">
+  <Image src={desktopImg} alt="XFCE Desktop Setup" width={1280} height={720} />
+  <figcaption>Figure 1: XFCE Desktop Setup</figcaption>
 </figure>
 
 # Goals
@@ -41,7 +54,7 @@ The laptop in question was showing signs of failure:
 - RAM upgrade from 6GB DDR2 to 8GB DDR3
 - Storage upgrade from HDD to SSD
 - Battery replacement or removal for desktop use
-- Cleaning and CPU thermal paste replacement
+- Cleaning and CPU thermal paste replacement (see [Figure 2](#figure-2) for thermal improvements)
 
 ## Software Optimization
 
@@ -137,7 +150,7 @@ After comparing the available options, Void Linux was chosen as the operating sy
 
 - **musl libc Option**: Void Linux offers both glibc and musl libc variants. The musl version provides even better performance on older hardware and smaller memory footprint.
 
-- **Xbps Package Manager**: The xbps package manager is fast, simple, and efficient, making it easy to install only what's needed without unnecessary bloat.
+- **Xbps Package Manager**: The xbps package manager is fast, simple, and efficient, making it easy to install only what's needed without unnecessary bloat. The package manager in action is shown in [Figure 10](#figure-10).
 
 - **No Systemd**: Void Linux uses runit as its init system, which is simpler, faster, and uses fewer resources than systemd. This aligns perfectly with the goal of maximizing performance on old hardware.
 
@@ -145,9 +158,11 @@ After comparing the available options, Void Linux was chosen as the operating sy
 
 - **Community and Documentation**: Despite being a smaller distribution, Void Linux has excellent documentation and a helpful community for troubleshooting issues during setup.
 
-<figure>
-  <img src="/images/projects/voidpad/terminal.png" alt="Void Linux Fastfetch System Information" />
-  <figcaption>Void Linux Fastfetch System Information</figcaption>
+The successful installation of Void Linux is shown in [Figure 2](#figure-2), displaying the system information via Fastfetch.
+
+<figure id="figure-2">
+  <Image src={terminalImg} alt="Void Linux Fastfetch System Information" width={1280} height={720} />
+  <figcaption>Figure 2: Void Linux Fastfetch System Information</figcaption>
 </figure>
 
 # Desktop Environment: XFCE
@@ -174,9 +189,11 @@ The XFCE desktop is configured with a retro aesthetic for a nostalgic writing ex
 - **Retro Focus Mode**: Full-screen writing mode with vintage terminal-inspired color schemes
 - **Classic Theme**: Carefully chosen color palette and fonts that evoke the golden age of personal computing and dedicated writing machines
 
-<figure>
-  <img src="/images/projects/voidpad/desktop_2.png" alt="XFCE Desktop Setup with Chicago Theme Modified" />
-  <figcaption>XFCE Desktop Setup with Chicago Theme Modified</figcaption>
+The retro-themed XFCE desktop with the customized Chicago95 theme is shown in [Figure 3](#figure-3).
+
+<figure id="figure-3">
+  <Image src={desktop2Img} alt="XFCE Desktop Setup with Chicago Theme Modified" width={1280} height={720} />
+  <figcaption>Figure 3: XFCE Desktop Setup with Chicago Theme Modified</figcaption>
 </figure>
 
 # Writing Environment
@@ -209,9 +226,11 @@ Selecting the right writing application was crucial for this project. Five optio
 - More features than needed for simple journaling
 - Requires more setup and configuration
 
-<figure>
-  <img src="/images/projects/voidpad/obsidian.png" alt="Obsidian with retro theme configured for bidirectional writing" />
-  <figcaption>Obsidian with retro theme configured for bidirectional writing</figcaption>
+Obsidian configured with a retro theme for bidirectional writing is shown in [Figure 4](#figure-4).
+
+<figure id="figure-4">
+  <Image src={obsidianImg} alt="Obsidian with retro theme configured for bidirectional writing" width={1280} height={720} />
+  <figcaption>Figure 4: Obsidian with retro theme configured for bidirectional writing</figcaption>
 </figure>
 
 ### 2. LazyVim
@@ -232,10 +251,11 @@ Selecting the right writing application was crucial for this project. Five optio
 - May be overkill if you just want to write
 - **Arabic configuration**: Requires additional setup for optimal RTL text editing experience
 
+LazyVim configured for coding and editing config files is shown in [Figure 5](#figure-5).
 
-<figure>
-  <img src="/images/projects/voidpad/neovim.png" alt="LazyVim configured for coding and editing config files" />
-  <figcaption>LazyVim configured for coding and editing config files</figcaption>
+<figure id="figure-5">
+  <Image src={neovimImg} alt="LazyVim configured for coding and editing config files" width={1280} height={720} />
+  <figcaption>Figure 5: LazyVim configured for coding and editing config files</figcaption>
 </figure>
 
 ### 3. Emacs
@@ -257,9 +277,11 @@ Selecting the right writing application was crucial for this project. Five optio
 - Org-mode is less widely adopted than standard markdown
 - **Arabic setup**: While powerful, Arabic support requires some configuration to enable full bidirectional editing features
 
-<figure>
-  <img src="/images/projects/voidpad/emacs.png" alt="Emacs used for experimenting with org mode" />
-  <figcaption>Emacs used for experimenting with org mode</figcaption>
+Emacs used for experimenting with org mode is shown in [Figure 6](#figure-6).
+
+<figure id="figure-6">
+  <Image src={emacsImg} alt="Emacs used for experimenting with org mode" width={1280} height={720} />
+  <figcaption>Figure 6: Emacs used for experimenting with org mode</figcaption>
 </figure>
 ### 4. neovim-obsidian
 
@@ -281,7 +303,7 @@ Selecting the right writing application was crucial for this project. Five optio
 - Requires plugin setup and configuration
 - **Arabic configuration**: Needs additional setup for optimal RTL text editing, similar to LazyVim
 
-### 5. [ekphos](https://www.ekphos.xyz/)
+### 5. [Ekphos](https://www.ekphos.xyz/)
 
 **Pros:**
 - **Extremely lightweight**: Written in Rust, native performance with minimal resource usage
@@ -303,7 +325,7 @@ Selecting the right writing application was crucial for this project. Five optio
 
 ### The Decision
 
-After testing all options, **Obsidian** was selected as the primary note-taking application for the Voidpad project.
+After testing all options, **Obsidian** was selected as the primary note-taking application for the Voidpad project (see [Figure 4](#figure-4) for the configured interface).
 
 **Key reasons for choosing Obsidian:**
 
@@ -348,29 +370,31 @@ This local AI integration perfectly complements the Voidpad's philosophy of crea
 
 # Gallery 
 
-<figure>
-  <img src="/images/projects/voidpad/old-games.png" alt="Retro gaming setup with classic games running on the Voidpad" />
-  <figcaption>Taking a break from writing with some nostalgic retro gaming</figcaption>
+The following gallery showcases various aspects of the Voidpad in use, from leisure activities to system maintenance.
+
+<figure id="figure-7">
+  <Image src={oldGamesImg} alt="Retro gaming setup with classic games running on the Voidpad" width={1280} height={720} />
+  <figcaption>Figure 7: Taking a break from writing with some nostalgic retro gaming</figcaption>
 </figure>
 
-<figure>
-  <img src="/images/projects/voidpad/screensaver.png" alt="Classic xscreensaver running retro screensaver animations" />
-  <figcaption>Can't resist these sweet sweet retro screensavers in xscreensaver</figcaption>
+<figure id="figure-8">
+  <Image src={screensaverImg} alt="Classic xscreensaver running retro screensaver animations" width={1280} height={720} />
+  <figcaption>Figure 8: Can't resist these sweet sweet retro screensavers in xscreensaver</figcaption>
 </figure>
 
-<figure>
-  <img src="/images/projects/voidpad/thermals.png" alt="System thermal monitoring using bottom process monitor" />
-  <figcaption>Keeping an eye on system thermals and performance using bottom - a modern system monitor</figcaption>
+<figure id="figure-9">
+  <Image src={thermalsImg} alt="System thermal monitoring using bottom process monitor" width={1280} height={720} />
+  <figcaption>Figure 9: Keeping an eye on system thermals and performance using bottom - a modern system monitor</figcaption>
 </figure>
 
-<figure>
-  <img src="/images/projects/voidpad/upate.png" alt="XBPS package manager updating system packages" />
-  <figcaption>It's a real pleasure to work with xbps package manager! Fast, smooth, and well designed. Sorry pacman!</figcaption>
+<figure id="figure-10">
+  <Image src={upateImg} alt="XBPS package manager updating system packages" width={1280} height={720} />
+  <figcaption>Figure 10: It's a real pleasure to work with xbps package manager! Fast, smooth, and well designed. Sorry pacman!</figcaption>
 </figure>
 
-<figure>
-  <img src="/images/projects/voidpad/web-b.png" alt="Retro-themed web browser with classic interface styling" />
-  <figcaption>When the Voidpad goes online, browsing the web in style with a retro-themed browser</figcaption>
+<figure id="figure-11">
+  <Image src={webBImg} alt="Retro-themed web browser with classic interface styling" width={1280} height={720} />
+  <figcaption>Figure 11: When the Voidpad goes online, browsing the web in style with a retro-themed browser</figcaption>
 </figure>
 
 
