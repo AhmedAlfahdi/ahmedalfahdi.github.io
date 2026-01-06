@@ -51,7 +51,7 @@ What do you do with a 13-year-old laptop that's on its last legs? Turn it into a
 The laptop in question was showing signs of failure:
 - Slow performance and frequent crashes
 - Overheating issues
-- Outdated operating system
+- Outdated operating system (Windows 8.1)
 - Extremely slow HDD performance
 - Battery degradation
 
@@ -59,7 +59,7 @@ The laptop in question was showing signs of failure:
 
 ### 4.1 Hardware Revival
 
-A bit of TLC goes a long way! Upgraded RAM (6GB → 8GB), swapped the HDD for an SSD, replaced thermal paste, and gave it a thorough cleaning. The hardware can now handle development tasks like a champ.
+A bit of TLC goes a long way! Upgraded RAM (6GB → 8GB), swapped the HDD for an SSD, replaced thermal paste, cleaned out all the dust, and made it stationary (plugged in all the time to avoid battery issues). The hardware can now handle tasks from basic writing to development and package compilation like a champ.
 
 <figure id="figure-3">
   <Image src={cargo} alt="System resources during Rust compilation" width={1280} height={720} />
@@ -71,10 +71,10 @@ A bit of TLC goes a long way! Upgraded RAM (6GB → 8GB), swapped the HDD for an
 After comparing Arch (too unstable for offline use), Debian (too old packages), and Debian forks (same issues), **Void Linux** won the race. It's lightweight, stable enough, and doesn't need constant updates - perfect for an offline writing machine.
 
 **Why Void?**
-- Minimal by default (perfect for old hardware)
+- Minimal by default (perfect for old hardware - boots in ~15 seconds, uses only 200MB RAM at idle)
 - Rolling release with stability (best of both worlds)
 - No systemd (runit is simpler and lighter)
-- Fast package manager (xbps is a joy to use)
+- Fast package manager (xbps is incredibly fast and efficient - no dependency hell, clean transactions, and lightning-quick searches that make package management actually enjoyable)
 - Great documentation despite smaller community
 
 <figure id="figure-4">
@@ -199,7 +199,33 @@ File-level encryption with gocryptfs gives me exactly what I need: transparent p
 
 ### 6.2 Local AI Integration
 
-Added a local 3B parameter language model for offline writing assistance. It runs on CPU, keeps everything private, and integrates seamlessly with Obsidian. No cloud, no subscriptions, no data leaving the device.
+Added a local 3B parameter language model for offline writing assistance using Ollama. Here's how to set it up with Obsidian:
+
+1. **Install Ollama**:
+   ```bash
+   # Download and install Ollama
+   curl -fsSL https://ollama.ai/install.sh | sh
+   
+   # Pull a lightweight model (3B parameters)
+   ollama pull phi3:mini
+   ```
+
+2. **Install Obsidian AI plugin**:
+   - Open Obsidian Settings → Community Plugins
+   - Search for "Text Generator" or "Copilot" plugin
+   - Install and enable the plugin
+
+3. **Configure the plugin**:
+   - Set API endpoint to `http://localhost:11434`
+   - Select model: `phi3:mini`
+   - Configure hotkeys for quick AI assistance
+
+4. **Usage**:
+   - Select text and press your hotkey for AI suggestions
+   - Use prompts like "improve this paragraph" or "translate to Spanish"
+   - Everything runs locally - no internet required after setup
+
+The model runs efficiently on CPU, uses about 2GB RAM, and provides instant writing assistance without any privacy concerns. Perfect for brainstorming, editing, and translation tasks while keeping everything offline.
 
 <figure id="figure-9">
   <Image src={llm} alt="Local AI running on Voidpad" width={1280} height={720} />
