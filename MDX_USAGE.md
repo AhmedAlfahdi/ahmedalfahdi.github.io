@@ -86,3 +86,23 @@ graph TD
 -   **Callouts**: Use blockquotes with types (e.g., `> [!NOTE]`).
 -   **Tables**: Standard Markdown tables are supported.
 -   **Task Lists**: Use `- [ ]` and `- [x]`.
+
+## Preventing Ordered List Numbering
+
+If you have a numbered label (like `3. Section name:`) followed by bullet points, MDX will interpret the number as the start of an ordered list and renumber your bullets. To prevent this while maintaining the theme's amber color:
+
+**Use the `section-label` class:**
+
+```mdx
+<p class="section-label"><strong>3. Integration benefits:</strong></p>
+- First bullet point
+- Second bullet point
+- Third bullet point
+```
+
+This prevents MDX from creating an ordered list while keeping the amber accent color (`--accent-primary`) that matches your theme's section headings.
+
+**Why this works:**
+- The HTML `<p>` tag bypasses MDX's markdown parser, so `3.` isn't interpreted as a list item
+- The `section-label` class applies the theme's accent color and proper spacing
+- The bullets below remain as a normal unordered list with `#` markers
