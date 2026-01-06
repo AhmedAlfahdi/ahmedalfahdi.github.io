@@ -113,6 +113,75 @@ Tested five options: Obsidian, LazyVim, Emacs, neovim-obsidian, and Ekphos. Each
   - Transforms scattered notes into structured, queryable knowledge
 
 
+### 6.1.1 Security with gocryptfs
+
+Since this is a journaling machine handling personal thoughts and sensitive information, encryption is non-negotiable. **gocryptfs** provides transparent file-level encryption that works seamlessly with Obsidian.
+
+**What is gocryptfs?**
+- A FUSE-based encrypted overlay filesystem
+- Creates an encrypted directory that appears as normal files when mounted
+- Uses AES-256-GCM encryption with scrypt key derivation
+- Filename encryption prevents metadata leakage
+
+**Why gocryptfs over alternatives?**
+- **Performance**: Faster than EncFS, especially for small files (perfect for Markdown notes)
+- **Security**: Modern cryptography, regular security audits, no known vulnerabilities
+- **Transparency**: Works with any application - Obsidian doesn't even know files are encrypted
+- **Portability**: Encrypted vault can be moved between systems easily
+- **Simplicity**: Mount/unmount workflow is straightforward
+
+**When to use it:**
+- Storing personal journals, thoughts, or sensitive notes
+- Working on shared computers or systems you don't fully control
+- Backing up notes to cloud storage (encrypted files are safe even if compromised)
+- Any scenario where file-level encryption is needed without application changes
+
+**How I use it with Obsidian:**
+
+1. **Setup** (one-time):
+   ```bash
+   # Install gocryptfs
+   sudo xbps-install -S gocryptfs
+   
+   # Create encrypted directory
+   mkdir ~/encrypted-vault
+   gocryptfs -init ~/encrypted-vault
+   ```
+
+2. **Daily workflow**:
+   ```bash
+   # Mount the encrypted vault
+   mkdir ~/journal
+   gocryptfs ~/encrypted-vault ~/journal
+   
+   # Open Obsidian pointing to ~/journal
+   # Write, edit, organize - everything is automatically encrypted
+   
+   # Unmount when done (files become inaccessible)
+   fusermount -u ~/journal
+   ```
+
+3. **Integration benefits**:
+   - Obsidian sees normal Markdown files in `~/journal`
+   - All changes are automatically encrypted in `~/encrypted-vault`
+   - No performance impact during writing
+   - Vault remains encrypted when unmounted - even if laptop is stolen
+
+The beauty is in the transparency - I write naturally in Obsidian while everything gets encrypted behind the scenes. Perfect for a privacy-focused journaling setup.
+
+**Why not Full Disk Encryption (FDE)?**
+
+While FDE might seem like the obvious choice for a privacy-focused machine, I opted for file-level encryption instead for several practical reasons:
+
+- **Startup Performance**: FDE adds noticeable boot time on older hardware - every second counts when you want to quickly jot down thoughts
+- **Void Linux Complexity**: Setting up LUKS properly on Void requires more manual configuration compared to mainstream distros
+- **Overkill for Use Case**: The Voidpad is a dedicated writing machine, not storing system secrets or handling multi-user scenarios
+- **Selective Protection**: Only my journal needs encryption - system files, applications, and temporary data don't contain sensitive information
+- **Recovery Simplicity**: If something breaks, I can still access the system to troubleshoot without decryption steps
+
+File-level encryption with gocryptfs gives me exactly what I need: transparent protection for my writing while keeping the system lightweight and maintainable.
+
+
 <figure id="figure-6">
   <Image src={obsidianImg} alt="Obsidian with retro theme" width={1280} height={720} />
   <figcaption>Figure 6: Obsidian configured for bilingual writing</figcaption>
