@@ -27,13 +27,63 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       <div class="skills">
         <h3>Skills & Expertise</h3>
+        <div class="skills-controls">
+          <button class="skills-btn" id="collapse-all">Collapse All</button>
+          <button class="skills-btn" id="expand-all">Expand All</button>
+        </div>
         <ul class="skills-list">
-          <li><strong>Wireline & TCP Engineering:</strong> Logging support, TCP string assembly, fiber-optic perforation readiness, and explosive materials handling and operations.</li>
-          <li><strong>Pipeline Engineering:</strong> Hydrotesting and NDT coordination, design calculations (B31.4/B31.8), buckling/buoyancy assessments, alignment drawings, integrity reviews.</li>
-          <li><strong>Engineering Software:</strong> Ansys (simulation), SolidWorks (CAD/CAM/CAE).</li>
-          <li><strong>Software & Automation:</strong> PowerShell, Bash, PLC programming, SBC prototyping; enthusiastic about software development and reverse engineering.</li>
-          <li><strong>Systems & Documentation:</strong> Windows/Linux, Docker, documentation (LaTeX/Markdown/Typst).</li>
-          <li><strong>Safety:</strong> H2S & SO2 entry permit; ISO 45001:2018 (2024 certified).</li>
+          <li>
+            <strong>Wireline & TCP Engineering:</strong>
+            <ul>
+              <li>Logging support</li>
+              <li>TCP string assembly</li>
+              <li>Fiber-optic perforation readiness</li>
+              <li>Explosive materials handling and operations</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Pipeline Engineering:</strong>
+            <ul>
+              <li>Hydrotesting and NDT coordination</li>
+              <li>Design calculations (B31.4/B31.8)</li>
+              <li>Buckling/buoyancy assessments</li>
+              <li>Alignment drawings</li>
+              <li>Integrity reviews</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Engineering Software:</strong>
+            <ul>
+              <li>Ansys (simulation)</li>
+              <li>SolidWorks (CAD/CAM/CAE)</li>
+              <li>FreeCAD (parametric CAD)</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Software & Automation:</strong>
+            <ul>
+              <li>PowerShell</li>
+              <li>Bash</li>
+              <li>PLC programming</li>
+              <li>SBC prototyping</li>
+              <li>Software development and reverse engineering</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Systems & Documentation:</strong>
+            <ul>
+              <li>Windows/Linux</li>
+              <li>Docker</li>
+              <li>Documentation (LaTeX/Markdown/Typst)</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Safety:</strong>
+            <ul>
+              <li>H2S & SO2 entry permit</li>
+              <li>ISO 45001:2018 (2024 certified)</li>
+            </ul>
+          </li>
         </ul>
       </div>
     </div>
@@ -199,6 +249,92 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   // Skills animation removed - items are visible by default
+
+  // Collapsible skills list
+  document.querySelectorAll('.skills-list > li').forEach((parentItem) => {
+    const nestedList = parentItem.querySelector('ul');
+    if (!nestedList) return;
+
+    const childCount = nestedList.querySelectorAll('li').length;
+    
+    // Create count indicator element
+    const countIndicator = document.createElement('span');
+    countIndicator.className = 'child-count';
+    countIndicator.textContent = ` (${childCount})`;
+    countIndicator.style.display = 'none';
+    
+    const strongElement = parentItem.querySelector('strong');
+    if (strongElement) {
+      strongElement.appendChild(countIndicator);
+    }
+
+    // Function to update count visibility
+    const updateCountVisibility = () => {
+      if (parentItem.classList.contains('collapsed')) {
+        countIndicator.style.display = 'inline';
+      } else {
+        countIndicator.style.display = 'none';
+      }
+    };
+
+    // Add click handler to parent item
+    parentItem.style.cursor = 'pointer';
+    parentItem.addEventListener('click', (e) => {
+      // Don't toggle if clicking directly on a nested list item
+      if (e.target !== parentItem && e.target !== parentItem.querySelector('strong') && e.target.closest('ul') === nestedList) {
+        return;
+      }
+      
+      // Toggle collapsed/expanded state
+      if (parentItem.classList.contains('collapsed')) {
+        parentItem.classList.remove('collapsed');
+        parentItem.classList.add('expanded');
+      } else {
+        parentItem.classList.remove('expanded');
+        parentItem.classList.add('collapsed');
+      }
+      
+      updateCountVisibility();
+    });
+
+    // Initialize as collapsed
+    parentItem.classList.add('collapsed');
+    updateCountVisibility();
+  });
+
+  // Collapse all functionality
+  const collapseAllBtn = document.getElementById('collapse-all');
+  if (collapseAllBtn) {
+    collapseAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('.skills-list > li').forEach((item) => {
+        const nestedList = item.querySelector('ul');
+        if (!nestedList) return;
+        item.classList.remove('expanded');
+        item.classList.add('collapsed');
+        const countIndicator = item.querySelector('.child-count');
+        if (countIndicator) {
+          countIndicator.style.display = 'inline';
+        }
+      });
+    });
+  }
+
+  // Expand all functionality
+  const expandAllBtn = document.getElementById('expand-all');
+  if (expandAllBtn) {
+    expandAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('.skills-list > li').forEach((item) => {
+        const nestedList = item.querySelector('ul');
+        if (!nestedList) return;
+        item.classList.remove('collapsed');
+        item.classList.add('expanded');
+        const countIndicator = item.querySelector('.child-count');
+        if (countIndicator) {
+          countIndicator.style.display = 'none';
+        }
+      });
+    });
+  }
 </script>
 
 <style>
@@ -667,7 +803,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   .skills::before {
-    content: "SKILLS_MATRIX_V1.0";
+    content: "SKILLS_TREE_V2.1";
     position: absolute;
     top: -10px;
     right: 10px;
@@ -681,7 +817,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .skills h3 {
     color: var(--text-primary);
     margin-top: 0;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     text-transform: uppercase;
     letter-spacing: 1.5px;
     font-size: 1.1rem;
@@ -689,34 +825,234 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding-bottom: 0.5rem;
   }
 
+  .skills-controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    justify-content: flex-end;
+  }
+
+  .skills-btn {
+    padding: 0.35rem 0.75rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .skills-btn:hover {
+    background: var(--bg-secondary);
+    border-color: var(--accent-secondary);
+    color: var(--accent-secondary);
+  }
+
+  .skills-btn:active {
+    transform: scale(0.98);
+  }
+
   .skills-list {
     list-style: none;
     padding-left: 0;
+    font-family: var(--font-mono), 'Courier New', monospace;
+    font-feature-settings: normal;
+    position: relative;
   }
 
-  .skills-list li {
-    margin: 0.75rem 0;
-    padding-left: 1.5rem;
+  /* Main vertical line through all parent items */
+  .skills-list::before {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--accent-secondary);
+    opacity: 0.3;
+    z-index: 0;
+  }
+
+  .skills-list > li {
+    margin: 1rem 0;
+    padding-left: 3rem;
     position: relative;
     color: var(--text-secondary);
     opacity: 1;
     transform: translateX(0);
   }
 
-  .skills-list li::before {
-    content: "[+]";
+  /* Horizontal branch line (├── style) */
+  .skills-list > li::before {
+    content: "";
     position: absolute;
-    left: 0;
-    color: var(--accent-secondary);
-    font-weight: bold;
-    font-size: 0.8rem;
+    left: 0.5rem;
+    top: 0.6em;
+    width: 1.5rem;
+    height: 1px;
+    background: var(--accent-secondary);
+    z-index: 1;
   }
 
-  .skills-list strong {
+  /* Ensure vertical line stops at last item */
+  .skills-list > li:last-child::after {
+    z-index: 3;
+  }
+
+  /* Last item - shorter line (└── style) */
+  .skills-list > li:last-child::before {
+    width: 1.2rem;
+  }
+
+  /* Expand/collapse indicator */
+  .skills-list > li::after {
+    content: "";
+    position: absolute;
+    left: 1.3rem;
+    top: 0.35em;
+    width: 0.75rem;
+    height: 0.75rem;
+    border: 1px solid var(--accent-secondary);
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    line-height: 0.75rem;
+    transition: all 0.2s ease;
+    color: var(--accent-secondary);
+    font-weight: bold;
+    z-index: 2;
+  }
+
+  .skills-list > li.expanded::after {
+    content: "−";
+  }
+
+  .skills-list > li.collapsed::after {
+    content: "+";
+  }
+
+
+  .skills-list > li:hover {
+    color: var(--text-primary);
+  }
+
+  .skills-list > li:hover strong {
+    color: var(--accent-primary);
+  }
+
+  .skills-list > li:hover::after {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+  }
+
+  .skills-list > li strong {
     color: var(--text-primary);
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
+    display: inline;
+    margin-right: 0.5rem;
+  }
+
+  .skills-list > li strong .child-count {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: normal;
+    font-style: italic;
+    margin-left: 0.25rem;
+  }
+
+  .skills-list > li > ul {
+    list-style: none;
+    padding-left: 3rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    position: relative;
+    display: block;
+    transition: opacity 0.2s ease, max-height 0.3s ease;
+    overflow: visible;
+  }
+
+  .skills-list > li.collapsed > ul {
+    display: none;
+  }
+
+  /* Vertical line connecting parent to children (│) - extends from parent */
+  .skills-list > li.expanded > ul::before {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    top: -0.5rem;
+    bottom: 0;
+    width: 1px;
+    background: var(--accent-secondary);
+    opacity: 0.3;
+  }
+
+  .skills-list > li > ul > li {
+    margin: 0.3rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    padding-left: 2rem;
+  }
+
+  /* Horizontal line for nested items (├── style) - connects to vertical */
+  .skills-list > li > ul > li::before {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    top: 0.5em;
+    width: 1.2rem;
+    height: 1px;
+    background: var(--accent-primary);
+    opacity: 0.8;
+    z-index: 1;
+  }
+
+  /* Vertical line for nested items - connects horizontal to text */
+  .skills-list > li > ul > li::after {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    top: 0;
+    width: 1px;
+    height: 1.2em;
+    background: var(--accent-primary);
+    opacity: 0.8;
+  }
+
+  /* Last nested item - L-shaped connector (└── style) */
+  .skills-list > li > ul > li:last-child::before {
+    width: 1rem;
+  }
+
+  .skills-list > li > ul > li:last-child::after {
+    height: 0.6em;
+  }
+
+  /* Ensure vertical line continues through all nested items */
+  .skills-list > li.expanded > ul > li:not(:last-child)::after {
+    height: calc(100% + 0.3rem);
+  }
+
+  /* Vertical line through nested items list */
+  .skills-list > li.expanded > ul::after {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--accent-primary);
+    opacity: 0.3;
+    z-index: 0;
   }
 
   .sections-overview {
@@ -955,6 +1291,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .contact-links {
       flex-direction: column;
       gap: 0.8rem;
+    }
+
+    /* Smaller fonts for skills on mobile */
+    .skills h3 {
+      font-size: 0.95rem;
+    }
+
+    .skills-btn {
+      font-size: 0.65rem;
+      padding: 0.3rem 0.6rem;
+    }
+
+    .skills-list > li strong {
+      font-size: 0.75rem;
+    }
+
+    .skills-list > li > ul > li {
+      font-size: 0.8rem;
+    }
+
+    .skills-list > li strong .child-count {
+      font-size: 0.65rem;
+    }
+
+    .skills-list > li::after {
+      width: 0.65rem;
+      height: 0.65rem;
+      font-size: 0.6rem;
+      left: 1.2rem;
+      top: 0.3em;
     }
 
     .contact-link {
