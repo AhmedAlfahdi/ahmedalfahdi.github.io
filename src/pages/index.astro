@@ -34,6 +34,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <ul class="skills-list">
           <li>
             <strong>Wireline & TCP Engineering:</strong>
+            <a href="/career/ray-group-tcp-wireline" class="skill-link">View Details</a>
             <ul>
               <li>Hands-on experience with assembling and disassembling packers</li>
               <li>Logging support</li>
@@ -45,6 +46,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </li>
           <li>
             <strong>Pipeline Engineering:</strong>
+            <a href="/career/pdo-pipeline-engineering" class="skill-link">View Details</a>
             <ul>
               <li>Hydrotesting and NDT coordination</li>
               <li>Design calculations (B31.4/B31.8)</li>
@@ -344,8 +346,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     // Add click handler to parent item
     parentItem.style.cursor = 'pointer';
     parentItem.addEventListener('click', (e) => {
-      // Don't toggle if clicking directly on a nested list item
+      // Don't toggle if clicking directly on a nested list item or a link
       if (e.target !== parentItem && e.target !== parentItem.querySelector('strong') && e.target.closest('ul') === nestedList) {
+        return;
+      }
+      // Don't toggle if clicking on a link
+      if (e.target.tagName === 'A' || e.target.closest('a')) {
         return;
       }
       
@@ -992,6 +998,23 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: inline;
     margin-right: 0.5rem;
     margin-left: 0.25rem;
+  }
+
+  .skills-list > li .skill-link {
+    display: inline-block;
+    margin-left: 0.5rem;
+    color: var(--accent-secondary);
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: normal;
+    text-transform: none;
+    letter-spacing: normal;
+    transition: color 0.2s ease;
+  }
+
+  .skills-list > li .skill-link:hover {
+    color: var(--accent-primary);
+    text-decoration: underline;
   }
 
   .skills-list > li strong .child-count {
