@@ -108,7 +108,14 @@ try {
       box-sizing: border-box;
     }
 
+    html {
+      width: 100%;
+      overflow-x: hidden;
+    }
+
     body {
+      width: 100%;
+      overflow-x: hidden;
       font-family: var(--font-mono);
       line-height: 1.6;
       color: var(--text-primary);
@@ -1162,13 +1169,21 @@ try {
       }
 
       main {
-        padding: 0 1rem;
+        padding: 0;
         max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+        margin-left: 0;
+        margin-right: 0;
       }
 
       .container {
         padding: 1.5rem;
         max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+        margin-left: 0;
+        margin-right: 0;
       }
 
       h1 {

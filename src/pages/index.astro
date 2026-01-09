@@ -873,7 +873,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   .skills::before {
-    content: "SKILLS_TREE_V2.1";
+    content: "SKILLS_TREE_V2.3";
     position: absolute;
     top: -10px;
     right: 10px;
@@ -1318,6 +1318,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   @media (max-width: 768px) {
+    /* Ensure 100% width on mobile */
+    .home-wrap.container {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+
     .section-cards {
       grid-template-columns: 1fr;
     }
@@ -1375,6 +1384,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .home-wrap.container {
       padding-top: 2rem !important;
       overflow: visible !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
     }
 
     /* Subtitle mobile optimization */
