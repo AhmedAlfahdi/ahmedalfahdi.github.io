@@ -863,19 +863,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     position: relative;
   }
 
-  /* Main vertical line through all parent items */
-  .skills-list::before {
-    content: "";
-    position: absolute;
-    left: 0.5rem;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: var(--accent-secondary);
-    opacity: 0.3;
-    z-index: 0;
-  }
-
   .skills-list > li {
     margin: 1rem 0;
     padding-left: 3rem;
@@ -885,26 +872,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     transform: translateX(0);
   }
 
-  /* Horizontal branch line (├── style) */
-  .skills-list > li::before {
-    content: "";
-    position: absolute;
-    left: 0.5rem;
-    top: 0.6em;
-    width: 1.5rem;
-    height: 1px;
-    background: var(--accent-secondary);
-    z-index: 1;
-  }
-
   /* Ensure vertical line stops at last item */
   .skills-list > li:last-child::after {
     z-index: 3;
-  }
-
-  /* Last item - shorter line (└── style) */
-  .skills-list > li:last-child::before {
-    width: 1.2rem;
   }
 
   /* Expand/collapse indicator */
@@ -957,6 +927,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     letter-spacing: 0.5px;
     display: inline;
     margin-right: 0.5rem;
+    margin-left: 0.25rem;
   }
 
   .skills-list > li strong .child-count {
@@ -969,7 +940,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .skills-list > li > ul {
     list-style: none;
-    padding-left: 3rem;
+    padding-left: 0.5rem;
     margin-top: 0.5rem;
     margin-bottom: 0;
     position: relative;
@@ -982,25 +953,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: none;
   }
 
-  /* Vertical line connecting parent to children (│) - extends from parent */
-  .skills-list > li.expanded > ul::before {
-    content: "";
-    position: absolute;
-    left: 0.5rem;
-    top: -0.5rem;
-    bottom: 0;
-    width: 1px;
-    background: var(--accent-secondary);
-    opacity: 0.3;
-  }
 
   .skills-list > li > ul > li {
     margin: 0.3rem 0;
-    padding-left: 1.5rem;
+    padding-left: 2rem;
     position: relative;
     color: var(--text-secondary);
     font-size: 0.9rem;
-    padding-left: 2rem;
   }
 
   /* Horizontal line for nested items (├── style) - connects to vertical */
@@ -1042,18 +1001,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     height: calc(100% + 0.3rem);
   }
 
-  /* Vertical line through nested items list */
-  .skills-list > li.expanded > ul::after {
-    content: "";
-    position: absolute;
-    left: 0.5rem;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: var(--accent-primary);
-    opacity: 0.3;
-    z-index: 0;
-  }
 
   .sections-overview {
     margin: 3rem 0;
@@ -1356,15 +1303,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     .subtitle-role {
       display: block;
-      margin: 0.3rem 0;
+      margin: 0;
+      padding: 0.5rem 0;
+      border-top: 1px solid var(--border-light);
+      text-align: center;
     }
 
     .subtitle-role:first-child {
       margin-top: 0;
+      border-top: none;
+      padding-top: 0;
     }
 
     .subtitle-role:last-child {
       margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    /* Make gear icon always visible and animated on mobile (same as desktop hover) */
+    .home-wrap h1 .h1-dot {
+      color: transparent;
+    }
+
+    .home-wrap h1 .h1-dot::after {
+      opacity: 1 !important;
+      transform: translate(-50%, calc(-50% + 0.15em));
+      animation: gear-spin 1.5s linear infinite;
     }
   }
 
