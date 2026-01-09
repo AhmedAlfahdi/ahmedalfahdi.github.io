@@ -250,6 +250,67 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   // Skills animation removed - items are visible by default
 
+  // Force gear animation on mobile devices - use real element instead of pseudo-element
+  function initMobileGear() {
+    const isMobile = window.innerWidth <= 768;
+    const h1Dot = document.querySelector('.h1-dot');
+    
+    if (!h1Dot) return;
+    
+    // Check if mobile gear element already exists
+    let mobileGear = h1Dot.querySelector('.mobile-gear');
+    
+    if (isMobile) {
+      // Force transparent color
+      h1Dot.style.setProperty('color', 'transparent', 'important');
+      
+      // Create real gear element if it doesn't exist
+      if (!mobileGear) {
+        mobileGear = document.createElement('span');
+        mobileGear.className = 'mobile-gear';
+        mobileGear.textContent = '⚙';
+        mobileGear.style.cssText = `
+          position: absolute;
+          left: 50%;
+          top: calc(50% + 0.15em);
+          transform: translate(-50%, calc(-50% + 0.15em));
+          font-size: 0.85em;
+          line-height: 1;
+          color: var(--accent-primary);
+          z-index: 10;
+          pointer-events: none;
+          display: inline-block;
+          animation: gear-spin 1.5s linear infinite;
+        `;
+        h1Dot.appendChild(mobileGear);
+      }
+      
+      // Ensure animation is running
+      mobileGear.style.animation = 'gear-spin 1.5s linear infinite';
+      mobileGear.style.display = 'inline-block';
+      mobileGear.style.opacity = '1';
+    } else {
+      // Remove mobile gear element on desktop
+      if (mobileGear) {
+        mobileGear.remove();
+      }
+      h1Dot.style.removeProperty('color');
+    }
+  }
+  
+  // Run immediately and on resize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileGear);
+  } else {
+    initMobileGear();
+  }
+  window.addEventListener('resize', initMobileGear);
+  
+  // Also trigger on first touch to ensure animation starts on mobile
+  document.addEventListener('touchstart', function() {
+    initMobileGear();
+  }, { once: true, passive: true });
+
   // Collapsible skills list
   document.querySelectorAll('.skills-list > li').forEach((parentItem) => {
     const nestedList = parentItem.querySelector('ul');
@@ -1322,13 +1383,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     /* Make gear icon always visible and animated on mobile (same as desktop hover) */
     .home-wrap h1 .h1-dot {
-      color: transparent;
+      color: transparent !important;
     }
 
+    /* Hide pseudo-element on mobile since we use real element */
     .home-wrap h1 .h1-dot::after {
-      opacity: 1 !important;
+      display: none !important;
+    }
+
+    /* Style the real mobile gear element */
+    .home-wrap h1 .h1-dot .mobile-gear {
+      position: absolute;
+      left: 50%;
+      top: calc(50% + 0.15em);
       transform: translate(-50%, calc(-50% + 0.15em));
-      animation: gear-spin 1.5s linear infinite;
+      font-size: 0.85em;
+      line-height: 1;
+      color: var(--accent-primary);
+      z-index: 10;
+      pointer-events: none;
+      display: inline-block !important;
+      opacity: 1 !important;
+      animation: gear-spin 1.5s linear infinite !important;
+      animation-play-state: running !important;
+      will-change: transform !important;
     }
   }
 
