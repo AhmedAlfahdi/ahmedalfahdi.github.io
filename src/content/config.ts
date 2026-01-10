@@ -39,9 +39,9 @@ const career = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
-    company: z.string(),
-    role: z.string(),
-    startDate: z.date(),
+    company: z.string().optional(),
+    role: z.string().optional(),
+    startDate: z.date().optional(),
     endDate: z.date().optional(),
     current: z.boolean().default(false),
     location: z.string().optional(),

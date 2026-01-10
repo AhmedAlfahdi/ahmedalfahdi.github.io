@@ -3,8 +3,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
 const career = await getCollection('career');
-const timelineCareer = career.filter(job => !job.data.excludeFromTimeline);
-const sortedCareer = timelineCareer.sort((a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf());
+const timelineCareer = career.filter(job => 
+  !job.data.excludeFromTimeline && 
+  job.data.startDate && 
+  job.data.role && 
+  job.data.company
+);
+const sortedCareer = timelineCareer.sort((a, b) => {
+  const aDate = a.data.startDate?.valueOf() || 0;
+  const bDate = b.data.startDate?.valueOf() || 0;
+  return bDate - aDate;
+});
 ---
 
 <BaseLayout title="Career & Experience">
