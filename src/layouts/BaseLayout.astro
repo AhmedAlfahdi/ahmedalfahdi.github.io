@@ -478,6 +478,7 @@ try {
       margin: 1rem 0;
       border-left: 3px solid var(--accent-primary);
       overflow-x: auto;
+      overflow-y: hidden;
       white-space: pre;
       word-break: normal;
       overflow-wrap: normal;
@@ -486,6 +487,7 @@ try {
       transform: translateZ(0);
       backface-visibility: hidden;
       transition: background 0.3s ease, box-shadow 0.3s ease;
+      max-width: 100%;
     }
     
     /* Trim leading whitespace from code blocks */
@@ -545,29 +547,12 @@ try {
     pre .code-language {
       position: absolute;
       top: 0.5rem;
-      right: 0.75rem;
+      left: 0.75rem;
       font-size: 0.7rem;
       font-family: var(--font-mono);
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      background: var(--bg-primary);
-      padding: 0.25rem 0.5rem;
-      border: 1px solid var(--border-light);
-      border-radius: 2px;
-      opacity: 0.7;
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    /* Wrap toggle button */
-    pre .wrap-toggle {
-      position: absolute;
-      top: 0.5rem;
-      left: 0.75rem;
-      font-size: 0.7rem;
-      font-family: var(--font-mono);
-      color: var(--text-secondary);
       background: var(--bg-primary);
       padding: 0.25rem 0.5rem;
       border: 1px solid var(--border-light);
@@ -579,21 +564,96 @@ try {
       user-select: none;
     }
 
-    pre .wrap-toggle:hover {
+    pre .code-language:hover {
       opacity: 1;
       border-color: var(--accent-primary);
+    }
+
+    /* Code block instruction overlay */
+    .code-instruction-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(4px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeInOut 4s ease-in-out forwards;
+      cursor: pointer;
+    }
+
+    @keyframes fadeInOut {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .code-instruction-overlay .instruction-text {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      font-family: var(--font-mono);
+      text-align: center;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .code-instruction-overlay .instruction-hint {
       color: var(--accent-primary);
+      font-size: 0.9rem;
+      font-family: var(--font-mono);
+      text-align: center;
+      animation: pulse 1.5s ease-in-out infinite;
     }
 
-    /* Wrapped state */
-    pre.wrapped {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.7;
+        transform: scale(1.05);
+      }
     }
 
-    pre.wrapped code {
-      white-space: pre-wrap;
+    .code-instruction-overlay .dismiss-text {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 1rem;
+      opacity: 0.8;
+    }
+
+
+    /* Wrapped state - strongest selectors */
+    pre.wrapped,
+    pre.wrapped[style],
+    pre.astro-code.wrapped,
+    pre[class*="github"].wrapped {
+      white-space: pre-wrap !important;
+      word-wrap: break-word !important;
+      overflow-wrap: break-word !important;
+      overflow-x: visible !important;
+    }
+
+    pre.wrapped code,
+    pre.wrapped code[style],
+    pre.wrapped > code,
+    pre.astro-code.wrapped code,
+    pre[class*="github"].wrapped code {
+      white-space: pre-wrap !important;
+      word-wrap: break-word !important;
+      overflow-wrap: break-word !important;
+    }
+    
+    /* Ensure wrapped code doesn't have conflicting styles */
+    pre.wrapped code span,
+    pre.wrapped code .line {
+      white-space: pre-wrap !important;
     }
 
     pre {
@@ -1968,29 +2028,86 @@ try {
       }
     });
 
-    // Add wrap/unwrap toggle button to code blocks
-    document.querySelectorAll('pre code').forEach((codeEl) => {
-      const preEl = codeEl.closest('pre');
-      if (!preEl) return;
+    // Show instruction overlay on first code block
+    const showInstructionOverlay = () => {
+      const firstPre = document.querySelector('pre');
+      if (!firstPre) return;
       
-      // Check if toggle already exists
-      if (preEl.querySelector('.wrap-toggle')) return;
+      // Check if overlay has been shown before
+      sessionStorage.removeItem('codeWrapInstructionSeen'); // Remove this line when ready for production
+      const hasSeenOverlay = sessionStorage.getItem('codeWrapInstructionSeen');
+      if (hasSeenOverlay) return;
       
-      // Create toggle button
-      const toggleBtn = document.createElement('button');
-      toggleBtn.className = 'wrap-toggle';
-      toggleBtn.textContent = 'Unwrapped';
-      toggleBtn.setAttribute('aria-label', 'Toggle line wrapping');
-      toggleBtn.setAttribute('title', 'Click to toggle line wrapping');
+      // Create overlay
+      const overlay = document.createElement('div');
+      overlay.className = 'code-instruction-overlay';
+      overlay.style.cssText = 'position: absolute; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;';
+      overlay.innerHTML = `
+        <div class="instruction-text" style="color: white; font-size: 1.1rem; margin-bottom: 0.5rem; text-align: center;">Press & Hold Language Label</div>
+        <div class="instruction-hint" style="color: #f5a524; font-size: 0.9rem; text-align: center;">300ms to toggle wrap</div>
+        <div class="dismiss-text" style="color: #888; font-size: 0.75rem; margin-top: 1rem;">Click to dismiss</div>
+      `;
       
-      // Toggle wrap on click
-      toggleBtn.addEventListener('click', (e) => {
+      // Add to first code block
+      firstPre.style.position = 'relative';
+      firstPre.appendChild(overlay);
+      
+      // Remove only when user clicks
+      overlay.addEventListener('click', () => {
+        overlay.remove();
+        sessionStorage.setItem('codeWrapInstructionSeen', 'true');
+      });
+    };
+    
+    // Show overlay after a short delay
+    setTimeout(showInstructionOverlay, 1000);
+
+    // Add long-press wrap toggle to language labels
+    document.querySelectorAll('pre').forEach((preEl) => {
+      const codeEl = preEl.querySelector('code');
+      const langLabel = preEl.querySelector('.code-language');
+      if (!codeEl || !langLabel) return;
+      
+      // Ensure unwrapped by default
+      preEl.classList.remove('wrapped');
+      preEl.style.setProperty('white-space', 'pre', 'important');
+      preEl.style.setProperty('overflow-x', 'auto', 'important');
+      codeEl.style.setProperty('white-space', 'pre', 'important');
+      
+      let pressTimer;
+      
+      const toggleWrap = () => {
+        if (preEl.classList.contains('wrapped')) {
+          preEl.classList.remove('wrapped');
+          preEl.style.setProperty('white-space', 'pre', 'important');
+          preEl.style.setProperty('overflow-x', 'auto', 'important');
+          codeEl.style.setProperty('white-space', 'pre', 'important');
+        } else {
+          preEl.classList.add('wrapped');
+          preEl.style.setProperty('white-space', 'pre-wrap', 'important');
+          preEl.style.setProperty('overflow-x', 'visible', 'important');
+          codeEl.style.setProperty('white-space', 'pre-wrap', 'important');
+        }
+      };
+      
+      // Mouse down on language label - start timer
+      langLabel.addEventListener('mousedown', (e) => {
         e.stopPropagation();
-        preEl.classList.toggle('wrapped');
-        toggleBtn.textContent = preEl.classList.contains('wrapped') ? 'Wrapped' : 'Unwrapped';
+        pressTimer = setTimeout(toggleWrap, 300);
       });
       
-      preEl.appendChild(toggleBtn);
+      // Mouse up or leave - cancel timer
+      langLabel.addEventListener('mouseup', () => clearTimeout(pressTimer));
+      langLabel.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+      
+      // Touch support
+      langLabel.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+        pressTimer = setTimeout(toggleWrap, 300);
+      });
+      
+      langLabel.addEventListener('touchend', () => clearTimeout(pressTimer));
+      langLabel.addEventListener('touchcancel', () => clearTimeout(pressTimer));
     });
 
     // Double-click to copy code blocks
