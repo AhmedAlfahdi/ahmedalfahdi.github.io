@@ -16,21 +16,16 @@
     const themeToggle = document.getElementById('theme-toggle');
     const root = document.documentElement;
     
-    // Get theme - prioritize user preference, then system preference
-    const getTheme = () => {
-      const stored = localStorage.getItem('theme');
-      if (stored) return stored;
-      
-      // Check system preference
+    // Get theme from system preference
+    const getSystemTheme = () => {
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
         return 'light';
       }
-      
       return 'dark';
     };
     
     // Set theme
-    const setTheme = (theme, saveToStorage = false) => {
+    const setTheme = (theme) => {
       if (theme === 'light') {
         root.setAttribute('data-theme', 'light');
         themeToggle?.classList.add('light-mode');
@@ -38,32 +33,22 @@
         root.removeAttribute('data-theme');
         themeToggle?.classList.remove('light-mode');
       }
-      
-      // Only save to localStorage if explicitly requested (manual toggle)
-      if (saveToStorage) {
-        localStorage.setItem('theme', theme);
-      }
     };
     
-    // Initialize theme (don't save to localStorage on initial load)
-    const currentTheme = getTheme();
-    setTheme(currentTheme, false);
+    // Initialize theme - always follow system preference on page load
+    setTheme(getSystemTheme());
     
-    // Toggle theme on click - save user's manual choice
+    // Toggle theme on click
     themeToggle?.addEventListener('click', () => {
       const currentTheme = root.getAttribute('data-theme');
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      setTheme(newTheme, true);
+      setTheme(newTheme);
     });
     
-    // Listen for system theme changes
+    // Always listen for system theme changes and sync immediately
     if (window.matchMedia) {
       window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
-        const stored = localStorage.getItem('theme');
-        // Only auto-switch if user hasn't manually set a preference
-        if (!stored) {
-          setTheme(e.matches ? 'light' : 'dark', false);
-        }
+        setTheme(e.matches ? 'light' : 'dark');
       });
     }
   }
