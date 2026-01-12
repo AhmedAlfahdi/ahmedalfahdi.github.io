@@ -454,16 +454,26 @@ try {
     code {
       background: var(--bg-tertiary);
       color: var(--accent-secondary);
-      padding: 0.25rem 0.45rem;
+      padding: 0.15rem 0.4rem;
       border: 1px solid var(--border-strong);
       font-family: var(--font-mono);
       border-radius: 2px;
+      font-size: 0.9em;
+      line-height: 1;
+      vertical-align: baseline;
+    }
+    
+    /* Increase line-height for elements containing inline code */
+    p:has(code),
+    li:has(code),
+    td:has(code) {
+      line-height: 1.8;
     }
 
     pre {
       background: var(--bg-tertiary);
       color: var(--text-primary);
-      padding: 1rem;
+      padding: 2.5rem 1rem 1rem 1rem;
       border: 1px solid var(--border-strong);
       margin: 1rem 0;
       border-left: 3px solid var(--accent-primary);
@@ -476,6 +486,15 @@ try {
       transform: translateZ(0);
       backface-visibility: hidden;
       transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    /* Trim leading whitespace from code blocks */
+    pre > code {
+      display: block;
+    }
+    
+    pre > code:first-line {
+      text-indent: 0;
     }
 
     /* Light theme code blocks */
@@ -538,7 +557,7 @@ try {
       border-radius: 2px;
       opacity: 0.7;
       pointer-events: none;
-      z-index: 1;
+      z-index: 2;
     }
 
     pre {
@@ -685,6 +704,17 @@ try {
       overflow-wrap: normal;
       border: none !important;
       outline: none !important;
+      display: block;
+    }
+    
+    /* Remove extra space at the beginning of code blocks */
+    pre code::before {
+      content: '';
+      display: none;
+    }
+    
+    pre code .line:first-child {
+      display: block;
     }
     pre code span,
     pre code span[style],
@@ -1705,6 +1735,21 @@ try {
       block.setAttribute('data-callout', tag);
     });
 
+    // Trim leading whitespace from code blocks
+    document.querySelectorAll('pre code').forEach((codeEl) => {
+      // Get the text content
+      let text = codeEl.textContent || '';
+      
+      // If first character is a newline or space, trim it
+      if (text.startsWith('\n') || text.startsWith(' ')) {
+        text = text.trimStart();
+        // Only update if we actually removed something
+        if (text !== codeEl.textContent) {
+          codeEl.textContent = text;
+        }
+      }
+    });
+    
     // Add a tooltip for horizontal scrolling on overflowed code/tables
     const addScrollTips = () => {
       document.querySelectorAll('pre, table').forEach((el) => {
