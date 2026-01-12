@@ -13,11 +13,11 @@ const {
 } = Astro.props;
 ---
 
-<div class="pdf-viewer-wrapper" style={`height: ${height};`}>
+<div class="pdf-viewer-wrapper" data-pdf-wrapper style={`height: ${height};`}>
   <div class="pdf-header">
     <div class="pdf-meta">
       <span class="pdf-label">PDF</span>
-      <span class="pdf-title">{title}</span>
+      <span class="pdf-title" data-pdf-title>{title}</span>
     </div>
     <a href={src} class="pdf-btn" target="_blank" rel="noopener noreferrer">
       Open PDF
@@ -27,12 +27,17 @@ const {
   <div class="pdf-frame">
     <iframe 
       class="pdf-iframe"
+      data-pdf-iframe
       src={`${src}#toolbar=1&statusbar=0&navpanes=0&view=FitH`}
       title={title}
       loading="lazy"
       type="application/pdf"
       allow="fullscreen"
+      onerror="this.closest('.pdf-viewer-wrapper').querySelector('[data-pdf-title]').textContent = 'PDF Preview Unavailable'; this.closest('.pdf-viewer-wrapper').querySelector('.pdf-error-message').style.display = 'block'; this.style.display = 'none';"
     ></iframe>
+    <div class="pdf-error-message" style="display: none;">
+      <p>Unable to display PDF preview. Please use the "Open PDF" button above to view the document.</p>
+    </div>
   </div>
 
   <div class="pdf-mobile-fallback">
@@ -41,6 +46,51 @@ const {
       open the document in your browser or PDF viewer.
     </p>
   </div>
+
+<script define:vars={{ src }}>
+  document.addEventListener('DOMContentLoaded', function() {
+    const wrappers = document.querySelectorAll('[data-pdf-wrapper]');
+    
+    wrappers.forEach(wrapper => {
+      const iframe = wrapper.querySelector('[data-pdf-iframe]');
+      const titleElement = wrapper.querySelector('[data-pdf-title]');
+      const errorMessage = wrapper.querySelector('.pdf-error-message');
+      
+      if (!iframe || !titleElement || !errorMessage) return;
+      
+      const showErrorMessage = () => {
+        if (titleElement.textContent !== 'PDF Preview Unavailable') {
+          titleElement.textContent = 'PDF Preview Unavailable';
+          titleElement.style.color = 'var(--text-muted)';
+        }
+        errorMessage.style.display = 'block';
+        iframe.style.display = 'none';
+      };
+      
+      // Check if PDF loads successfully
+      iframe.addEventListener('load', () => {
+        setTimeout(() => {
+          try {
+            const doc = iframe.contentDocument || iframe.contentWindow?.document;
+            if (doc) {
+              const bodyText = doc.body?.textContent || '';
+              if (bodyText.includes('Failed to load PDF') || 
+                  bodyText.includes('Unable to display PDF') ||
+                  (bodyText.includes('PDF.js') && bodyText.includes('error'))) {
+                showErrorMessage();
+              }
+            }
+          } catch (e) {
+            // Cross-origin - can't check, assume working
+          }
+        }, 2000);
+      });
+      
+      // Handle iframe error event
+      iframe.addEventListener('error', showErrorMessage);
+    });
+  });
+</script>
 </div>
 
 <style>
@@ -146,6 +196,22 @@ const {
     padding: 0.75rem 1rem 1rem;
     font-size: 0.85rem;
     color: var(--text-secondary);
+  }
+
+  .pdf-error-message {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+    background: rgba(245, 165, 36, 0.05);
+    border: 1px solid rgba(245, 165, 36, 0.2);
+    border-radius: 4px;
+    margin: 1rem;
+  }
+
+  .pdf-error-message p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
   }
 
   @media (max-width: 768px) {
