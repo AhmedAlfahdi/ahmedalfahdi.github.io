@@ -37,6 +37,13 @@ const startDate = entry.data.startDate;
           </div>
         </div>
       )}
+      {!isJobEntry && entry.data.lastUpdated && (
+        <div class="header">
+          <div class="meta">
+            <span class="date">Last Updated: {entry.data.lastUpdated.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+          </div>
+        </div>
+      )}
       
       <div class="prose">
         <Content />
