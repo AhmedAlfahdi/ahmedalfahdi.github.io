@@ -19,6 +19,9 @@ const {
       <span class="pdf-label">PDF</span>
       <span class="pdf-title">{title}</span>
     </div>
+    <a href={src} class="pdf-btn" target="_blank" rel="noopener noreferrer">
+      Open PDF
+    </a>
   </div>
 
   <div class="pdf-frame">
@@ -27,7 +30,16 @@ const {
       src={`${src}#toolbar=1&statusbar=0&navpanes=0&view=FitH`}
       title={title}
       loading="lazy"
+      type="application/pdf"
+      allow="fullscreen"
     ></iframe>
+  </div>
+
+  <div class="pdf-mobile-fallback">
+    <p>
+      PDF preview may not be supported on this device. Use the button above to
+      open the document in your browser or PDF viewer.
+    </p>
   </div>
 </div>
 
@@ -118,6 +130,22 @@ const {
     height: 100%;
     border: none;
     background: #0d131b;
+    /* Safari-specific fixes */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Safari desktop: ensure PDF renders properly */
+  @supports (-webkit-appearance: none) {
+    .pdf-iframe {
+      display: block;
+    }
+  }
+
+  .pdf-mobile-fallback {
+    display: none;
+    padding: 0.75rem 1rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
   }
 
   @media (max-width: 768px) {
@@ -125,16 +153,38 @@ const {
       margin: 1.5rem 0;
       width: 100%;
       align-self: stretch;
+      height: auto !important;
     }
     .pdf-header {
       flex-wrap: wrap;
       gap: 0.5rem 0.75rem;
+      justify-content: space-between;
+    }
+    .pdf-btn {
+      flex: 1;
+      min-width: 120px;
+      text-align: center;
     }
     .pdf-frame {
-      min-height: 420px;
+      display: none;
     }
     .pdf-iframe {
       min-height: 420px;
+    }
+    .pdf-mobile-fallback {
+      display: block;
+    }
+  }
+
+  /* Safari iOS specific: hide iframe, show fallback */
+  @supports (-webkit-touch-callout: none) {
+    @media (max-width: 768px) {
+      .pdf-frame {
+        display: none !important;
+      }
+      .pdf-mobile-fallback {
+        display: block !important;
+      }
     }
   }
 </style>
