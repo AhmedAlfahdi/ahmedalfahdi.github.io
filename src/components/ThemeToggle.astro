@@ -24,8 +24,17 @@
       return 'dark';
     };
     
+    // Get initial theme - check sessionStorage first, then system preference
+    const getInitialTheme = () => {
+      const sessionTheme = sessionStorage.getItem('theme');
+      if (sessionTheme) {
+        return sessionTheme;
+      }
+      return getSystemTheme();
+    };
+    
     // Set theme
-    const setTheme = (theme) => {
+    const setTheme = (theme, saveToSession = false) => {
       if (theme === 'light') {
         root.setAttribute('data-theme', 'light');
         themeToggle?.classList.add('light-mode');
@@ -33,22 +42,29 @@
         root.removeAttribute('data-theme');
         themeToggle?.classList.remove('light-mode');
       }
+      
+      if (saveToSession) {
+        sessionStorage.setItem('theme', theme);
+      }
     };
     
-    // Initialize theme - always follow system preference on page load
-    setTheme(getSystemTheme());
+    // Initialize theme - use sessionStorage if available, otherwise follow system
+    setTheme(getInitialTheme(), false);
     
-    // Toggle theme on click
+    // Toggle theme on click and save to sessionStorage
     themeToggle?.addEventListener('click', () => {
       const currentTheme = root.getAttribute('data-theme');
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      setTheme(newTheme);
+      setTheme(newTheme, true);
     });
     
-    // Always listen for system theme changes and sync immediately
+    // Listen for system theme changes - only apply if no session preference
     if (window.matchMedia) {
       window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
-        setTheme(e.matches ? 'light' : 'dark');
+        const sessionTheme = sessionStorage.getItem('theme');
+        if (!sessionTheme) {
+          setTheme(e.matches ? 'light' : 'dark', false);
+        }
       });
     }
   }

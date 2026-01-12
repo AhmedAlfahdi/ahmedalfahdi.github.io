@@ -1564,7 +1564,8 @@ try {
       </div>
       <div class="info-section">
         <h4>Last Build</h4>
-        <p>{buildDate} at {buildTime} UTC</p>
+        <p id="build-timestamp" data-build-date={buildDate} data-build-time={buildTime}>{buildDate} at {buildTime} UTC</p>
+        <p class="info-detail" id="build-relative-time"></p>
         <p class="info-detail">Static site generated with Astro</p>
       </div>
       <div class="info-section">
@@ -1973,6 +1974,56 @@ try {
           closeModal();
         }
       });
+
+      // Calculate and display relative build time
+      const updateRelativeTime = () => {
+        const timestampEl = document.getElementById('build-timestamp');
+        const relativeEl = document.getElementById('build-relative-time');
+        
+        if (!timestampEl || !relativeEl) return;
+        
+        const buildDate = timestampEl.dataset.buildDate;
+        const buildTime = timestampEl.dataset.buildTime;
+        
+        // Skip if placeholder values
+        if (buildDate === '0000-00-00' || buildTime === '00:00:00') {
+          relativeEl.textContent = '';
+          return;
+        }
+        
+        try {
+          const buildTimestamp = new Date(`${buildDate}T${buildTime}Z`);
+          const now = new Date();
+          const diffMs = now - buildTimestamp;
+          const diffSec = Math.floor(diffMs / 1000);
+          const diffMin = Math.floor(diffSec / 60);
+          const diffHour = Math.floor(diffMin / 60);
+          const diffDay = Math.floor(diffHour / 24);
+          
+          let relativeTime = '';
+          if (diffDay > 0) {
+            relativeTime = `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
+          } else if (diffHour > 0) {
+            relativeTime = `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`;
+          } else if (diffMin > 0) {
+            relativeTime = `${diffMin} minute${diffMin > 1 ? 's' : ''} ago`;
+          } else {
+            relativeTime = 'Just now';
+          }
+          
+          relativeEl.textContent = relativeTime;
+        } catch (error) {
+          relativeEl.textContent = '';
+        }
+      };
+      
+      // Update relative time when modal opens
+      infoBtn.addEventListener('click', () => {
+        updateRelativeTime();
+      });
+      
+      // Update relative time initially if modal is visible
+      updateRelativeTime();
 
       // Load statistics when modal opens
       let modalRetryCount = 0;
