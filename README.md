@@ -1,81 +1,79 @@
 # Personal Website
 
-A modern personal website built with Astro and Three.js, featuring interactive 3D models, Obsidian notes integration, and educational content.
+A modern personal website built with Astro and Three.js, featuring interactive 3D models, career documentation, and technical notes.
 
 ## Features
 
-- **Interactive 3D Models** - WebGL rendering with Three.js, support for GLTF/GLB formats
-- **Earth Rotation Demo** - 3D globe visualization with UTC/UT1 calculator
-- **Obsidian Notes Integration** - Wikilinks, Mermaid diagrams, LaTeX math rendering
-- **Career & Experience** - Professional timeline and documentation
-- **Technical Notes** - Engineering and physics content with interactive visualizations
-- **Privacy-Friendly Analytics** - Custom tracking API with MapLibre-powered world map and recent visitors
-
-## Tech Stack
-
-- **Astro** - Static site generator
-- **Three.js** - 3D graphics
-- **MapLibre GL JS** - Token-free vector world map for statistics
-- **MDX** - Markdown with React components
-- **Mermaid.js** - Diagrams
-- **KaTeX** - Math rendering
+- **Interactive 3D Models** - WebGL rendering with Three.js (GLTF/GLB formats)
+- **Career & Experience** - Professional timeline with PDF certifications
+- **Technical Notes** - Engineering content with Mermaid diagrams and LaTeX math
+- **Privacy-Friendly Analytics** - Custom tracking with MapLibre-powered world map
 
 ## Quick Start
 
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
-
-# Build for production
-npm run build
 ```
 
 Visit `http://localhost:4321` to preview.
+
+## Notes
+
+- **DarkReader Plugin**: This website already has a dark theme built-in. Please disable DarkReader or similar dark mode browser extensions when viewing this site, as they may interfere with the styling and cause display issues.
 
 ## Project Structure
 
 ```
 src/
-├── components/        # React/Astro components (3D models, diagrams)
-├── layouts/          # Page layouts
-├── pages/            # Site pages and routes
-│   ├── career/       # Career experience entries
-│   ├── notes/        # Technical notes and documentation
-│   └── earth-rotation.astro  # Interactive Earth demo
-└── content/          # MDX content collections
-    ├── career/       # Career MDX files
-    ├── notes/        # Notes MDX files
-    └── config.ts     # Content schema definitions
+├── components/          # Astro components
+│   ├── Model3D.astro   # 3D model viewer
+│   ├── PDFViewer.astro # PDF document viewer
+│   ├── Mermaid.astro   # Diagram renderer
+│   ├── MathZoom.astro  # Math formula zoom
+│   └── VisitorTracker.astro
+├── layouts/
+│   └── BaseLayout.astro
+├── pages/              # Site routes
+│   ├── index.astro
+│   ├── about.md
+│   ├── career/         # Career pages
+│   ├── notes/          # Technical notes
+│   ├── coding/         # Coding projects
+│   ├── engineering/    # Engineering projects
+│   └── statistics.astro
+├── content/            # MDX content collections
+│   ├── career/         # Career entries
+│   ├── notes/          # Technical notes
+│   ├── coding/         # Coding projects
+│   ├── engineering/    # Engineering projects
+│   └── config.ts       # Content schemas
+└── utils/
+    ├── remark-wikilinks.mjs
+    └── analytics-helpers.js
+
+public/
+├── career/             # PDF certificates and documents
+├── models/             # 3D model files (.glb)
+├── pdfs/               # General PDF files
+└── vendor/             # Third-party scripts
+
+astro.config.mjs        # Astro configuration
+package.json            # Dependencies
+tsconfig.json           # TypeScript config
 ```
 
 ## Deployment
 
-Configured for GitHub Pages. Push to `main` branch to auto-deploy via GitHub Actions.
+Deployed to GitHub Pages via GitHub Actions. Update `astro.config.mjs` with your site URL.
 
-Update `astro.config.mjs` with your site URL:
-```javascript
-site: 'https://yourusername.github.io'
-```
+## Tech Stack
 
-## Documentation
+- **Astro** - Static site generator
+- **Three.js** - 3D graphics
+- **MapLibre GL JS** - Vector maps for analytics
+- **MDX** - Markdown with components
+- **Mermaid.js** - Diagrams
+- **KaTeX** - Math rendering
 
-- `3D-MODELS-GUIDE.md` - Using 3D models in content
-- `OBSIDIAN-GUIDE.md` - Obsidian notes integration
-- `SETUP.md` - Deployment setup guide
-
-## License
-
-MIT License
-
----
-
-**Main Libraries Used**  
-- [Astro](https://astro.build/) (v4.6.0, MIT License)  
-- [Three.js](https://threejs.org/) (v0.157.0, MIT License)  
-- [MapLibre GL JS](https://maplibre.org/projects/maplibre-gl-js/) (Apache-2.0 License)  
-- [MDX](https://mdxjs.com/) (@astrojs/mdx v3.3.0, MIT License)  
-
-<sub>See `package.json` for full dependency versions.</sub>
+See `package.json` for full dependency versions.

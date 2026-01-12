@@ -37,12 +37,14 @@ try {
 ---
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-darkreader-mode="dynamic" data-darkreader-scheme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content={description}>
   <meta name="color-scheme" content="dark">
+  <meta name="darkreader-lock">
+  <meta name="theme-color" content="#0b1015" media="(prefers-color-scheme: dark)">
   <title>{title}</title>
   <!-- KaTeX CSS for Math Rendering -->
   <link rel="stylesheet" href={`https://cdn.jsdelivr.net/npm/katex@${katexVersion}/dist/katex.min.css`} integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
@@ -1305,13 +1307,69 @@ try {
       <div class="info-section">
         <h4>Built With</h4>
         <ul class="tech-list">
-          <li><strong>Astro</strong> {astroVersion} <span class="license">(MIT)</span></li>
-          <li><strong>Three.js</strong> {threeVersion} <span class="license">(MIT)</span></li>
-          <li><strong>KaTeX</strong> {katexVersion} <span class="license">(MIT)</span></li>
-          <li><strong>Mermaid</strong> {mermaidVersion} <span class="license">(MIT)</span></li>
-          <li><strong>PDF.js</strong> {pdfjsVersion} <span class="license">(Apache 2.0)</span></li>
-          <li><strong>MapLibre GL JS</strong> {maplibreVersion} <span class="license">(BSD 2-Clause)</span></li>
-          <li><strong>Vercel</strong> <span class="license">(Analytics API)</span></li>
+          <li>
+            <span
+              class="stat-label-tooltip"
+              data-tooltip="Astro is the static site generator that builds this site into fast, pre-rendered HTML with islands of interactive components."
+            >
+              <strong>Astro</strong>
+            </span>
+            {astroVersion} <span class="license">(MIT)</span>
+          </li>
+          <li>
+            <span
+              class="stat-label-tooltip"
+              data-tooltip="Three.js powers the 3D scenes and visualizations (like models and interactive graphics) using WebGL in the browser."
+            >
+              <strong>Three.js</strong>
+            </span>
+            {threeVersion} <span class="license">(MIT)</span>
+          </li>
+          <li>
+            <span
+              class="stat-label-tooltip"
+              data-tooltip="KaTeX renders LaTeX-style math formulas as fast, accessible HTML so equations display crisply across devices."
+            >
+              <strong>KaTeX</strong>
+            </span>
+            {katexVersion} <span class="license">(MIT)</span>
+          </li>
+          <li>
+            <span
+              class="stat-label-tooltip"
+              data-tooltip="Mermaid turns plain-text diagrams (flowcharts, sequences, etc.) into rendered SVG graphics inside the content."
+            >
+              <strong>Mermaid</strong>
+            </span>
+            {mermaidVersion} <span class="license">(MIT)</span>
+          </li>
+          <li>
+            <span
+              class="stat-label-tooltip"
+              data-tooltip="PDF.js is used to embed and render PDF documents directly in the browser without requiring external plugins."
+            >
+              <strong>PDF.js</strong>
+            </span>
+            {pdfjsVersion} <span class="license">(Apache 2.0)</span>
+          </li>
+          <li>
+            <span
+              class="stat-label-tooltip"
+              data-tooltip="MapLibre GL JS powers the interactive vector map used for visualizing visitor locations in the statistics view."
+            >
+              <strong>MapLibre GL JS</strong>
+            </span>
+            {maplibreVersion} <span class="license">(BSD 2-Clause)</span>
+          </li>
+          <li>
+            <span
+              class="stat-label-tooltip"
+              data-tooltip="Vercel provides the lightweight analytics API backend that collects and serves privacy-friendly site statistics."
+            >
+              <strong>Vercel</strong>
+            </span>
+            <span class="license">(Analytics API)</span>
+          </li>
         </ul>
       </div>
       <div class="info-section">
