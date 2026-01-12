@@ -560,6 +560,42 @@ try {
       z-index: 2;
     }
 
+    /* Wrap toggle button */
+    pre .wrap-toggle {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.75rem;
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      background: var(--bg-primary);
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border-light);
+      border-radius: 2px;
+      opacity: 0.7;
+      cursor: pointer;
+      z-index: 2;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    pre .wrap-toggle:hover {
+      opacity: 1;
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    /* Wrapped state */
+    pre.wrapped {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    pre.wrapped code {
+      white-space: pre-wrap;
+    }
+
     pre {
       user-select: text;
       -webkit-user-select: text;
@@ -1930,6 +1966,31 @@ try {
         langEl.textContent = displayLang;
         preEl.appendChild(langEl);
       }
+    });
+
+    // Add wrap/unwrap toggle button to code blocks
+    document.querySelectorAll('pre code').forEach((codeEl) => {
+      const preEl = codeEl.closest('pre');
+      if (!preEl) return;
+      
+      // Check if toggle already exists
+      if (preEl.querySelector('.wrap-toggle')) return;
+      
+      // Create toggle button
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = 'wrap-toggle';
+      toggleBtn.textContent = 'Unwrapped';
+      toggleBtn.setAttribute('aria-label', 'Toggle line wrapping');
+      toggleBtn.setAttribute('title', 'Click to toggle line wrapping');
+      
+      // Toggle wrap on click
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        preEl.classList.toggle('wrapped');
+        toggleBtn.textContent = preEl.classList.contains('wrapped') ? 'Wrapped' : 'Unwrapped';
+      });
+      
+      preEl.appendChild(toggleBtn);
     });
 
     // Double-click to copy code blocks
