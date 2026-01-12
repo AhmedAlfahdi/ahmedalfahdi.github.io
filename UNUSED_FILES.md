@@ -64,7 +64,7 @@ This document lists all files that appear to be unused in the project.
 - **Status**: Example directory, referenced in documentation
 - **Action**: Keep if used as reference, or remove if not needed
 
-### `vercel-api/`
+### `analytics-api/`
 - **Status**: Referenced in documentation (VERCEL-SETUP-GUIDE.md, ANALYTICS-SETUP.md)
 - **Action**: Keep if using Vercel deployment, or remove if not
 
@@ -108,4 +108,4 @@ These files are documentation and may not be "used" in code but serve as guides:
 
 **Keep (Reference/Documentation):**
 - All `.md` guide files
-- `api-example/` and `vercel-api/` if used for deployment
+- `api-example/` and `analytics-api/` if used for deployment

@@ -11,7 +11,7 @@
 
 3. **Deploy API**:
    - Vercel Dashboard → Add New Project
-   - Import your repository (or create new repo with `vercel-api` folder)
+   - Import your repository (or create new repo with `analytics-api` folder)
    - Add environment variables:
      - `KV_REST_API_URL` = (from step 2)
      - `KV_REST_API_TOKEN` = (from step 2)

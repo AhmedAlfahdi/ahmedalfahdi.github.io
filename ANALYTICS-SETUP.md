@@ -4,14 +4,14 @@ This guide explains how to set up visitor tracking and statistics for your websi
 
 ## Recommended Solution: Vercel
 
-**For the easiest setup, use Vercel Serverless Functions + Vercel KV.** See the `vercel-api/` folder for a ready-to-deploy solution. This is the recommended approach because:
+**For the easiest setup, use Vercel Serverless Functions + Vercel KV.** See the `analytics-api/` folder for a ready-to-deploy solution. This is the recommended approach because:
 - Free tier is generous (100GB bandwidth, 100GB storage)
 - No server management required
 - Easy deployment from GitHub
 - Perfect for static sites
 - Global CDN for fast performance
 
-See `vercel-api/README.md` for detailed setup instructions.
+See `analytics-api/README.md` for detailed setup instructions.
 
 ## Overview
 

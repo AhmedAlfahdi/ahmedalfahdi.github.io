@@ -59,9 +59,9 @@ You have two options:
    - Don't initialize with README
    - Click **Create repository**
 
-2. In your local project, navigate to the `vercel-api` folder:
+2. In your local project, navigate to the `analytics-api` folder:
    ```bash
-   cd vercel-api
+   cd analytics-api
    ```
 
 3. Initialize git and push:
@@ -79,7 +79,7 @@ You have two options:
 
 If you want to keep everything in one repository:
 
-1. The `vercel-api` folder is already in your project
+1. The `analytics-api` folder is already in your project
 2. You can deploy directly from your main repository
 3. Vercel will automatically detect the `api` folder
 
@@ -96,7 +96,7 @@ If you want to keep everything in one repository:
    - **Framework Preset**: Leave as "Other" or "Vercel"
    - **Root Directory**: 
      - If Option A: Leave as `./`
-     - If Option B: Set to `./vercel-api`
+     - If Option B: Set to `./analytics-api`
 
 5. **Environment Variables**:
    Click **Add** and add these two variables:
@@ -216,5 +216,5 @@ Vercel's free tier includes:
 
 ---
 
-Need help? Check the Vercel documentation or the `vercel-api/README.md` file.
+Need help? Check the Vercel documentation or the `analytics-api/README.md` file.
 
