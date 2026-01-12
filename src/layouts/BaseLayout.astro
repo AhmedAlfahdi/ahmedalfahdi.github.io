@@ -1,5 +1,6 @@
 ---
 import VisitorTracker from '../components/VisitorTracker.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 
 interface Props {
   title: string;
@@ -49,32 +50,86 @@ try {
   <!-- KaTeX CSS for Math Rendering -->
   <link rel="stylesheet" href={`https://cdn.jsdelivr.net/npm/katex@${katexVersion}/dist/katex.min.css`} integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
   <!-- Mermaid JS for Diagrams -->
-  <script type="module">
-    import mermaid from `https://cdn.jsdelivr.net/npm/mermaid@${mermaidVersion}/dist/mermaid.esm.min.mjs`;
-    mermaid.initialize({ 
-      startOnLoad: true,
-      theme: 'dark',
-      securityLevel: 'loose',
-      themeVariables: {
-        darkMode: true,
-        background: '#0b1015',
-        primaryColor: '#161f29',
-        primaryTextColor: '#e4e7ed',
-        primaryBorderColor: '#2a3542',
-        lineColor: '#62c7ff',
-        secondaryColor: '#101820',
-        tertiaryColor: '#161f29',
-        textColor: '#9ea7b3',
-        mainBkgColor: '#161f29',
-        secondBkgColor: '#101820',
-        tertiaryBkgColor: '#0b1015',
-        noteBkgColor: '#2a3542',
-        noteTextColor: '#e4e7ed',
-        noteBorderColor: '#f5a524',
-      }
-    });
+  <script type="module" define:vars={{ mermaidVersion }}>
+    const mermaidUrl = `https://cdn.jsdelivr.net/npm/mermaid@${mermaidVersion}/dist/mermaid.esm.min.mjs`;
+    const { default: mermaid } = await import(mermaidUrl);
+    
+    // Function to get current theme
+    const getCurrentTheme = () => {
+      return document.documentElement.getAttribute('data-theme') || 'dark';
+    };
+    
+    // Function to initialize Mermaid with theme
+    const initMermaid = (theme) => {
+      const isDark = theme === 'dark';
+      mermaid.initialize({ 
+        startOnLoad: true,
+        theme: isDark ? 'dark' : 'base',
+        securityLevel: 'loose',
+        themeVariables: isDark ? {
+          darkMode: true,
+          background: '#0b1015',
+          primaryColor: '#161f29',
+          primaryTextColor: '#e4e7ed',
+          primaryBorderColor: '#2a3542',
+          lineColor: '#62c7ff',
+          secondaryColor: '#101820',
+          tertiaryColor: '#161f29',
+          textColor: '#9ea7b3',
+          mainBkgColor: '#161f29',
+          secondBkgColor: '#101820',
+          tertiaryBkgColor: '#0b1015',
+          noteBkgColor: '#2a3542',
+          noteTextColor: '#e4e7ed',
+          noteBorderColor: '#f5a524',
+        } : {
+          darkMode: false,
+          background: '#f5f7fa',
+          primaryColor: '#d6dde6',
+          primaryTextColor: '#1a2029',
+          primaryBorderColor: '#b8c1cc',
+          lineColor: '#0077cc',
+          secondaryColor: '#e8ecf1',
+          tertiaryColor: '#d6dde6',
+          textColor: '#495463',
+          mainBkgColor: '#d6dde6',
+          secondBkgColor: '#e8ecf1',
+          tertiaryBkgColor: '#f5f7fa',
+          noteBkgColor: '#b8c1cc',
+          noteTextColor: '#1a2029',
+          noteBorderColor: '#d68910',
+        }
+      });
+    };
+    
+    // Initialize with current theme
+    initMermaid(getCurrentTheme());
+    
     // Make mermaid available globally for components
     window.mermaid = mermaid;
+    
+    // Listen for theme changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          const newTheme = getCurrentTheme();
+          initMermaid(newTheme);
+          // Re-render all mermaid diagrams
+          const mermaidDivs = document.querySelectorAll('.mermaid');
+          mermaidDivs.forEach(div => {
+            if (div.getAttribute('data-processed') === 'true') {
+              div.removeAttribute('data-processed');
+            }
+          });
+          mermaid.run();
+        }
+      });
+    });
+    
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
   </script>
   <style is:global>
     /* Google Fonts - JetBrains Mono */
@@ -84,7 +139,7 @@ try {
 
     :root {
       color-scheme: dark;
-      /* Engineering / Industrial palette */
+      /* Dark Theme - Engineering / Industrial palette */
       --bg-primary: #0b1015;      /* coal */
       --bg-secondary: #101820;    /* steel */
       --bg-tertiary: #161f29;     /* dark panel */
@@ -102,6 +157,30 @@ try {
       --border-light: #1c252f;
 
       --font-mono: 'JetBrains Mono', monospace;
+      
+      /* Transition for smooth theme switching */
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Light Theme */
+    :root[data-theme="light"] {
+      color-scheme: light;
+      /* Light Theme - Engineering / Industrial palette */
+      --bg-primary: #f5f7fa;      /* light blueprint paper */
+      --bg-secondary: #e8ecf1;    /* light steel */
+      --bg-tertiary: #d6dde6;     /* light panel */
+      --panel-glow: rgba(245, 165, 36, 0.08);
+
+      --text-primary: #1a2029;
+      --text-secondary: #495463;
+      --text-muted: #6b7785;
+
+      --accent-primary: #d68910;  /* darker hazard amber for better contrast */
+      --accent-secondary: #0077cc;/* darker blueprint cyan for better contrast */
+      --accent-emerald: #059669;  /* darker system healthy */
+
+      --border-strong: #b8c1cc;
+      --border-light: #d1d9e2;
     }
 
     * {
@@ -125,10 +204,20 @@ try {
       background-image:
         radial-gradient(circle at 20% 20%, rgba(98, 199, 255, 0.06), transparent 35%),
         radial-gradient(circle at 80% 0%, rgba(245, 165, 36, 0.08), transparent 30%),
-        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04) 1px, transparent 1px, transparent 32px),
-        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04) 1px, transparent 1px, transparent 32px);
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.04) 1px, transparent 1px, transparent 32px),
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.04) 1px, transparent 1px, transparent 32px);
       background-size: 100% 100%, 100% 100%, 64px 64px, 64px 64px;
       min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Light theme body adjustments */
+    :root[data-theme="light"] body {
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(98, 199, 255, 0.08), transparent 35%),
+        radial-gradient(circle at 80% 0%, rgba(245, 165, 36, 0.12), transparent 30%),
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.02) 1px, transparent 1px, transparent 32px),
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.02) 1px, transparent 1px, transparent 32px);
     }
 
     /* Custom Scrollbar */
@@ -146,6 +235,19 @@ try {
       background: var(--accent-primary);
     }
 
+    /* Light theme scrollbar */
+    :root[data-theme="light"] ::-webkit-scrollbar {
+      background: var(--bg-secondary);
+    }
+
+    :root[data-theme="light"] ::-webkit-scrollbar-thumb {
+      background: var(--border-strong);
+    }
+
+    :root[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-primary);
+    }
+
     nav {
       background: linear-gradient(180deg, #111923 0%, #0c141c 100%);
       border-bottom: 2px solid var(--accent-primary);
@@ -153,6 +255,15 @@ try {
       top: 0;
       z-index: 100;
       box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: visible;
+    }
+
+    /* Light theme navigation */
+    :root[data-theme="light"] nav {
+      background: linear-gradient(180deg, #ffffff 0%, #f5f7fa 100%);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
     nav ul {
@@ -163,6 +274,7 @@ try {
       justify-content: center;
       flex-wrap: wrap;
       gap: 0;
+      overflow: visible;
     }
 
     .menu-toggle {
@@ -187,11 +299,7 @@ try {
     }
 
     nav li {
-      border-left: 1px solid var(--border-light);
-    }
-
-    nav li:first-child {
-      border-left: none;
+      overflow: visible;
     }
 
     nav a {
@@ -205,19 +313,29 @@ try {
       display: block;
       padding: 1rem 1.75rem;
       position: relative;
+      border: none;
+      outline: none;
     }
     nav a::after {
       display: none;
+    }
+    nav a:focus-visible {
+      outline: 2px solid var(--accent-primary);
+      outline-offset: 2px;
     }
 
     nav a:hover,
     nav a:focus {
       color: var(--accent-primary);
-      background: rgba(245, 165, 36, 0.06);
+      background: transparent;
       text-shadow: 
-        0 0 8px rgba(245, 165, 36, 0.8),
-        0 0 16px rgba(245, 165, 36, 0.6),
-        0 0 24px rgba(245, 165, 36, 0.4);
+        0 0 10px rgba(245, 165, 36, 0.9),
+        0 0 20px rgba(245, 165, 36, 0.7),
+        0 0 30px rgba(245, 165, 36, 0.5),
+        0 0 40px rgba(245, 165, 36, 0.3);
+      filter: drop-shadow(0 0 30px rgba(245, 165, 36, 0.4))
+              drop-shadow(0 0 60px rgba(245, 165, 36, 0.3))
+              drop-shadow(0 0 90px rgba(245, 165, 36, 0.2));
     }
 
 
@@ -239,6 +357,15 @@ try {
       width: 100%;
       max-width: 1280px;
       margin: 0 auto;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* Light theme container */
+    :root[data-theme="light"] .container {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(245, 247, 250, 0.95));
+      box-shadow:
+        inset 0 1px 0 rgba(0, 0, 0, 0.02),
+        0 8px 24px rgba(0, 0, 0, 0.08);
     }
 
     .container::before,
@@ -348,6 +475,52 @@ try {
       position: relative;
       transform: translateZ(0);
       backface-visibility: hidden;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* Light theme code blocks */
+    :root[data-theme="light"] pre {
+      background: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+      border-color: var(--border-light) !important;
+    }
+    
+    :root[data-theme="light"] pre.astro-code,
+    :root[data-theme="light"] pre[class*="github"] {
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      color: #24292e !important;
+    }
+    
+    :root[data-theme="light"] pre code,
+    :root[data-theme="light"] pre.astro-code code {
+      color: #24292e !important;
+    }
+    
+    /* Light theme syntax highlighting - override inline styles */
+    :root[data-theme="light"] pre code span,
+    :root[data-theme="light"] pre.astro-code code span,
+    :root[data-theme="light"] pre[class*="github"] code span {
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+    
+    /* Ensure readable text in light theme - force dark colors for better contrast */
+    :root[data-theme="light"] pre code span[style*="color:#e1e4e8"],
+    :root[data-theme="light"] pre code span[style*="color: #e1e4e8"],
+    :root[data-theme="light"] pre code span[style*="color:#959da5"],
+    :root[data-theme="light"] pre code span[style*="color: #959da5"],
+    :root[data-theme="light"] pre code span[style*="color:#d1d5da"],
+    :root[data-theme="light"] pre code span[style*="color: #d1d5da"],
+    :root[data-theme="light"] pre code span[style*="color:#6a737d"],
+    :root[data-theme="light"] pre code span[style*="color: #6a737d"] {
+      color: #24292e !important;
+    }
+    
+    /* Force minimum contrast for all code text in light theme */
+    :root[data-theme="light"] pre code,
+    :root[data-theme="light"] pre code span {
+      filter: contrast(1.2) brightness(0.85);
     }
 
     pre .code-language {
@@ -591,6 +764,12 @@ try {
       padding: 1rem 1.5rem;
       background: rgba(22, 31, 41, 0.85);
       color: var(--text-primary);
+      transition: background 0.3s ease;
+    }
+
+    /* Light theme blockquotes */
+    :root[data-theme="light"] blockquote {
+      background: rgba(214, 221, 230, 0.3);
     }
 
     /* Callouts */
@@ -601,6 +780,12 @@ try {
       padding: 1rem 1.25rem;
       margin: 1.25rem 0;
       position: relative;
+      transition: background 0.3s ease;
+    }
+
+    /* Light theme callouts */
+    :root[data-theme="light"] .callout {
+      background: rgba(245, 247, 250, 0.9);
     }
     .callout::before {
       content: attr(data-callout);
@@ -623,6 +808,16 @@ try {
       margin: 1.5rem 0;
       border: 1px solid var(--border-strong);
       background: var(--bg-tertiary);
+      transition: background 0.3s ease;
+    }
+
+    /* Light theme tables */
+    :root[data-theme="light"] table {
+      background: #ffffff;
+    }
+
+    :root[data-theme="light"] table thead {
+      background: var(--bg-secondary);
     }
 
     table thead {
@@ -760,6 +955,15 @@ try {
       user-select: none;
     }
 
+    /* Light theme scroll progress */
+    :root[data-theme="light"] .scroll-progress {
+      background: rgba(255, 255, 255, 0.95);
+      color: var(--text-primary);
+      box-shadow:
+        inset 0 1px 0 rgba(0, 0, 0, 0.02),
+        0 8px 18px rgba(0, 0, 0, 0.12);
+    }
+
     .scroll-progress.at-bottom {
       pointer-events: auto;
       cursor: pointer;
@@ -782,11 +986,29 @@ try {
       transform: scale(0.98);
     }
 
+    /* Light theme scroll progress at bottom */
+    :root[data-theme="light"] .scroll-progress.at-bottom {
+      background: rgba(255, 255, 255, 0.98);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    :root[data-theme="light"] .scroll-progress.at-bottom:hover {
+      background: rgba(245, 247, 250, 1);
+      border-color: var(--accent-primary);
+      transform: scale(1.05);
+      box-shadow:
+        inset 0 1px 0 rgba(0, 0, 0, 0.02),
+        0 8px 18px rgba(0, 0, 0, 0.12),
+        0 0 20px rgba(214, 137, 16, 0.25);
+    }
+
     /* Site Info Button */
     .site-info-btn {
-      position: fixed;
-      top: 1rem;
-      right: 1.4rem;
+      position: absolute;
+      top: 50%;
+      right: 1rem;
+      transform: translateY(-50%);
       width: 32px;
       height: 32px;
       background: rgba(12, 20, 28, 0.9);
@@ -797,7 +1019,7 @@ try {
       font-size: 1.1rem;
       cursor: pointer;
       transition: all 0.2s ease;
-      z-index: 120;
+      z-index: 10;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -807,12 +1029,34 @@ try {
     }
 
     .site-info-btn:hover {
-      background: rgba(98, 199, 255, 0.15);
+      background: rgba(98, 199, 255, 0.1);
       border-color: var(--accent-secondary);
-      transform: scale(1.1);
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.04),
-        0 6px 16px rgba(98, 199, 255, 0.3);
+        0 4px 12px rgba(0, 0, 0, 0.25),
+        0 0 20px rgba(98, 199, 255, 0.3);
+    }
+
+    .site-info-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Light theme site info button */
+    :root[data-theme="light"] .site-info-btn {
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--accent-secondary);
+      box-shadow:
+        inset 0 1px 0 rgba(0, 0, 0, 0.02),
+        0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    :root[data-theme="light"] .site-info-btn:hover {
+      background: rgba(0, 119, 204, 0.08);
+      border-color: var(--accent-secondary);
+      box-shadow:
+        inset 0 1px 0 rgba(0, 0, 0, 0.02),
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 0 20px rgba(0, 119, 204, 0.25);
     }
 
     /* Site Info Modal */
@@ -833,6 +1077,12 @@ try {
       bottom: 0;
       background: rgba(11, 16, 21, 0.85);
       backdrop-filter: blur(4px);
+      transition: background 0.3s ease;
+    }
+
+    /* Light theme modal overlay */
+    :root[data-theme="light"] .site-info-overlay {
+      background: rgba(107, 119, 133, 0.4);
     }
 
     .site-info-content {
@@ -849,6 +1099,15 @@ try {
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.04),
         0 20px 40px rgba(0, 0, 0, 0.5);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* Light theme modal content */
+    :root[data-theme="light"] .site-info-content {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(245, 247, 250, 0.98));
+      box-shadow:
+        inset 0 1px 0 rgba(0, 0, 0, 0.02),
+        0 20px 40px rgba(0, 0, 0, 0.15);
     }
 
     .site-info-close {
@@ -1175,8 +1434,6 @@ try {
       }
 
       nav li {
-        border-left: none;
-        border-top: 1px solid var(--border-light);
         width: 100%;
       }
 
@@ -1237,8 +1494,7 @@ try {
       }
 
       .site-info-btn {
-        top: 0.8rem;
-        right: 1rem;
+        right: 0.5rem;
         width: 28px;
         height: 28px;
         font-size: 1rem;
@@ -1258,6 +1514,7 @@ try {
 </head>
 <body>
       <nav class="nav-links">
+        <ThemeToggle />
         <button class="menu-toggle" aria-expanded="false" aria-label="Toggle menu">
           <span></span><span></span><span></span>
         </button>
@@ -1268,17 +1525,16 @@ try {
           <li><a href="/notes" class="nav-link">Notes</a></li>
           <li><a href="/engineering" class="nav-link">Engineering</a></li>
         </ul>
+        <!-- Site Info Button -->
+        <button id="site-info-btn" class="site-info-btn" aria-label="Site Information" title="Site Information">
+          <span>!</span>
+        </button>
       </nav>
   <main>
     <slot />
   </main>
   <VisitorTracker />
   <div id="scroll-progress" class="scroll-progress" aria-hidden="true" aria-label="Scroll progress">0%</div>
-  
-  <!-- Site Info Button -->
-  <button id="site-info-btn" class="site-info-btn" aria-label="Site Information" title="Site Information">
-    <span>!</span>
-  </button>
   
   <!-- Site Info Modal -->
   <div id="site-info-modal" class="site-info-modal" style="display: none;">

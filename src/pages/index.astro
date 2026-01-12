@@ -565,6 +565,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     transition: all 0.3s ease;
   }
 
+  /* Light theme UTC badge */
+  :root[data-theme="light"] .utc-badge {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(245, 247, 250, 0.95));
+    color: rgba(214, 137, 16, 0.85);
+    box-shadow: 
+      inset 0 1px 0 rgba(0, 0, 0, 0.02),
+      0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
   @media (max-width: 768px) {
     .utc-badge {
       position: relative !important;
@@ -870,6 +879,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     border: 1px solid var(--border-light);
     border-left: 4px solid var(--accent-secondary);
     position: relative;
+    transition: background 0.3s ease;
+  }
+
+  /* Light theme skills section */
+  :root[data-theme="light"] .skills {
+    background: #ffffff;
   }
 
   .skills::before {
@@ -882,6 +897,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 0.7rem;
     color: var(--text-muted);
     border: 1px solid var(--border-light);
+    transition: background 0.3s ease;
+  }
+
+  /* Light theme skills label */
+  :root[data-theme="light"] .skills::before {
+    background: var(--bg-primary);
   }
 
   .skills h3 {
@@ -1106,12 +1127,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     border: 1px solid var(--border-light);
     text-decoration: none;
     color: inherit;
-    transition: all 0.2s;
+    transition: all 0.3s;
     position: relative;
     overflow: hidden;
     opacity: 0;
     transform: translateY(20px);
     animation: card-entrance 0.6s ease-out forwards;
+  }
+
+  /* Light theme section cards */
+  :root[data-theme="light"] .section-card {
+    background: #ffffff;
   }
 
   .section-card:nth-child(1) {
@@ -1246,6 +1272,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     border: 1px solid var(--border-light);
     color: var(--text-primary);
     border-top: 4px solid var(--border-heavy);
+    transition: background 0.3s ease;
+  }
+
+  /* Light theme contact section */
+  :root[data-theme="light"] .contact-section {
+    background: #ffffff;
+    border-top-color: var(--border-strong);
   }
 
   .contact-section h2 {
@@ -1278,6 +1311,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     overflow: hidden;
     word-break: break-word;
     hyphens: auto;
+  }
+
+  /* Light theme contact links */
+  :root[data-theme="light"] .contact-link {
+    background: var(--bg-secondary);
   }
 
   .contact-link::before {
