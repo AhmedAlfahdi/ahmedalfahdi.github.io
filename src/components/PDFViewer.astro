@@ -51,7 +51,16 @@ const {
   document.addEventListener('DOMContentLoaded', function() {
     const wrappers = document.querySelectorAll('[data-pdf-wrapper]');
     
+    // Detect Chrome mobile (Chrome mobile intercepts PDFs and shows download prompt)
+    const isChromeMobile = /Android.*Chrome|CriOS/i.test(navigator.userAgent) && 
+                           'ontouchstart' in window;
+    
     wrappers.forEach(wrapper => {
+      // Mark Chrome mobile wrappers
+      if (isChromeMobile) {
+        wrapper.setAttribute('data-chrome-mobile', 'true');
+      }
+      
       const iframe = wrapper.querySelector('[data-pdf-iframe]');
       const titleElement = wrapper.querySelector('[data-pdf-title]');
       const errorMessage = wrapper.querySelector('.pdf-error-message');
@@ -66,6 +75,11 @@ const {
         errorMessage.style.display = 'block';
         iframe.style.display = 'none';
       };
+      
+      // On Chrome mobile, hide iframe immediately (it will show download prompt anyway)
+      if (isChromeMobile) {
+        iframe.style.display = 'none';
+      }
       
       // Check if PDF loads successfully
       iframe.addEventListener('load', () => {
@@ -246,5 +260,13 @@ const {
         display: block !important;
       }
     }
+  }
+
+  /* Chrome mobile: hide iframe (Chrome mobile intercepts PDFs and shows download prompt) */
+  .pdf-viewer-wrapper[data-chrome-mobile] .pdf-frame {
+    display: none !important;
+  }
+  .pdf-viewer-wrapper[data-chrome-mobile] .pdf-mobile-fallback {
+    display: block !important;
   }
 </style>
