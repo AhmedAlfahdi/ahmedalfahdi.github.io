@@ -1,0 +1,60 @@
+---
+layout: ../layouts/BaseLayout.astro
+title: "Python Test"
+description: "Test Pyodide Python execution"
+---
+
+import PyodideRunner from '../components/PyodideRunner.astro';
+
+# Python Execution Test
+
+## Hello World
+
+<PyodideRunner 
+  title="Hello World Example"
+  code={`print("Hello from Python in the browser!")
+print("This is running with Pyodide!")
+
+# Simple calculation
+result = 10 + 5
+print(f"10 + 5 = {result}")`}
+/>
+
+## Math Example
+
+<PyodideRunner 
+  title="Mathematical Operations"
+  code={`import math
+
+# Calculate factorial
+n = 5
+factorial = math.factorial(n)
+print(f"{n}! = {factorial}")
+
+# Square root
+num = 25
+sqrt = math.sqrt(num)
+print(f"√{num} = {sqrt}")
+
+# Pi value
+print(f"π = {math.pi:.6f}")`}
+/>
+
+## Loop Example
+
+<PyodideRunner 
+  title="For Loop"
+  code={`# Print multiplication table
+n = 5
+print(f"Multiplication table for {n}:")
+for i in range(1, 11):
+    result = n * i
+    print(f"{n} × {i} = {result}")`}
+/>
+
+---
+
+**Instructions:**
+1. Click any "Run Code" button above
+2. Wait for Pyodide to load (first time only)
+3. See the output below each code block

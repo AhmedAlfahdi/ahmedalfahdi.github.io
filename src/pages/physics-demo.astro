@@ -1,0 +1,324 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PyodideRunner from '../components/PyodideRunner.astro';
+
+const pythonCode = `import math
+
+# Get values from sliders (these will be updated)
+velocity = 20      # m/s
+angle = 45         # degrees
+gravity = 9.8      # m/s²
+height = 0         # m
+
+# Convert angle to radians
+angle_rad = math.radians(angle)
+
+# Calculate velocity components
+vx = velocity * math.cos(angle_rad)
+vy = velocity * math.sin(angle_rad)
+
+print("=" * 50)
+print("PROJECTILE MOTION ANALYSIS")
+print("=" * 50)
+print(f"\\nInitial Conditions:")
+print(f"  Velocity: {velocity} m/s")
+print(f"  Angle: {angle}°")
+print(f"  Gravity: {gravity} m/s²")
+print(f"  Initial Height: {height} m")
+
+print(f"\\nVelocity Components:")
+print(f"  Horizontal (Vx): {vx:.2f} m/s")
+print(f"  Vertical (Vy): {vy:.2f} m/s")
+
+# Calculate time of flight
+# Using quadratic formula: h = h0 + vy*t - 0.5*g*t²
+a = 0.5 * gravity
+b = -vy
+c = -height
+
+discriminant = b**2 - 4*a*c
+if discriminant >= 0:
+    t1 = (-b + math.sqrt(discriminant)) / (2*a)
+    t2 = (-b - math.sqrt(discriminant)) / (2*a)
+    time_of_flight = max(t1, t2)
+    
+    # Calculate maximum height
+    time_to_max = vy / gravity
+    max_height = height + vy * time_to_max - 0.5 * gravity * time_to_max**2
+    
+    # Calculate range
+    range_distance = vx * time_of_flight
+    
+    # Calculate final velocity
+    final_vy = vy - gravity * time_of_flight
+    final_velocity = math.sqrt(vx**2 + final_vy**2)
+    final_angle = math.degrees(math.atan2(final_vy, vx))
+    
+    print(f"\\nTrajectory Results:")
+    print(f"  Time of Flight: {time_of_flight:.2f} seconds")
+    print(f"  Maximum Height: {max_height:.2f} m")
+    print(f"  Range (Distance): {range_distance:.2f} m")
+    
+    print(f"\\nImpact Conditions:")
+    print(f"  Final Velocity: {final_velocity:.2f} m/s")
+    print(f"  Impact Angle: {abs(final_angle):.1f}° below horizontal")
+    
+    # Print trajectory points
+    print(f"\\nTrajectory Points (every 0.5s):")
+    print(f"  {'Time (s)':<10} {'Height (m)':<12} {'Distance (m)':<12}")
+    print(f"  {'-'*10} {'-'*12} {'-'*12}")
+    
+    t = 0
+    while t <= time_of_flight:
+        x = vx * t
+        y = height + vy * t - 0.5 * gravity * t**2
+        print(f"  {t:<10.1f} {y:<12.2f} {x:<12.2f}")
+        t += 0.5
+    
+    # Print ASCII trajectory visualization
+    print(f"\\nTrajectory Visualization:")
+    
+    # Create simple ASCII plot
+    width = 60
+    height_plot = 15
+    
+    points = []
+    for i in range(50):
+        t = (time_of_flight / 49) * i
+        x = vx * t
+        y = height + vy * t - 0.5 * gravity * t**2
+        if y >= 0:
+            points.append((x, y))
+    
+    if points:
+        max_x = max(p[0] for p in points)
+        max_y = max(p[1] for p in points)
+        
+        for row in range(height_plot, -1, -1):
+            line = ""
+            for col in range(width):
+                x_val = (col / width) * max_x
+                y_val = (row / height_plot) * max_y
+                
+                # Check if any point is close to this position
+                is_point = False
+                for px, py in points:
+                    if abs(px - x_val) < max_x/width and abs(py - y_val) < max_y/height_plot:
+                        is_point = True
+                        break
+                
+                if row == 0:
+                    line += "-"
+                elif is_point:
+                    line += "*"
+                else:
+                    line += " "
+            
+            if row == height_plot:
+                print(f"  {line} {max_y:.1f}m")
+            elif row == 0:
+                print(f"  {line} 0m")
+            else:
+                print(f"  {line}")
+        
+        print(f"  0m{' '*(width-10)}{range_distance:.1f}m")
+    
+else:
+    print("\\nError: Invalid parameters (no real solution)")
+
+print("\\n" + "=" * 50)`;
+---
+
+<BaseLayout title="Interactive Physics Demo">
+  <div class="container">
+    <article class="content">
+      <h1>Interactive Physics Problems</h1>
+      
+      <h2>/// Projectile Motion Calculator</h2>
+      <p>Adjust the sliders below to change the parameters, then click "Run Code" to see the trajectory!</p>
+      
+      <div class="physics-controls">
+        <div class="control-group">
+          <label for="velocity-slider">
+            Initial Velocity: <span id="velocity-value">20</span> m/s
+          </label>
+          <input type="range" id="velocity-slider" min="5" max="50" value="20" step="1" />
+        </div>
+
+        <div class="control-group">
+          <label for="angle-slider">
+            Launch Angle: <span id="angle-value">45</span>°
+          </label>
+          <input type="range" id="angle-slider" min="0" max="90" value="45" step="5" />
+        </div>
+
+        <div class="control-group">
+          <label for="gravity-slider">
+            Gravity: <span id="gravity-value">9.8</span> m/s²
+          </label>
+          <input type="range" id="gravity-slider" min="1" max="20" value="9.8" step="0.1" />
+        </div>
+
+        <div class="control-group">
+          <label for="height-slider">
+            Initial Height: <span id="height-value">0</span> m
+          </label>
+          <input type="range" id="height-slider" min="0" max="50" value="0" step="1" />
+        </div>
+      </div>
+
+      <PyodideRunner title="Projectile Motion Simulator" code={pythonCode} />
+
+      <hr style="margin: 3rem 0; border: none; border-top: 1px solid var(--border-light);" />
+
+      <h2>/// How to Use</h2>
+      <ol>
+        <li><strong>Adjust the sliders</strong> to set your initial conditions</li>
+        <li><strong>Watch the values update</strong> in real-time</li>
+        <li><strong>Click "Run Code"</strong> to compute the trajectory</li>
+        <li><strong>Experiment</strong> with different combinations to see how they affect the motion!</li>
+      </ol>
+
+      <h2>/// Physics Concepts</h2>
+      <p>This simulator demonstrates:</p>
+      <ul>
+        <li><strong>Projectile Motion</strong>: Motion under constant gravitational acceleration</li>
+        <li><strong>Velocity Components</strong>: Breaking velocity into horizontal and vertical parts</li>
+        <li><strong>Kinematic Equations</strong>: Using physics formulas to predict motion</li>
+        <li><strong>Energy Conservation</strong>: Relationship between height and velocity</li>
+        <li><strong>Parabolic Trajectory</strong>: The characteristic path of projectiles</li>
+      </ul>
+    </article>
+  </div>
+</BaseLayout>
+
+<script>
+  // Update slider values and sync with Python code
+  const sliders = {
+    velocity: document.getElementById('velocity-slider'),
+    angle: document.getElementById('angle-slider'),
+    gravity: document.getElementById('gravity-slider'),
+    height: document.getElementById('height-slider')
+  };
+
+  const displays = {
+    velocity: document.getElementById('velocity-value'),
+    angle: document.getElementById('angle-value'),
+    gravity: document.getElementById('gravity-value'),
+    height: document.getElementById('height-value')
+  };
+
+  // Find the PyodideRunner textarea
+  const textarea = document.querySelector('.pyodide-runner .python-code') as HTMLTextAreaElement;
+
+  function updateCode() {
+    if (!textarea) return;
+    
+    const velocity = sliders.velocity!.value;
+    const angle = sliders.angle!.value;
+    const gravity = sliders.gravity!.value;
+    const height = sliders.height!.value;
+    
+    // Update display values
+    displays.velocity!.textContent = velocity;
+    displays.angle!.textContent = angle;
+    displays.gravity!.textContent = gravity;
+    displays.height!.textContent = height;
+    
+    // Update the Python code with new values
+    let code = textarea.value;
+    code = code.replace(/velocity = \d+\.?\d*/, `velocity = ${velocity}`);
+    code = code.replace(/angle = \d+\.?\d*/, `angle = ${angle}`);
+    code = code.replace(/gravity = \d+\.?\d*/, `gravity = ${gravity}`);
+    code = code.replace(/height = \d+\.?\d*/, `height = ${height}`);
+    
+    textarea.value = code;
+  }
+
+  // Add event listeners to all sliders
+  Object.values(sliders).forEach(slider => {
+    slider?.addEventListener('input', updateCode);
+  });
+</script>
+
+<style>
+  .physics-controls {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+  }
+
+  .control-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .control-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .control-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+
+  .control-group label span {
+    color: var(--accent-secondary);
+    font-weight: 600;
+    min-width: 3rem;
+    display: inline-block;
+  }
+
+  .control-group input[type="range"] {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    outline: none;
+    -webkit-appearance: none;
+  }
+
+  .control-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--accent-secondary);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .control-group input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--accent-secondary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+  }
+
+  .control-group input[type="range"]::-webkit-slider-thumb:hover {
+    background: #0088dd;
+    transform: scale(1.2);
+  }
+
+  .control-group input[type="range"]::-moz-range-thumb:hover {
+    background: #0088dd;
+    transform: scale(1.2);
+  }
+
+  /* Light theme support */
+  :root[data-theme="light"] .physics-controls {
+    background: #f5f7fa;
+  }
+
+  :root[data-theme="light"] .control-group input[type="range"] {
+    background: #e8ecf1;
+  }
+</style>

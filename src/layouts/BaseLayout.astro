@@ -49,6 +49,8 @@ try {
   <title>{title}</title>
   <!-- KaTeX CSS for Math Rendering -->
   <link rel="stylesheet" href={`https://cdn.jsdelivr.net/npm/katex@${katexVersion}/dist/katex.min.css`} integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+  <!-- Pyodide for Python execution -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
   <!-- Mermaid JS for Diagrams -->
   <script type="module" define:vars={{ mermaidVersion }}>
     const mermaidUrl = `https://cdn.jsdelivr.net/npm/mermaid@${mermaidVersion}/dist/mermaid.esm.min.mjs`;
@@ -2030,7 +2032,8 @@ try {
 
     // Show instruction overlay on first code block
     const showInstructionOverlay = () => {
-      const firstPre = document.querySelector('pre');
+      // Only target regular code blocks, not PyodideRunner
+      const firstPre = document.querySelector('pre:not(.python-code):not(.output-content)');
       if (!firstPre) return;
       
       // Check if overlay has been shown before

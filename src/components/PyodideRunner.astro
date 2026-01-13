@@ -1,0 +1,424 @@
+---
+// PyodideRunner - Execute Python code in the browser using Pyodide
+interface Props {
+  code: string;
+  title?: string;
+}
+
+const { code, title = "Python Code" } = Astro.props;
+---
+
+<div class="pyodide-runner">
+  <div class="pyodide-header">
+    <span class="pyodide-title">{title}</span>
+    <button class="run-button">Run Code</button>
+  </div>
+  <div class="code-editor-wrapper">
+    <div class="syntax-highlight" aria-hidden="true"></div>
+    <textarea class="python-code" spellcheck="false">{code}</textarea>
+  </div>
+  <div class="pyodide-output">
+    <div class="output-label">Output:</div>
+    <pre class="output-content"></pre>
+  </div>
+</div>
+
+<script>
+  // Load Pyodide
+  let pyodideInstance = null;
+  let pyodideLoading = false;
+
+  async function loadPyodideLib() {
+    if (pyodideInstance) return pyodideInstance;
+    if (pyodideLoading) {
+      // Wait for existing load
+      while (!pyodideInstance) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      return pyodideInstance;
+    }
+
+    pyodideLoading = true;
+    try {
+      // Load the Pyodide script dynamically
+      if (!(window as any).loadPyodide) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js';
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+      
+      // @ts-ignore
+      pyodideInstance = await window.loadPyodide({
+        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
+      });
+      console.log("Pyodide loaded successfully");
+      return pyodideInstance;
+    } catch (error) {
+      console.error("Failed to load Pyodide:", error);
+      throw error;
+    }
+  }
+
+  // Python syntax highlighting (matches GitHub Dark theme colors)
+  function highlightPython(code: string): string {
+    // Keywords (pink/magenta like Shiki)
+    const keywords = /\b(def|class|import|from|return|if|elif|else|for|while|in|with|as|try|except|finally|raise|pass|break|continue|True|False|None|and|or|not|is|lambda|yield|async|await)\b/g;
+    // Builtins (cyan/blue)
+    const builtins = /\b(print|len|range|str|int|float|list|dict|set|tuple|open|input|type|isinstance|hasattr|getattr|setattr|enumerate|zip|map|filter|sorted|sum|max|min|abs|round|pow|divmod|all|any|bool)\b/g;
+    // Strings (green/yellow)
+    const strings = /("""[\s\S]*?"""|'''[\s\S]*?'''|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
+    // Comments (gray)
+    const comments = /(#.*$)/gm;
+    // Numbers (purple)
+    const numbers = /\b(\d+\.?\d*)\b/g;
+    // Function definitions (green/cyan)
+    const functions = /\b([a-zA-Z_]\w*)\s*(?=\()/g;
+    
+    // Escape HTML
+    let highlighted = code
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    
+    // Apply highlighting in order (strings first to avoid conflicts)
+    highlighted = highlighted
+      .replace(strings, '<span class="hl-string">$1</span>')
+      .replace(comments, '<span class="hl-comment">$1</span>')
+      .replace(keywords, '<span class="hl-keyword">$1</span>')
+      .replace(builtins, '<span class="hl-builtin">$1</span>')
+      .replace(numbers, '<span class="hl-number">$1</span>')
+      .replace(functions, '<span class="hl-function">$1</span>');
+    
+    return highlighted;
+  }
+
+  // Update syntax highlighting
+  function updateHighlighting(textarea: HTMLTextAreaElement) {
+    const runner = textarea.closest('.pyodide-runner');
+    const highlightDiv = runner?.querySelector('.syntax-highlight') as HTMLElement;
+    if (!highlightDiv) return;
+
+    const highlighted = highlightPython(textarea.value);
+    highlightDiv.innerHTML = highlighted;
+  }
+
+  // Initialize all Python code editors
+  document.querySelectorAll('.python-code').forEach((textarea) => {
+    const ta = textarea as HTMLTextAreaElement;
+    
+    // Initial highlighting
+    updateHighlighting(ta);
+
+    // Tab key handler
+    ta.addEventListener('keydown', function(e: KeyboardEvent) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const target = e.target as HTMLTextAreaElement;
+        const start = target.selectionStart;
+        const end = target.selectionEnd;
+        
+        // Insert tab at cursor position
+        target.value = target.value.substring(0, start) + '    ' + target.value.substring(end);
+        
+        // Move cursor after the inserted tab
+        target.selectionStart = target.selectionEnd = start + 4;
+        
+        // Update highlighting
+        updateHighlighting(target);
+      }
+    });
+
+    // Update highlighting on input
+    ta.addEventListener('input', function() {
+      updateHighlighting(this as HTMLTextAreaElement);
+    });
+
+    // Sync scroll
+    ta.addEventListener('scroll', function() {
+      const runner = this.closest('.pyodide-runner');
+      const highlightDiv = runner?.querySelector('.syntax-highlight') as HTMLElement;
+      if (highlightDiv) {
+        highlightDiv.scrollTop = this.scrollTop;
+        highlightDiv.scrollLeft = this.scrollLeft;
+      }
+    });
+  });
+
+  // Handle run button clicks
+  document.querySelectorAll('.run-button').forEach((button) => {
+    button.addEventListener('click', async function() {
+      const btn = this as HTMLButtonElement;
+      const runner = btn.closest('.pyodide-runner');
+      const textarea = runner?.querySelector('.python-code') as HTMLTextAreaElement;
+      const output = runner?.querySelector('.output-content');
+      
+      if (!textarea || !output) return;
+      
+      const code = textarea.value.trim();
+      if (!code) {
+        output.textContent = 'No code to run';
+        return;
+      }
+
+      // Update button state
+      btn.disabled = true;
+      btn.textContent = 'Running...';
+      output.textContent = 'Loading Python environment...';
+      output.classList.remove('error');
+
+      try {
+        // Load Pyodide if not already loaded
+        const pyodide = await loadPyodideLib();
+        
+        output.textContent = 'Executing...';
+
+        // Capture stdout
+        let outputText = '';
+        pyodide.runPython(`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+        `);
+
+        // Run the user code
+        await pyodide.runPythonAsync(code);
+
+        // Get the output
+        outputText = pyodide.runPython('sys.stdout.getvalue()');
+        
+        output.textContent = outputText || '(No output)';
+        
+      } catch (error) {
+        output.textContent = `Error: ${error}`;
+        output.classList.add('error');
+        console.error('Python execution error:', error);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Run Code';
+      }
+    });
+  });
+</script>
+
+<style>
+  .pyodide-runner {
+    margin: 1.5rem 0;
+    border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--accent-secondary);
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .pyodide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .pyodide-title {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .run-button {
+    background: var(--accent-secondary);
+    color: white;
+    border: none;
+    padding: 0.4rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    font-weight: 500;
+  }
+
+  .run-button:hover:not(:disabled) {
+    background: #0077cc;
+    box-shadow: 0 0 12px rgba(0, 119, 204, 0.4);
+  }
+
+  .run-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .code-editor-wrapper {
+    position: relative;
+    background: #24292e;
+  }
+
+  .syntax-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: pre;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+    color: #e1e4e8;
+    tab-size: 4;
+  }
+
+  /* GitHub Dark theme colors (matching your code blocks) */
+  .syntax-highlight :global(.hl-keyword) {
+    color: #f97583;
+  }
+
+  .syntax-highlight :global(.hl-builtin) {
+    color: #79b8ff;
+  }
+
+  .syntax-highlight :global(.hl-string) {
+    color: #9ecbff;
+  }
+
+  .syntax-highlight :global(.hl-comment) {
+    color: #6a737d;
+    font-style: italic;
+  }
+
+  .syntax-highlight :global(.hl-number) {
+    color: #79b8ff;
+  }
+
+  .syntax-highlight :global(.hl-function) {
+    color: #b392f0;
+  }
+
+  .python-code {
+    position: relative;
+    width: 100%;
+    min-height: 150px;
+    margin: 0;
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-light);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: transparent;
+    caret-color: #e1e4e8;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    tab-size: 4;
+    overflow: auto;
+    white-space: pre;
+    z-index: 2;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .python-code::selection {
+    background: rgba(33, 136, 255, 0.3);
+  }
+
+  .python-code::-moz-selection {
+    background: rgba(33, 136, 255, 0.3);
+  }
+
+  .python-code:focus {
+    box-shadow: inset 0 0 0 1px var(--accent-secondary);
+  }
+
+  .pyodide-output {
+    border-top: 1px solid var(--border-light);
+    background: var(--bg-primary);
+  }
+
+  .output-label {
+    padding: 0.5rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  .output-content {
+    margin: 0;
+    padding: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    min-height: 3rem;
+    background: var(--bg-secondary);
+    white-space: pre-wrap;
+  }
+
+  .output-content.error {
+    color: #e1695d;
+  }
+
+  /* Light theme support */
+  :root[data-theme="light"] .pyodide-runner {
+    background: #ffffff;
+  }
+
+  :root[data-theme="light"] .pyodide-header {
+    background: #f5f7fa;
+  }
+
+  :root[data-theme="light"] .code-editor-wrapper {
+    background: #ffffff;
+  }
+
+  :root[data-theme="light"] .syntax-highlight {
+    color: #24292e;
+  }
+
+  /* Light theme syntax highlighting (GitHub Light colors) */
+  :root[data-theme="light"] .syntax-highlight :global(.hl-keyword) {
+    color: #d73a49;
+  }
+
+  :root[data-theme="light"] .syntax-highlight :global(.hl-builtin) {
+    color: #005cc5;
+  }
+
+  :root[data-theme="light"] .syntax-highlight :global(.hl-string) {
+    color: #032f62;
+  }
+
+  :root[data-theme="light"] .syntax-highlight :global(.hl-comment) {
+    color: #6a737d;
+  }
+
+  :root[data-theme="light"] .syntax-highlight :global(.hl-number) {
+    color: #005cc5;
+  }
+
+  :root[data-theme="light"] .syntax-highlight :global(.hl-function) {
+    color: #6f42c1;
+  }
+
+  :root[data-theme="light"] .python-code {
+    caret-color: #24292e;
+  }
+
+  :root[data-theme="light"] .pyodide-output {
+    background: #f5f7fa;
+  }
+
+  :root[data-theme="light"] .output-content {
+    background: #e8ecf1;
+  }
+</style>
