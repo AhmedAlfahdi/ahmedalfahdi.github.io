@@ -571,64 +571,6 @@ try {
       border-color: var(--accent-primary);
     }
 
-    /* Code block instruction overlay */
-    .code-instruction-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(4px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      animation: fadeInOut 4s ease-in-out forwards;
-      cursor: pointer;
-    }
-
-    @keyframes fadeInOut {
-      0% {
-        opacity: 0;
-      }
-      100% {
-        opacity: 1;
-      }
-    }
-
-    .code-instruction-overlay .instruction-text {
-      color: var(--text-primary);
-      font-size: 1.1rem;
-      font-family: var(--font-mono);
-      text-align: center;
-      margin-bottom: 0.5rem;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    }
-
-    .code-instruction-overlay .instruction-hint {
-      color: var(--accent-primary);
-      font-size: 0.9rem;
-      font-family: var(--font-mono);
-      text-align: center;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-      50% {
-        opacity: 0.7;
-        transform: scale(1.05);
-      }
-    }
-
-    .code-instruction-overlay .dismiss-text {
-      color: var(--text-muted);
-      font-size: 0.75rem;
-      margin-top: 1rem;
-      opacity: 0.8;
-    }
 
 
     /* Wrapped state - strongest selectors */
@@ -2030,40 +1972,6 @@ try {
       }
     });
 
-    // Show instruction overlay on first code block
-    const showInstructionOverlay = () => {
-      // Only target regular code blocks, not PyodideRunner
-      const firstPre = document.querySelector('pre:not(.python-code):not(.output-content)');
-      if (!firstPre) return;
-      
-      // Check if overlay has been shown before
-      sessionStorage.removeItem('codeWrapInstructionSeen'); // Remove this line when ready for production
-      const hasSeenOverlay = sessionStorage.getItem('codeWrapInstructionSeen');
-      if (hasSeenOverlay) return;
-      
-      // Create overlay
-      const overlay = document.createElement('div');
-      overlay.className = 'code-instruction-overlay';
-      overlay.style.cssText = 'position: absolute; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;';
-      overlay.innerHTML = `
-        <div class="instruction-text" style="color: white; font-size: 1.1rem; margin-bottom: 0.5rem; text-align: center;">Press & Hold Language Label</div>
-        <div class="instruction-hint" style="color: #f5a524; font-size: 0.9rem; text-align: center;">300ms to toggle wrap</div>
-        <div class="dismiss-text" style="color: #888; font-size: 0.75rem; margin-top: 1rem;">Click to dismiss</div>
-      `;
-      
-      // Add to first code block
-      firstPre.style.position = 'relative';
-      firstPre.appendChild(overlay);
-      
-      // Remove only when user clicks
-      overlay.addEventListener('click', () => {
-        overlay.remove();
-        sessionStorage.setItem('codeWrapInstructionSeen', 'true');
-      });
-    };
-    
-    // Show overlay after a short delay
-    setTimeout(showInstructionOverlay, 1000);
 
     // Add long-press wrap toggle to language labels
     document.querySelectorAll('pre').forEach((preEl) => {
