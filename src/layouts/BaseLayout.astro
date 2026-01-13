@@ -40,6 +40,23 @@ try {
 <!DOCTYPE html>
 <html lang="en" data-darkreader-mode="dynamic" data-darkreader-scheme="dark">
 <head>
+  <!-- Inline script to prevent theme flash - must run before any content renders -->
+  <script is:inline>
+    (function() {
+      // Check for stored theme preference in sessionStorage
+      const storedTheme = sessionStorage.getItem('theme');
+      
+      if (storedTheme) {
+        // Use stored preference
+        document.documentElement.setAttribute('data-theme', storedTheme);
+      } else {
+        // Use system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = prefersDark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content={description}>
