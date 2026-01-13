@@ -447,6 +447,41 @@ Polynomial terms improve large-expansion accuracy.
 
 ### Pressure Calculation (Python)
 
+<div style="background: var(--bg-secondary); padding: 1rem; border-left: 3px solid var(--accent-primary); margin: 1rem 0; border-radius: 4px;">
+  <strong>Interactive Calculator:</strong> Adjust the parameters below and click "Run Code" to see results. Default values are for TNT at Chapman-Jouguet (CJ) state.
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0; background: var(--bg-tertiary); padding: 1rem; border-radius: 4px;">
+  <div>
+    <label for="jwl-V" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Volume (V)</label>
+    <input type="number" id="jwl-V" value="1.0" step="0.1" min="0.1" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+  <div>
+    <label for="jwl-E" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Energy (E, MJ/kg)</label>
+    <input type="number" id="jwl-E" value="3.681" step="0.1" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+  <div>
+    <label for="jwl-A" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Coeff. A (GPa)</label>
+    <input type="number" id="jwl-A" value="373.77" step="1" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+  <div>
+    <label for="jwl-B" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Coeff. B (GPa)</label>
+    <input type="number" id="jwl-B" value="3.747" step="0.1" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+  <div>
+    <label for="jwl-R1" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Constant R1</label>
+    <input type="number" id="jwl-R1" value="4.15" step="0.1" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+  <div>
+    <label for="jwl-R2" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Constant R2</label>
+    <input type="number" id="jwl-R2" value="0.90" step="0.1" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+  <div>
+    <label for="jwl-omega" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Omega (ω)</label>
+    <input type="number" id="jwl-omega" value="0.35" step="0.05" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+</div>
+
 <PyodideRunner 
   title="JWL Pressure Calculator"
   code={`import math
@@ -471,21 +506,141 @@ def jwl_pressure(V, E, A, B, R1, R2, omega):
     
     return term1 + term2 + term3
 
-# Example: TNT at Chapman-Jouguet (CJ) state
-P_CJ = jwl_pressure(V=1.0, E=3.681, 
-                     A=373.77, B=3.747, 
-                     R1=4.15, R2=0.90, omega=0.35)
+# Get values from inputs (will be updated when you modify inputs above)
+V = 1.0
+E = 3.681
+A = 373.77
+B = 3.747
+R1 = 4.15
+R2 = 0.90
+omega = 0.35
+
+# Calculate pressure at specified volume
+P_CJ = jwl_pressure(V=V, E=E, A=A, B=B, R1=R1, R2=R2, omega=omega)
 print(f"TNT CJ Pressure: {P_CJ:.2f} GPa")
 
-# Try different volumes to see pressure variation
+# Pressure variation across different volumes
 print(f"\\nPressure vs Volume:")
-for V in [0.5, 0.75, 1.0, 1.25, 1.5, 2.0]:
-    P = jwl_pressure(V, E=3.681, A=373.77, B=3.747, 
-                      R1=4.15, R2=0.90, omega=0.35)
-    print(f"  V = {V:.2f} → P = {P:.2f} GPa")`}
+for V_test in [0.50, 0.75, 1.00, 1.25, 1.50, 2.00]:
+    P = jwl_pressure(V_test, E=E, A=A, B=B, R1=R1, R2=R2, omega=omega)
+    print(f"  V = {V_test:.2f} → P = {P:.2f} GPa")`}
 />
 
+<script>{`
+  // Update JWL Pressure Calculator code when inputs change
+  function updateJWLPressureCode() {
+    const V = document.getElementById('jwl-V')?.value || '1.0';
+    const E = document.getElementById('jwl-E')?.value || '3.681';
+    const A = document.getElementById('jwl-A')?.value || '373.77';
+    const B = document.getElementById('jwl-B')?.value || '3.747';
+    const R1 = document.getElementById('jwl-R1')?.value || '4.15';
+    const R2 = document.getElementById('jwl-R2')?.value || '0.90';
+    const omega = document.getElementById('jwl-omega')?.value || '0.35';
+    
+    const newCode = \`import math
+
+def jwl_pressure(V, E, A, B, R1, R2, omega):
+    """
+    Calculate pressure using JWL equation of state
+    
+    Parameters:
+    V : float - Relative specific volume (dimensionless)
+    E : float - Specific internal energy (MJ/kg)
+    A, B : float - Pressure coefficients (GPa)
+    R1, R2 : float - Material constants (dimensionless)
+    omega : float - Grüneisen coefficient (dimensionless)
+    
+    Returns:
+    P : float - Pressure (GPa)
+    """
+    term1 = A * (1 - omega / (R1 * V)) * math.exp(-R1 * V)
+    term2 = B * (1 - omega / (R2 * V)) * math.exp(-R2 * V)
+    term3 = omega * E / V
+    
+    return term1 + term2 + term3
+
+# Get values from inputs (will be updated when you modify inputs above)
+V = \${V}
+E = \${E}
+A = \${A}
+B = \${B}
+R1 = \${R1}
+R2 = \${R2}
+omega = \${omega}
+
+# Calculate pressure at specified volume
+P_CJ = jwl_pressure(V=V, E=E, A=A, B=B, R1=R1, R2=R2, omega=omega)
+print(f"TNT CJ Pressure: {P_CJ:.2f} GPa")
+
+# Pressure variation across different volumes
+print(f"\\\\nPressure vs Volume:")
+for V_test in [0.50, 0.75, 1.00, 1.25, 1.50, 2.00]:
+    P = jwl_pressure(V_test, E=E, A=A, B=B, R1=R1, R2=R2, omega=omega)
+    print(f"  V = {V_test:.2f} → P = {P:.2f} GPa")\`;
+    
+    // Find the textarea in the first PyodideRunner after the inputs
+    const inputs = document.getElementById('jwl-V')?.closest('div[style*="grid"]');
+    if (inputs) {
+      const pyodideRunner = inputs.nextElementSibling;
+      if (pyodideRunner?.classList.contains('pyodide-runner')) {
+        const textarea = pyodideRunner.querySelector('textarea.python-code');
+        if (textarea) {
+          textarea.value = newCode;
+          textarea.dispatchEvent(new Event('input'));
+        }
+      }
+    }
+  }
+  
+  // Add event listeners to all JWL pressure inputs
+  ['jwl-V', 'jwl-E', 'jwl-A', 'jwl-B', 'jwl-R1', 'jwl-R2', 'jwl-omega'].forEach(id => {
+    const input = document.getElementById(id);
+    if (input) {
+      input.addEventListener('input', updateJWLPressureCode);
+    }
+  });
+`}</script>
+
 ### Sound Speed Calculation
+
+<div style="background: var(--bg-secondary); padding: 1rem; border-left: 3px solid var(--accent-primary); margin: 1rem 0; border-radius: 4px;">
+  <strong>Interactive Calculator:</strong> Modify the parameters and click "Run Code". The calculator will compute sound speed at various expansion states.
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0; background: var(--bg-tertiary); padding: 1rem; border-radius: 4px;">
+  <div>
+    <label for="jwl-sound-V" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Volume (V)</label>
+    <input type="number" id="jwl-sound-V" value="1.0" step="0.1" min="0.1" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+  <div>
+    <label for="jwl-sound-E" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Energy (E, MJ/kg)</label>
+    <input type="number" id="jwl-sound-E" value="3.681" step="0.1" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+  <div>
+    <label for="jwl-sound-P" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Pressure (P, GPa)</label>
+    <input type="number" id="jwl-sound-P" value="7.62" step="0.1" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+  <div>
+    <label for="jwl-sound-A" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Coeff. A (GPa)</label>
+    <input type="number" id="jwl-sound-A" value="373.77" step="1" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+  <div>
+    <label for="jwl-sound-B" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Coeff. B (GPa)</label>
+    <input type="number" id="jwl-sound-B" value="3.747" step="0.1" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+  <div>
+    <label for="jwl-sound-R1" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Constant R1</label>
+    <input type="number" id="jwl-sound-R1" value="4.15" step="0.1" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+  <div>
+    <label for="jwl-sound-R2" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Constant R2</label>
+    <input type="number" id="jwl-sound-R2" value="0.90" step="0.1" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+  <div>
+    <label for="jwl-sound-omega" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text-secondary);">Omega (ω)</label>
+    <input type="number" id="jwl-sound-omega" value="0.35" step="0.05" style="width: 100%; padding: 0.4rem; background: var(--bg-primary); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 4px; font-family: var(--font-mono);" />
+  </div>
+</div>
 
 <PyodideRunner 
   title="JWL Sound Speed Calculator"
@@ -503,10 +658,18 @@ def jwl_sound_speed(V, E, P, A, B, R1, R2, omega):
     
     return math.sqrt(max(c_squared, 0))
 
-# Example: Sound speed at Chapman-Jouguet (CJ) state
-c_sound = jwl_sound_speed(V=1.0, E=3.681, P=7.62, 
-                          A=373.77, B=3.747, 
-                          R1=4.15, R2=0.90, omega=0.35)
+# Get values from inputs (TNT at CJ state by default)
+V = 1.0
+E = 3.681
+P = 7.62
+A = 373.77
+B = 3.747
+R1 = 4.15
+R2 = 0.90
+omega = 0.35
+
+# Calculate sound speed at specified state
+c_sound = jwl_sound_speed(V=V, E=E, P=P, A=A, B=B, R1=R1, R2=R2, omega=omega)
 print(f"Sound speed at CJ: {c_sound:.2f} km/s")
 
 # Calculate sound speed for different expansion states
@@ -514,16 +677,92 @@ print(f"\\nSound Speed vs Volume:")
 print(f"  {'Volume':<10} {'Pressure (GPa)':<15} {'Sound Speed (km/s)':<20}")
 print(f"  {'-'*10} {'-'*15} {'-'*20}")
 
-for V in [0.8, 1.0, 1.5, 2.0, 3.0]:
+for V_test in [0.8, 1.0, 1.5, 2.0, 3.0]:
     # First calculate pressure at this volume
-    P = (373.77 * (1 - 0.35/(4.15*V)) * math.exp(-4.15*V) + 
-         3.747 * (1 - 0.35/(0.90*V)) * math.exp(-0.90*V) + 
-         0.35 * 3.681 / V)
+    P_calc = (A * (1 - omega/(R1*V_test)) * math.exp(-R1*V_test) + 
+              B * (1 - omega/(R2*V_test)) * math.exp(-R2*V_test) + 
+              omega * E / V_test)
     
-    c = jwl_sound_speed(V, E=3.681, P=P, A=373.77, B=3.747, 
-                        R1=4.15, R2=0.90, omega=0.35)
-    print(f"  {V:<10.2f} {P:<15.2f} {c:<20.2f}")`}
+    c = jwl_sound_speed(V_test, E=E, P=P_calc, A=A, B=B, R1=R1, R2=R2, omega=omega)
+    print(f"  {V_test:<10.2f} {P_calc:<15.2f} {c:<20.2f}")`}
 />
+
+<script>{`
+  // Update JWL Sound Speed Calculator code when inputs change
+  function updateJWLSoundCode() {
+    const V = document.getElementById('jwl-sound-V')?.value || '1.0';
+    const E = document.getElementById('jwl-sound-E')?.value || '3.681';
+    const P = document.getElementById('jwl-sound-P')?.value || '7.62';
+    const A = document.getElementById('jwl-sound-A')?.value || '373.77';
+    const B = document.getElementById('jwl-sound-B')?.value || '3.747';
+    const R1 = document.getElementById('jwl-sound-R1')?.value || '4.15';
+    const R2 = document.getElementById('jwl-sound-R2')?.value || '0.90';
+    const omega = document.getElementById('jwl-sound-omega')?.value || '0.35';
+    
+    const newCode = \`import math
+
+def jwl_sound_speed(V, E, P, A, B, R1, R2, omega):
+    """Calculate sound speed in JWL detonation products"""
+    dP_dV = (-A * R1 * (1 - omega/(R1*V)) * math.exp(-R1*V) 
+             - A * omega/V * math.exp(-R1*V)
+             - B * R2 * (1 - omega/(R2*V)) * math.exp(-R2*V)
+             - B * omega/V * math.exp(-R2*V)
+             - omega * E / V**2)
+    
+    c_squared = V**2 * (-dP_dV) + omega * (omega + 1) * E + omega * P * V
+    
+    return math.sqrt(max(c_squared, 0))
+
+# Get values from inputs (TNT at CJ state by default)
+V = \${V}
+E = \${E}
+P = \${P}
+A = \${A}
+B = \${B}
+R1 = \${R1}
+R2 = \${R2}
+omega = \${omega}
+
+# Calculate sound speed at specified state
+c_sound = jwl_sound_speed(V=V, E=E, P=P, A=A, B=B, R1=R1, R2=R2, omega=omega)
+print(f"Sound speed at CJ: {c_sound:.2f} km/s")
+
+# Calculate sound speed for different expansion states
+print(f"\\\\nSound Speed vs Volume:")
+print(f"  {'Volume':<10} {'Pressure (GPa)':<15} {'Sound Speed (km/s)':<20}")
+print(f"  {'-'*10} {'-'*15} {'-'*20}")
+
+for V_test in [0.8, 1.0, 1.5, 2.0, 3.0]:
+    # First calculate pressure at this volume
+    P_calc = (A * (1 - omega/(R1*V_test)) * math.exp(-R1*V_test) + 
+              B * (1 - omega/(R2*V_test)) * math.exp(-R2*V_test) + 
+              omega * E / V_test)
+    
+    c = jwl_sound_speed(V_test, E=E, P=P_calc, A=A, B=B, R1=R1, R2=R2, omega=omega)
+    print(f"  {V_test:<10.2f} {P_calc:<15.2f} {c:<20.2f}")\`;
+    
+    // Find the textarea in the second PyodideRunner
+    const inputs = document.getElementById('jwl-sound-V')?.closest('div[style*="grid"]');
+    if (inputs) {
+      const pyodideRunner = inputs.nextElementSibling;
+      if (pyodideRunner?.classList.contains('pyodide-runner')) {
+        const textarea = pyodideRunner.querySelector('textarea.python-code');
+        if (textarea) {
+          textarea.value = newCode;
+          textarea.dispatchEvent(new Event('input'));
+        }
+      }
+    }
+  }
+  
+  // Add event listeners to all JWL sound speed inputs
+  ['jwl-sound-V', 'jwl-sound-E', 'jwl-sound-P', 'jwl-sound-A', 'jwl-sound-B', 'jwl-sound-R1', 'jwl-sound-R2', 'jwl-sound-omega'].forEach(id => {
+    const input = document.getElementById(id);
+    if (input) {
+      input.addEventListener('input', updateJWLSoundCode);
+    }
+  });
+`}</script>
 
 ## Summary
 
