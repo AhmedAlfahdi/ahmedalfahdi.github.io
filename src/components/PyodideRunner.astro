@@ -571,10 +571,49 @@ sys.stdout = StringIO()
     resize: none;
     outline: none;
     tab-size: 4;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     white-space: pre;
     z-index: 2;
     -webkit-text-fill-color: transparent;
+    /* Custom scrollbar for horizontal scroll */
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-primary) transparent;
+  }
+
+  /* WebKit scrollbar styling for code editor */
+  .python-code::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .python-code::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+
+  .python-code::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 4px;
+  }
+
+  .python-code::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-secondary);
+  }
+
+  /* Light theme scrollbar */
+  :root[data-theme="light"] .python-code::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  :root[data-theme="light"] .python-code::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+  }
+
+  @media (max-width: 520px) {
+    /* Larger scrollbar on mobile for better visibility */
+    .python-code::-webkit-scrollbar {
+      height: 10px;
+    }
   }
 
   .python-code::selection {
