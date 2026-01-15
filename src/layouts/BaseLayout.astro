@@ -1705,23 +1705,16 @@ try {
        MOBILE PERFORMANCE OPTIMIZATIONS
        ======================================== */
     @media (max-width: 768px) {
-      /* Reduce expensive backdrop-filters on mobile */
+      /* Reduce expensive backdrop-filters on mobile (Chrome/Safari) */
       .site-info-overlay,
       .site-info-modal {
+        -webkit-backdrop-filter: none !important;
         backdrop-filter: none !important;
       }
 
       /* Simplify box-shadows on mobile */
       img {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-      }
-
-      /* Use hardware acceleration for transforms */
-      * {
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
       }
 
       /* Faster animations on mobile */
@@ -1736,6 +1729,30 @@ try {
         *:hover {
           box-shadow: inherit !important;
         }
+      }
+    }
+
+    /* Safari-specific optimizations */
+    @supports (-webkit-touch-callout: none) {
+      /* iOS Safari - disable backdrop-filter (can be slow) */
+      .math-modal-backdrop,
+      .site-info-overlay {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+        background: rgba(0, 0, 0, 0.92) !important;
+      }
+
+      /* iOS Safari - optimize 3D transforms */
+      nav,
+      .theme-toggle,
+      .katex-display,
+      .output-content {
+        -webkit-transform: translate3d(0, 0, 0);
+      }
+
+      /* iOS Safari - fix elastic scrolling performance */
+      body {
+        -webkit-overflow-scrolling: touch;
       }
     }
 

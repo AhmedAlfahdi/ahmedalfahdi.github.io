@@ -117,8 +117,8 @@
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.04),
       0 4px 12px rgba(0, 0, 0, 0.25);
-    /* Hardware acceleration */
-    will-change: border-color;
+    /* Hardware acceleration - Safari friendly */
+    -webkit-transform: translateZ(0);
     transform: translateZ(0);
   }
 
@@ -136,38 +136,43 @@
     background: var(--accent-primary);
     border-radius: 50%;
     /* Use transform instead of left for GPU acceleration */
+    -webkit-transform: translateY(-50%) translateX(0) translateZ(0);
     transform: translateY(-50%) translateX(0) translateZ(0);
+    -webkit-transition: -webkit-transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    /* Hardware acceleration */
-    will-change: transform;
   }
 
   .theme-icon {
     position: absolute;
     font-size: 1rem;
+    -webkit-transition: opacity 0.25s ease, -webkit-transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     /* Hardware acceleration */
-    will-change: opacity, transform;
+    -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
     -webkit-font-smoothing: antialiased;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   /* Default (dark mode) - show moon icon */
   .moon-icon {
     opacity: 1;
+    -webkit-transform: scale(1) translateZ(0);
     transform: scale(1) translateZ(0);
     color: rgba(12, 20, 28, 0.9);
   }
 
   .sun-icon {
     opacity: 0;
+    -webkit-transform: scale(0.5) translateZ(0);
     transform: scale(0.5) translateZ(0);
     color: rgba(12, 20, 28, 0.9);
   }
@@ -175,16 +180,19 @@
   /* Light mode - slide to right and show sun icon */
   .theme-toggle.light-mode .slider-thumb {
     /* Use transform instead of left for better performance */
+    -webkit-transform: translateY(-50%) translateX(30px) translateZ(0);
     transform: translateY(-50%) translateX(30px) translateZ(0);
   }
 
   .theme-toggle.light-mode .moon-icon {
     opacity: 0;
+    -webkit-transform: scale(0.5) translateZ(0);
     transform: scale(0.5) translateZ(0);
   }
 
   .theme-toggle.light-mode .sun-icon {
     opacity: 1;
+    -webkit-transform: scale(1) translateZ(0);
     transform: scale(1) translateZ(0);
   }
 
@@ -216,15 +224,18 @@
     .theme-toggle {
       right: 2.75rem;
       top: 0.75rem;
+      -webkit-transform: none;
       transform: none;
     }
 
-    /* Faster animations on mobile */
+    /* Faster animations on mobile - Safari compatible */
     .slider-thumb {
+      -webkit-transition: -webkit-transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .theme-icon {
+      -webkit-transition: opacity 0.2s ease, -webkit-transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -240,6 +251,15 @@
     /* Disable hover effects on touch devices */
     .theme-toggle:hover .slider-track {
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  /* Safari-specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    /* iOS Safari - use simpler animations */
+    .slider-thumb,
+    .theme-icon {
+      -webkit-transform: translate3d(0, 0, 0);
     }
   }
 
