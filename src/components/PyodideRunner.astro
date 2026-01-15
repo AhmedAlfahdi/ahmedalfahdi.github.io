@@ -11,7 +11,10 @@ const { code, title = "Python Code" } = Astro.props;
 <div class="pyodide-runner">
   <div class="pyodide-header">
     <span class="pyodide-title">{title}</span>
-    <button class="run-button">Run Code</button>
+    <div class="header-buttons">
+      <button class="fullscreen-btn" title="Fullscreen (F11)">⛶</button>
+      <button class="run-button">Run Code</button>
+    </div>
   </div>
   <div class="code-editor-wrapper">
     <div class="syntax-highlight" aria-hidden="true"></div>
@@ -148,6 +151,46 @@ const { code, title = "Python Code" } = Astro.props;
     });
   });
 
+  // Handle fullscreen button clicks
+  document.querySelectorAll('.fullscreen-btn').forEach((button) => {
+    button.addEventListener('click', function() {
+      const btn = this as HTMLButtonElement;
+      const runner = btn.closest('.pyodide-runner') as HTMLElement;
+      
+      if (!runner) return;
+      
+      if (runner.classList.contains('fullscreen')) {
+        // Exit fullscreen
+        runner.classList.remove('fullscreen');
+        document.body.style.overflow = '';
+      } else {
+        // Enter fullscreen
+        runner.classList.add('fullscreen');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+  });
+
+  // Handle ESC key to exit fullscreen
+  document.addEventListener('keydown', function(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.pyodide-runner.fullscreen').forEach((runner) => {
+        runner.classList.remove('fullscreen');
+        document.body.style.overflow = '';
+      });
+    }
+    
+    // F11 to toggle fullscreen
+    if (e.key === 'F11') {
+      e.preventDefault();
+      const focusedRunner = document.querySelector('.python-code:focus')?.closest('.pyodide-runner') as HTMLElement;
+      if (focusedRunner) {
+        const btn = focusedRunner.querySelector('.fullscreen-btn') as HTMLButtonElement;
+        btn?.click();
+      }
+    }
+  });
+
   // Add swipe indicator to scrollable output
   function checkOutputScrollable(output: Element) {
     const outputEl = output as HTMLElement;
@@ -270,6 +313,33 @@ sys.stdout = StringIO()
     letter-spacing: 0.5px;
   }
 
+  .header-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .fullscreen-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .fullscreen-btn:hover {
+    background: rgba(245, 165, 36, 0.1);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    box-shadow: 0 0 12px rgba(245, 165, 36, 0.3);
+  }
+
   .run-button {
     background: var(--accent-secondary);
     color: white;
@@ -291,6 +361,55 @@ sys.stdout = StringIO()
   .run-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+
+  /* Fullscreen mode */
+  .pyodide-runner.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .pyodide-runner.fullscreen .code-editor-wrapper {
+    height: calc(100vh - 100px - 150px);
+    min-height: calc(100vh - 100px - 150px);
+  }
+
+  .pyodide-runner.fullscreen .python-code {
+    height: 100% !important;
+    min-height: 100%;
+  }
+
+  .pyodide-runner.fullscreen .syntax-highlight {
+    height: 100%;
+  }
+
+  .pyodide-runner.fullscreen .pyodide-output {
+    max-height: 150px;
+    min-height: 150px;
+  }
+
+  .pyodide-runner.fullscreen .output-content {
+    max-height: 100px;
+  }
+
+  .pyodide-runner.fullscreen .fullscreen-btn::before {
+    content: '⛶ Exit Fullscreen (ESC)';
+    font-size: 0.85rem;
+    font-family: var(--font-mono);
+  }
+
+  .pyodide-runner.fullscreen .fullscreen-btn {
+    padding: 0.4rem 1rem;
+  }
+
+  .fullscreen-btn::before {
+    content: '';
   }
 
   .code-editor-wrapper {
@@ -444,7 +563,7 @@ sys.stdout = StringIO()
 
   /* Swipe indicator for scrollable output */
   .output-content.scrollable::after {
-    content: '👆 Swipe';
+    content: '← Scroll →';
     position: absolute;
     right: 10px;
     top: 50%;
@@ -550,5 +669,18 @@ sys.stdout = StringIO()
 
   :root[data-theme="light"] .output-content {
     background: #e8ecf1;
+  }
+
+  /* Light theme fullscreen button */
+  :root[data-theme="light"] .fullscreen-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+  }
+
+  :root[data-theme="light"] .fullscreen-btn:hover {
+    background: rgba(245, 165, 36, 0.1);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
   }
 </style>
