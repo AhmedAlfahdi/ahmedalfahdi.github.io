@@ -156,6 +156,20 @@
     background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(4px);
   }
+
+  /* Mobile performance optimizations */
+  @media (max-width: 768px) {
+    .math-modal-backdrop {
+      /* Disable expensive backdrop-filter on mobile */
+      backdrop-filter: none;
+      background: rgba(0, 0, 0, 0.9);
+    }
+
+    .math-modal-content {
+      /* Reduce shadow complexity on mobile */
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+  }
   
   .math-modal-content {
     position: relative;

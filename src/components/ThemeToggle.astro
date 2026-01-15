@@ -113,72 +113,79 @@
     background: rgba(12, 20, 28, 0.9);
     border: 1px solid var(--border-strong);
     border-radius: 16px;
-    transition: all 0.3s ease;
+    transition: border-color 0.3s ease, background 0.3s ease;
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.04),
       0 4px 12px rgba(0, 0, 0, 0.25);
+    /* Hardware acceleration */
+    will-change: border-color;
+    transform: translateZ(0);
   }
 
   .theme-toggle:hover .slider-track {
     border-color: var(--accent-primary);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.04),
-      0 4px 12px rgba(0, 0, 0, 0.25),
-      0 0 20px rgba(245, 165, 36, 0.3);
+    /* Avoid animating box-shadow for better mobile performance */
   }
 
   .slider-thumb {
     position: absolute;
     left: 2px;
     top: 50%;
-    transform: translateY(-50%);
     width: 26px;
     height: 26px;
     background: var(--accent-primary);
     border-radius: 50%;
-    transition: all 0.3s ease;
+    /* Use transform instead of left for GPU acceleration */
+    transform: translateY(-50%) translateX(0) translateZ(0);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    /* Hardware acceleration */
+    will-change: transform;
   }
 
   .theme-icon {
     position: absolute;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Hardware acceleration */
+    will-change: opacity, transform;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
   }
 
   /* Default (dark mode) - show moon icon */
   .moon-icon {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateZ(0);
     color: rgba(12, 20, 28, 0.9);
   }
 
   .sun-icon {
     opacity: 0;
-    transform: scale(0);
+    transform: scale(0.5) translateZ(0);
     color: rgba(12, 20, 28, 0.9);
   }
 
   /* Light mode - slide to right and show sun icon */
   .theme-toggle.light-mode .slider-thumb {
-    left: calc(100% - 28px);
-    background: var(--accent-primary);
+    /* Use transform instead of left for better performance */
+    transform: translateY(-50%) translateX(30px) translateZ(0);
   }
 
   .theme-toggle.light-mode .moon-icon {
     opacity: 0;
-    transform: scale(0);
+    transform: scale(0.5) translateZ(0);
   }
 
   .theme-toggle.light-mode .sun-icon {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateZ(0);
   }
 
   /* Disable transitions on initial load */
@@ -204,11 +211,35 @@
       0 0 20px rgba(214, 137, 16, 0.25);
   }
 
+  /* Mobile optimizations - reduce expensive effects */
   @media (max-width: 768px) {
     .theme-toggle {
       right: 2.75rem;
       top: 0.75rem;
       transform: none;
+    }
+
+    /* Faster animations on mobile */
+    .slider-thumb {
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .theme-icon {
+      transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Remove expensive box-shadows on mobile */
+    .slider-track {
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .slider-thumb {
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Disable hover effects on touch devices */
+    .theme-toggle:hover .slider-track {
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
   }
 

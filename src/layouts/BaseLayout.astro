@@ -1700,6 +1700,56 @@ try {
         font-size: 1.2rem;
       }
     }
+
+    /* ========================================
+       MOBILE PERFORMANCE OPTIMIZATIONS
+       ======================================== */
+    @media (max-width: 768px) {
+      /* Reduce expensive backdrop-filters on mobile */
+      .site-info-overlay,
+      .site-info-modal {
+        backdrop-filter: none !important;
+      }
+
+      /* Simplify box-shadows on mobile */
+      img {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+      }
+
+      /* Use hardware acceleration for transforms */
+      * {
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+      }
+
+      /* Faster animations on mobile */
+      *[style*="transition"],
+      .code-language,
+      .scroll-indicator {
+        transition-duration: 0.15s !important;
+      }
+
+      /* Disable expensive hover effects on touch devices */
+      @media (hover: none) {
+        *:hover {
+          box-shadow: inherit !important;
+        }
+      }
+    }
+
+    /* Reduce motion for users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
 </head>
 <body>

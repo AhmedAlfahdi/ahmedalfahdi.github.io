@@ -122,6 +122,20 @@ import pkg from '../../package.json';
     color: var(--accent-primary);
   }
 
+  /* Mobile performance optimizations */
+  @media (max-width: 768px) {
+    .site-info-modal {
+      /* Disable expensive backdrop-filter on mobile */
+      backdrop-filter: none;
+      background: rgba(0, 0, 0, 0.9);
+    }
+
+    .modal-content {
+      /* Reduce shadow complexity on mobile */
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+  }
+
   .modal-content h3 {
     color: var(--accent-primary);
     text-transform: uppercase;
