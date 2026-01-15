@@ -872,6 +872,67 @@ try {
       margin: 0.2rem 0 0.6rem;
     }
 
+    /* Swipe indicator for scrollable equations on mobile */
+    .katex-display.scrollable::after {
+      content: '👆 Swipe';
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--accent-primary);
+      color: #fff;
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-family: var(--font-sans);
+      pointer-events: none;
+      opacity: 0;
+      animation: swipeHint 3s ease-in-out;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      z-index: 10;
+    }
+
+    .katex-display.scrollable {
+      position: relative;
+    }
+
+    @keyframes swipeHint {
+      0% {
+        opacity: 0;
+        transform: translateY(-50%) translateX(0);
+      }
+      10% {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+      }
+      25% {
+        transform: translateY(-50%) translateX(-10px);
+      }
+      35% {
+        transform: translateY(-50%) translateX(0);
+      }
+      50% {
+        transform: translateY(-50%) translateX(-10px);
+      }
+      60% {
+        transform: translateY(-50%) translateX(0);
+      }
+      80% {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-50%) translateX(0);
+      }
+    }
+
+    /* Hide swipe indicator after user scrolls */
+    .katex-display.scrollable.scrolled::after {
+      display: none;
+    }
+
     @media (max-width: 520px) {
       .katex-display {
         font-size: 0.9rem; /* slight downscale for narrow screens */
@@ -1570,10 +1631,14 @@ try {
         flex-direction: column;
         width: 100%;
         display: none;
+        align-items: center;
+        padding-right: 0;
       }
 
       nav li {
         width: 100%;
+        display: flex;
+        justify-content: center;
       }
 
       nav a {
@@ -2136,6 +2201,43 @@ try {
         }
       });
     });
+
+    // Add swipe indicator to scrollable math equations on mobile
+    function addMathSwipeIndicators() {
+      // Only on mobile devices
+      if (window.innerWidth > 768) return;
+
+      const equations = document.querySelectorAll('.katex-display');
+      equations.forEach((eq) => {
+        // Check if equation is scrollable (content wider than container)
+        if (eq.scrollWidth > eq.clientWidth + 5) {
+          eq.classList.add('scrollable');
+          
+          // Remove indicator after user scrolls
+          let hasScrolled = false;
+          eq.addEventListener('scroll', () => {
+            if (!hasScrolled) {
+              hasScrolled = true;
+              eq.classList.add('scrolled');
+            }
+          }, { once: true });
+
+          // Also remove after touch (user is interacting)
+          eq.addEventListener('touchstart', () => {
+            if (!hasScrolled) {
+              hasScrolled = true;
+              eq.classList.add('scrolled');
+            }
+          }, { once: true });
+        }
+      });
+    }
+
+    // Run on load
+    window.addEventListener('load', addMathSwipeIndicators);
+    // Also run after a delay for dynamically loaded content
+    setTimeout(addMathSwipeIndicators, 500);
+    setTimeout(addMathSwipeIndicators, 1500);
 
 
     // Site info modal functionality
