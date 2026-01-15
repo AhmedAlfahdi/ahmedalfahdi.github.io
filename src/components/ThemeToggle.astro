@@ -11,10 +11,30 @@
   </span>
 </button>
 
+<!-- Inline script to set initial toggle state before page renders -->
+<script is:inline>
+  (function() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const storedTheme = sessionStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = storedTheme || (prefersDark ? 'dark' : 'light');
+    
+    // Set initial state without animation
+    if (theme === 'light' && themeToggle) {
+      themeToggle.classList.add('light-mode', 'no-transition');
+    }
+  })();
+</script>
+
 <script>
   if (typeof window !== 'undefined') {
     const themeToggle = document.getElementById('theme-toggle');
     const root = document.documentElement;
+    
+    // Remove no-transition class after initial render to enable animations
+    setTimeout(() => {
+      themeToggle?.classList.remove('no-transition');
+    }, 50);
     
     // Get theme from system preference
     const getSystemTheme = () => {
@@ -159,6 +179,13 @@
   .theme-toggle.light-mode .sun-icon {
     opacity: 1;
     transform: scale(1);
+  }
+
+  /* Disable transitions on initial load */
+  .theme-toggle.no-transition .slider-track,
+  .theme-toggle.no-transition .slider-thumb,
+  .theme-toggle.no-transition .theme-icon {
+    transition: none !important;
   }
 
   /* Light theme styling */

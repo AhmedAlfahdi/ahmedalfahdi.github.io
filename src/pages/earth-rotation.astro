@@ -945,92 +945,234 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       { year: 2025, dut1: -0.2 }
     ];
     
-    ctx.fillStyle = '#0c141c';
-    ctx.fillRect(0, 0, w, h);
+    // Store data points with their coordinates for hover detection
+    const dataPoints = [];
     
-    // Draw axes
-    ctx.strokeStyle = '#556677';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(padding, padding);
-    ctx.lineTo(padding, h - padding);
-    ctx.lineTo(w - padding, h - padding);
-    ctx.stroke();
+    // Function to get current theme colors
+    const getThemeColors = () => {
+      const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+      if (theme === 'light') {
+        return {
+          background: '#f5f7fa',
+          axisColor: '#7890a8',
+          textColor: '#1a2029',
+          zeroLineColor: '#d97706',
+          thresholdColor: '#dc2626',
+          dataLineColor: '#1e40af',
+          dataPointColor: '#3b82f6',
+          dataPointHover: '#60a5fa',
+          annotationColor: '#d97706'
+        };
+      } else {
+        return {
+          background: '#0c141c',
+          axisColor: '#556677',
+          textColor: '#cccccc',
+          zeroLineColor: '#f5a524',
+          thresholdColor: '#e1695d',
+          dataLineColor: '#2c6ead',
+          dataPointColor: '#5588cc',
+          dataPointHover: '#7aa5dd',
+          annotationColor: '#f5a524'
+        };
+      }
+    };
     
-    // Draw zero line
-    ctx.strokeStyle = '#f5a524';
-    ctx.setLineDash([4, 4]);
-    const zeroY = padding + graphH / 2;
-    ctx.beginPath();
-    ctx.moveTo(padding, zeroY);
-    ctx.lineTo(w - padding, zeroY);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    // Hover state
+    let hoveredPoint = null;
     
-    // Draw +0.9s and -0.9s threshold lines
-    ctx.strokeStyle = '#e1695d';
-    ctx.setLineDash([2, 2]);
-    const posThreshY = padding + graphH * (1 - 0.9) / 2;
-    const negThreshY = padding + graphH * (1 + 0.9) / 2;
-    ctx.beginPath();
-    ctx.moveTo(padding, posThreshY);
-    ctx.lineTo(w - padding, posThreshY);
-    ctx.moveTo(padding, negThreshY);
-    ctx.lineTo(w - padding, negThreshY);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    
-    // Labels
-    ctx.font = '12px sans-serif';
-    ctx.fillStyle = '#cccccc';
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('+0.9s', padding - 5, posThreshY);
-    ctx.fillText('0s', padding - 5, zeroY);
-    ctx.fillText('-0.9s', padding - 5, negThreshY);
-    
-    // Draw data line
-    ctx.strokeStyle = '#2c6ead';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    data.forEach((point, i) => {
-      const x = padding + ((point.year - 2015) / (2025 - 2015)) * graphW;
-      const y = padding + graphH / 2 - (point.dut1 * graphH / 2);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-    
-    // Draw data points
-    ctx.fillStyle = '#5588cc';
-    data.forEach(point => {
-      const x = padding + ((point.year - 2015) / (2025 - 2015)) * graphW;
-      const y = padding + graphH / 2 - (point.dut1 * graphH / 2);
+    // Function to draw the chart
+    const drawChart = () => {
+      const colors = getThemeColors();
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, w, h);
+      
+      // Background
+      ctx.fillStyle = colors.background;
+      ctx.fillRect(0, 0, w, h);
+      
+      // Draw axes
+      ctx.strokeStyle = colors.axisColor;
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(x, y, 4, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(padding, padding);
+      ctx.lineTo(padding, h - padding);
+      ctx.lineTo(w - padding, h - padding);
+      ctx.stroke();
+      
+      // Draw zero line
+      ctx.strokeStyle = colors.zeroLineColor;
+      ctx.setLineDash([4, 4]);
+      const zeroY = padding + graphH / 2;
+      ctx.beginPath();
+      ctx.moveTo(padding, zeroY);
+      ctx.lineTo(w - padding, zeroY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Draw +0.9s and -0.9s threshold lines
+      ctx.strokeStyle = colors.thresholdColor;
+      ctx.setLineDash([2, 2]);
+      const posThreshY = padding + graphH * (1 - 0.9) / 2;
+      const negThreshY = padding + graphH * (1 + 0.9) / 2;
+      ctx.beginPath();
+      ctx.moveTo(padding, posThreshY);
+      ctx.lineTo(w - padding, posThreshY);
+      ctx.moveTo(padding, negThreshY);
+      ctx.lineTo(w - padding, negThreshY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Labels
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = colors.textColor;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('+0.9s', padding - 5, posThreshY);
+      ctx.fillText('0s', padding - 5, zeroY);
+      ctx.fillText('-0.9s', padding - 5, negThreshY);
+      
+      // Draw data line
+      ctx.strokeStyle = colors.dataLineColor;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      dataPoints.length = 0; // Clear previous data points
+      data.forEach((point, i) => {
+        const x = padding + ((point.year - 2015) / (2025 - 2015)) * graphW;
+        const y = padding + graphH / 2 - (point.dut1 * graphH / 2);
+        dataPoints.push({ x, y, year: point.year, dut1: point.dut1 });
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      
+      // Draw data points
+      dataPoints.forEach((point, i) => {
+        const isHovered = hoveredPoint === i;
+        ctx.fillStyle = isHovered ? colors.dataPointHover : colors.dataPointColor;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, isHovered ? 6 : 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw border on hover
+        if (isHovered) {
+          ctx.strokeStyle = colors.background;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      });
+      
+      // Draw tooltip if hovering
+      if (hoveredPoint !== null) {
+        const point = dataPoints[hoveredPoint];
+        const tooltipText = `Year: ${point.year}, DUT1: ${point.dut1.toFixed(2)}s`;
+        
+        // Measure tooltip dimensions
+        ctx.font = '12px sans-serif';
+        const textWidth = ctx.measureText(tooltipText).width;
+        const tooltipWidth = textWidth + 16;
+        const tooltipHeight = 24;
+        
+        // Position tooltip (adjust to stay within canvas bounds)
+        let tooltipX = point.x - tooltipWidth / 2;
+        let tooltipY = point.y - tooltipHeight - 12;
+        
+        // Keep tooltip within canvas bounds
+        if (tooltipX < 5) tooltipX = 5;
+        if (tooltipX + tooltipWidth > w - 5) tooltipX = w - tooltipWidth - 5;
+        if (tooltipY < 5) tooltipY = point.y + 12;
+        
+        // Draw tooltip background
+        ctx.fillStyle = colors.textColor;
+        ctx.globalAlpha = 0.95;
+        ctx.beginPath();
+        ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 4);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        
+        // Draw tooltip text
+        ctx.fillStyle = colors.background;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(tooltipText, tooltipX + tooltipWidth / 2, tooltipY + tooltipHeight / 2);
+      }
+      
+      // X-axis labels
+      ctx.fillStyle = colors.textColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      for (let year = 2015; year <= 2025; year += 2) {
+        const x = padding + ((year - 2015) / (2025 - 2015)) * graphW;
+        ctx.fillText(year.toString(), x, h - padding + 5);
+      }
+      
+      // Title
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('DUT1 (UT1 - UTC) Over Time', w / 2, padding - 20);
+      
+      // Note about leap second
+      ctx.font = '11px sans-serif';
+      ctx.fillStyle = colors.annotationColor;
+      ctx.textAlign = 'left';
+      ctx.fillText('Leap second added →', padding + graphW * 0.25, posThreshY - 10);
+    };
+    
+    // Initial draw
+    drawChart();
+    
+    // Mouse move handler for hover effect
+    dut1Canvas.addEventListener('mousemove', (event) => {
+      const rect = dut1Canvas.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+      
+      let foundHover = null;
+      const hoverRadius = 10; // Larger hit area for easier hovering
+      
+      // Check if mouse is near any data point
+      dataPoints.forEach((point, i) => {
+        const dx = mouseX - point.x;
+        const dy = mouseY - point.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance <= hoverRadius) {
+          foundHover = i;
+        }
+      });
+      
+      // Only redraw if hover state changed
+      if (foundHover !== hoveredPoint) {
+        hoveredPoint = foundHover;
+        dut1Canvas.style.cursor = foundHover !== null ? 'pointer' : 'default';
+        drawChart();
+      }
     });
     
-    // X-axis labels
-    ctx.fillStyle = '#cccccc';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    for (let year = 2015; year <= 2025; year += 2) {
-      const x = padding + ((year - 2015) / (2025 - 2015)) * graphW;
-      ctx.fillText(year.toString(), x, h - padding + 5);
-    }
+    // Mouse leave handler to clear hover
+    dut1Canvas.addEventListener('mouseleave', () => {
+      if (hoveredPoint !== null) {
+        hoveredPoint = null;
+        dut1Canvas.style.cursor = 'default';
+        drawChart();
+      }
+    });
     
-    // Title
-    ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText('DUT1 (UT1 - UTC) Over Time', w / 2, padding - 20);
+    // Listen for theme changes and redraw
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          drawChart();
+        }
+      });
+    });
     
-    // Note about leap second
-    ctx.font = '11px sans-serif';
-    ctx.fillStyle = '#f5a524';
-    ctx.textAlign = 'left';
-    ctx.fillText('Leap second added →', padding + graphW * 0.25, posThreshY - 10);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
   }
 
   // Leap Seconds Grid
@@ -1198,6 +1340,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     border-color: var(--accent-primary);
     color: var(--accent-primary);
   }
+
+  /* Light theme fullscreen button */
+  :root[data-theme="light"] .fullscreen-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  :root[data-theme="light"] .fullscreen-btn:hover {
+    background: rgba(215, 137, 16, 0.15);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+  }
+
   .keyboard-shortcuts {
     display: flex;
     flex-wrap: wrap;
