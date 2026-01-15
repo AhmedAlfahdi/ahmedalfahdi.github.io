@@ -886,8 +886,8 @@ try {
       font-size: 0.75rem;
       font-family: var(--font-sans);
       pointer-events: none;
-      opacity: 0;
-      animation: swipeHint 3s ease-in-out;
+      opacity: 1;
+      animation: swipeHint 2s ease-in-out infinite;
       white-space: nowrap;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       z-index: 10;
@@ -899,36 +899,23 @@ try {
 
     @keyframes swipeHint {
       0% {
-        opacity: 0;
-        transform: translateY(-50%) translateX(0);
-      }
-      10% {
-        opacity: 1;
         transform: translateY(-50%) translateX(0);
       }
       25% {
         transform: translateY(-50%) translateX(-10px);
       }
-      35% {
+      50% {
         transform: translateY(-50%) translateX(0);
       }
-      50% {
+      75% {
         transform: translateY(-50%) translateX(-10px);
       }
-      60% {
-        transform: translateY(-50%) translateX(0);
-      }
-      80% {
-        opacity: 1;
-        transform: translateY(-50%) translateX(0);
-      }
       100% {
-        opacity: 0;
         transform: translateY(-50%) translateX(0);
       }
     }
 
-    /* Hide swipe indicator after user scrolls */
+    /* Hide swipe indicator after user interacts */
     .katex-display.scrollable.scrolled::after {
       display: none;
     }
@@ -2202,33 +2189,32 @@ try {
       });
     });
 
-    // Add swipe indicator to scrollable math equations on mobile
+    // Add swipe indicator to scrollable math equations
     function addMathSwipeIndicators() {
-      // Only on mobile devices
-      if (window.innerWidth > 768) return;
-
       const equations = document.querySelectorAll('.katex-display');
       equations.forEach((eq) => {
         // Check if equation is scrollable (content wider than container)
         if (eq.scrollWidth > eq.clientWidth + 5) {
           eq.classList.add('scrollable');
           
-          // Remove indicator after user scrolls
-          let hasScrolled = false;
-          eq.addEventListener('scroll', () => {
-            if (!hasScrolled) {
-              hasScrolled = true;
+          // Remove indicator after user interacts
+          let hasInteracted = false;
+          
+          const hideIndicator = () => {
+            if (!hasInteracted) {
+              hasInteracted = true;
               eq.classList.add('scrolled');
             }
-          }, { once: true });
-
-          // Also remove after touch (user is interacting)
-          eq.addEventListener('touchstart', () => {
-            if (!hasScrolled) {
-              hasScrolled = true;
-              eq.classList.add('scrolled');
-            }
-          }, { once: true });
+          };
+          
+          // Hide on scroll
+          eq.addEventListener('scroll', hideIndicator, { once: true });
+          
+          // Hide on touch
+          eq.addEventListener('touchstart', hideIndicator, { once: true });
+          
+          // Hide on mouse down (for desktop)
+          eq.addEventListener('mousedown', hideIndicator, { once: true });
         }
       });
     }
