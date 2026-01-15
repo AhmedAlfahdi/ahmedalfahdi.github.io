@@ -148,6 +148,39 @@ const { code, title = "Python Code" } = Astro.props;
     });
   });
 
+  // Add swipe indicator to scrollable output
+  function checkOutputScrollable(output: Element) {
+    const outputEl = output as HTMLElement;
+    // Check if output is scrollable (content wider or taller than container)
+    const isScrollable = outputEl.scrollWidth > outputEl.clientWidth + 5 || 
+                         outputEl.scrollHeight > outputEl.clientHeight + 5;
+    
+    if (isScrollable) {
+      outputEl.classList.add('scrollable');
+      
+      // Remove indicator after user interacts
+      let hasInteracted = false;
+      
+      const hideIndicator = () => {
+        if (!hasInteracted) {
+          hasInteracted = true;
+          outputEl.classList.add('scrolled');
+        }
+      };
+      
+      // Hide on scroll
+      outputEl.addEventListener('scroll', hideIndicator, { once: true });
+      
+      // Hide on touch
+      outputEl.addEventListener('touchstart', hideIndicator, { once: true });
+      
+      // Hide on mouse down (for desktop)
+      outputEl.addEventListener('mousedown', hideIndicator, { once: true });
+    } else {
+      outputEl.classList.remove('scrollable', 'scrolled');
+    }
+  }
+
   // Handle run button clicks
   document.querySelectorAll('.run-button').forEach((button) => {
     button.addEventListener('click', async function() {
@@ -168,7 +201,7 @@ const { code, title = "Python Code" } = Astro.props;
       btn.disabled = true;
       btn.textContent = 'Running...';
       output.textContent = 'Loading Python environment...';
-      output.classList.remove('error');
+      output.classList.remove('error', 'scrollable', 'scrolled');
 
       try {
         // Load Pyodide if not already loaded
@@ -192,10 +225,16 @@ sys.stdout = StringIO()
         
         output.textContent = outputText || '(No output)';
         
+        // Check if output is scrollable after content is set
+        setTimeout(() => checkOutputScrollable(output), 100);
+        
       } catch (error) {
         output.textContent = `Error: ${error}`;
         output.classList.add('error');
         console.error('Python execution error:', error);
+        
+        // Check scrollability even for errors
+        setTimeout(() => checkOutputScrollable(output), 100);
       } finally {
         btn.disabled = false;
         btn.textContent = 'Run Code';
@@ -361,11 +400,102 @@ sys.stdout = StringIO()
     color: var(--text-primary);
     min-height: 3rem;
     background: var(--bg-secondary);
-    white-space: pre-wrap;
+    white-space: pre;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 400px;
+    /* Better scrollbar visibility */
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-primary) transparent;
+  }
+
+  /* WebKit scrollbar styling for output */
+  .output-content::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+
+  .output-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+
+  .output-content::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 4px;
+  }
+
+  .output-content::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-secondary);
+  }
+
+  /* Light theme scrollbar */
+  :root[data-theme="light"] .output-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  :root[data-theme="light"] .output-content::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
   }
 
   .output-content.error {
     color: #e1695d;
+  }
+
+  /* Swipe indicator for scrollable output */
+  .output-content.scrollable::after {
+    content: '👆 Swipe';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--accent-primary);
+    color: #fff;
+    padding: 0.3rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-family: var(--font-sans);
+    pointer-events: none;
+    opacity: 1;
+    animation: swipeHint 2s ease-in-out infinite;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+  }
+
+  .output-content.scrollable {
+    position: relative;
+  }
+
+  @keyframes swipeHint {
+    0% {
+      transform: translateY(-50%) translateX(0);
+    }
+    25% {
+      transform: translateY(-50%) translateX(-10px);
+    }
+    50% {
+      transform: translateY(-50%) translateX(0);
+    }
+    75% {
+      transform: translateY(-50%) translateX(-10px);
+    }
+    100% {
+      transform: translateY(-50%) translateX(0);
+    }
+  }
+
+  /* Hide swipe indicator after user interacts */
+  .output-content.scrollable.scrolled::after {
+    display: none;
+  }
+
+  @media (max-width: 520px) {
+    /* Larger scrollbar on mobile for better visibility */
+    .output-content::-webkit-scrollbar {
+      height: 10px;
+      width: 10px;
+    }
   }
 
   /* Light theme support */
