@@ -819,7 +819,39 @@ try {
       padding-bottom: 0.25rem;
       white-space: nowrap; /* keep long equations on a single line */
       min-width: 0; /* allow scroll container to shrink */
+      /* Better scrollbar visibility */
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-primary) transparent;
     }
+
+    /* WebKit scrollbar styling for katex */
+    .katex-display::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .katex-display::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+
+    .katex-display::-webkit-scrollbar-thumb {
+      background: var(--accent-primary);
+      border-radius: 4px;
+    }
+
+    .katex-display::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-secondary);
+    }
+
+    /* Light theme scrollbar */
+    :root[data-theme="light"] .katex-display::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    :root[data-theme="light"] .katex-display::-webkit-scrollbar-thumb {
+      background: var(--accent-primary);
+    }
+
     .katex-display > .katex {
       display: inline-block;
       padding: 0.25rem 0;
@@ -843,6 +875,12 @@ try {
     @media (max-width: 520px) {
       .katex-display {
         font-size: 0.9rem; /* slight downscale for narrow screens */
+        padding-bottom: 0.5rem; /* more space for scrollbar on mobile */
+      }
+      
+      /* Larger scrollbar on mobile for better visibility */
+      .katex-display::-webkit-scrollbar {
+        height: 10px;
       }
     }
 
