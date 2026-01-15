@@ -12,13 +12,17 @@ const { code, title = "Python Code" } = Astro.props;
   <div class="pyodide-header">
     <span class="pyodide-title">{title}</span>
     <div class="header-buttons">
+      <button class="toggle-code-btn" title="Show/Hide Code">Show Code</button>
       <button class="fullscreen-btn" title="Fullscreen (F11)">⛶</button>
-      <button class="run-button">Run Code</button>
+      <button class="run-button">Run</button>
     </div>
   </div>
-  <div class="code-editor-wrapper">
-    <div class="syntax-highlight" aria-hidden="true"></div>
-    <textarea class="python-code" spellcheck="false">{code}</textarea>
+  <div class="code-editor-wrapper" style="display: none;">
+    <div class="line-numbers" aria-hidden="true"></div>
+    <div class="code-content">
+      <div class="syntax-highlight" aria-hidden="true"></div>
+      <textarea class="python-code" spellcheck="false">{code}</textarea>
+    </div>
   </div>
   <div class="pyodide-output">
     <div class="output-label">Output:</div>
@@ -99,6 +103,17 @@ const { code, title = "Python Code" } = Astro.props;
     return highlighted;
   }
 
+  // Update line numbers
+  function updateLineNumbers(textarea: HTMLTextAreaElement) {
+    const runner = textarea.closest('.pyodide-runner');
+    const lineNumbersDiv = runner?.querySelector('.line-numbers') as HTMLElement;
+    if (!lineNumbersDiv) return;
+
+    const lines = textarea.value.split('\n').length;
+    const lineNumbers = Array.from({ length: lines }, (_, i) => i + 1).join('\n');
+    lineNumbersDiv.textContent = lineNumbers;
+  }
+
   // Update syntax highlighting
   function updateHighlighting(textarea: HTMLTextAreaElement) {
     const runner = textarea.closest('.pyodide-runner');
@@ -107,14 +122,24 @@ const { code, title = "Python Code" } = Astro.props;
 
     const highlighted = highlightPython(textarea.value);
     highlightDiv.innerHTML = highlighted;
+    
+    // Also update line numbers
+    updateLineNumbers(textarea);
+  }
+
+  // Auto-resize textarea to fit content
+  function autoResizeTextarea(textarea: HTMLTextAreaElement) {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
   }
 
   // Initialize all Python code editors
   document.querySelectorAll('.python-code').forEach((textarea) => {
     const ta = textarea as HTMLTextAreaElement;
     
-    // Initial highlighting
+    // Initial highlighting and sizing
     updateHighlighting(ta);
+    autoResizeTextarea(ta);
 
     // Tab key handler
     ta.addEventListener('keydown', function(e: KeyboardEvent) {
@@ -132,21 +157,53 @@ const { code, title = "Python Code" } = Astro.props;
         
         // Update highlighting
         updateHighlighting(target);
+        autoResizeTextarea(target);
       }
     });
 
     // Update highlighting on input
     ta.addEventListener('input', function() {
       updateHighlighting(this as HTMLTextAreaElement);
+      autoResizeTextarea(this as HTMLTextAreaElement);
     });
 
     // Sync scroll
     ta.addEventListener('scroll', function() {
       const runner = this.closest('.pyodide-runner');
       const highlightDiv = runner?.querySelector('.syntax-highlight') as HTMLElement;
+      const lineNumbersDiv = runner?.querySelector('.line-numbers') as HTMLElement;
       if (highlightDiv) {
         highlightDiv.scrollTop = this.scrollTop;
         highlightDiv.scrollLeft = this.scrollLeft;
+      }
+      if (lineNumbersDiv) {
+        lineNumbersDiv.scrollTop = this.scrollTop;
+      }
+    });
+  });
+
+  // Handle toggle code button clicks
+  document.querySelectorAll('.toggle-code-btn').forEach((button) => {
+    button.addEventListener('click', function() {
+      const btn = this as HTMLButtonElement;
+      const runner = btn.closest('.pyodide-runner');
+      const codeWrapper = runner?.querySelector('.code-editor-wrapper') as HTMLElement;
+      const textarea = runner?.querySelector('.python-code') as HTMLTextAreaElement;
+      
+      if (!codeWrapper) return;
+      
+      if (codeWrapper.style.display === 'none') {
+        // Show code
+        codeWrapper.style.display = 'flex';
+        btn.textContent = 'Hide Code';
+        // Auto-resize to fit content
+        if (textarea) {
+          autoResizeTextarea(textarea);
+        }
+      } else {
+        // Hide code
+        codeWrapper.style.display = 'none';
+        btn.textContent = 'Show Code';
       }
     });
   });
@@ -280,7 +337,7 @@ sys.stdout = StringIO()
         setTimeout(() => checkOutputScrollable(output), 100);
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Run Code';
+        btn.textContent = 'Run';
       }
     });
   });
@@ -317,6 +374,24 @@ sys.stdout = StringIO()
     display: flex;
     gap: 0.5rem;
     align-items: center;
+  }
+
+  .toggle-code-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+  }
+
+  .toggle-code-btn:hover {
+    background: rgba(245, 165, 36, 0.1);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
   }
 
   .fullscreen-btn {
@@ -376,17 +451,12 @@ sys.stdout = StringIO()
   }
 
   .pyodide-runner.fullscreen .code-editor-wrapper {
-    height: calc(100vh - 100px - 150px);
-    min-height: calc(100vh - 100px - 150px);
+    max-height: calc(100vh - 100px - 150px);
+    overflow: auto;
   }
 
   .pyodide-runner.fullscreen .python-code {
-    height: 100% !important;
-    min-height: 100%;
-  }
-
-  .pyodide-runner.fullscreen .syntax-highlight {
-    height: 100%;
+    overflow: auto;
   }
 
   .pyodide-runner.fullscreen .pyodide-output {
@@ -399,13 +469,13 @@ sys.stdout = StringIO()
   }
 
   .pyodide-runner.fullscreen .fullscreen-btn::before {
-    content: '⛶ Exit Fullscreen (ESC)';
+    content: 'Exit (ESC)';
     font-size: 0.85rem;
     font-family: var(--font-mono);
   }
 
   .pyodide-runner.fullscreen .fullscreen-btn {
-    padding: 0.4rem 1rem;
+    padding: 0.4rem 0.8rem;
   }
 
   .fullscreen-btn::before {
@@ -415,6 +485,30 @@ sys.stdout = StringIO()
   .code-editor-wrapper {
     position: relative;
     background: #24292e;
+    display: flex;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .line-numbers {
+    padding: 1rem 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #6a737d;
+    background: #1a1f25;
+    text-align: right;
+    user-select: none;
+    min-width: 3rem;
+    border-right: 1px solid var(--border-light);
+    overflow: hidden;
+    white-space: pre;
+  }
+
+  .code-content {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   .syntax-highlight {
@@ -464,21 +558,20 @@ sys.stdout = StringIO()
   .python-code {
     position: relative;
     width: 100%;
-    min-height: 150px;
+    height: auto;
     margin: 0;
     padding: 1rem;
     background: transparent;
     border: none;
-    border-bottom: 1px solid var(--border-light);
     font-family: var(--font-mono);
     font-size: 0.9rem;
     color: transparent;
     caret-color: #e1e4e8;
     line-height: 1.5;
-    resize: vertical;
+    resize: none;
     outline: none;
     tab-size: 4;
-    overflow: auto;
+    overflow: hidden;
     white-space: pre;
     z-index: 2;
     -webkit-text-fill-color: transparent;
@@ -661,6 +754,47 @@ sys.stdout = StringIO()
 
   :root[data-theme="light"] .python-code {
     caret-color: #24292e;
+  }
+
+  :root[data-theme="light"] .line-numbers {
+    background: #f5f7fa;
+    color: #6a737d;
+  }
+
+  :root[data-theme="light"] .toggle-code-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+  }
+
+  :root[data-theme="light"] .toggle-code-btn:hover {
+    background: rgba(245, 165, 36, 0.1);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .header-buttons {
+      gap: 0.35rem;
+    }
+
+    .toggle-code-btn,
+    .fullscreen-btn,
+    .run-button {
+      padding: 0.35rem 0.6rem;
+      font-size: 0.8rem;
+    }
+
+    .pyodide-header {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .header-buttons {
+      width: 100%;
+      justify-content: flex-end;
+    }
   }
 
   :root[data-theme="light"] .pyodide-output {
