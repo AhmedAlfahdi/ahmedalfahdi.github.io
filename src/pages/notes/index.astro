@@ -55,7 +55,6 @@ const allTags = [...new Set(notes.flatMap(note => note.data.tags || []))].sort()
           data-tags={note.data.tags?.join(',') || ''}
           data-title={note.data.title.toLowerCase()}
           data-description={(note.data.description || '').toLowerCase()}
-          data-body={note.body.toLowerCase()}
         >
           <div class="item-header">
             <h2>{note.data.title}</h2>
@@ -297,112 +296,118 @@ const allTags = [...new Set(notes.flatMap(note => note.data.tags || []))].sort()
 </style>
 
 <script is:inline>
-  // Tag filtering and search functionality
-  const filterTags = document.querySelectorAll('.filter-tag');
-  const listItems = document.querySelectorAll('.list-item');
-  const noteTags = document.querySelectorAll('.tag');
-  const noResults = document.querySelector('.no-results');
-  const searchInput = document.getElementById('search-input');
-  
-  let currentTag = 'all';
-  let currentSearch = '';
+  (function() {
+    const filterTags = document.querySelectorAll('.filter-tag');
+    const listItems = document.querySelectorAll('.list-item');
+    const noteTags = document.querySelectorAll('.tag');
+    const noResults = document.querySelector('.no-results');
+    const searchInput = document.getElementById('search-input');
+    
+    if (!searchInput) {
+      console.error('Search input not found');
+      return;
+    }
+    
+    console.log('Search initialized, found', listItems.length, 'items');
+    
+    let currentTag = 'all';
+    let currentSearch = '';
 
-  function fuzzyMatch(text, query) {
-    if (!query) return true;
-    const q = query.toLowerCase().trim();
-    const t = text.toLowerCase();
+    function fuzzyMatch(text, query) {
+      if (!query) return true;
+      const q = query.toLowerCase().trim();
+      const t = text.toLowerCase();
 
-    // Simple subsequence fuzzy match: all query chars appear in order
-    let ti = 0;
-    for (let qi = 0; qi < q.length; qi++) {
-      const qc = q[qi];
-      let found = false;
-      while (ti < t.length) {
-        if (t[ti] === qc) {
-          found = true;
+      // Simple subsequence fuzzy match: all query chars appear in order
+      let ti = 0;
+      for (let qi = 0; qi < q.length; qi++) {
+        const qc = q[qi];
+        let found = false;
+        while (ti < t.length) {
+          if (t[ti] === qc) {
+            found = true;
+            ti++;
+            break;
+          }
           ti++;
-          break;
         }
-        ti++;
+        if (!found) return false;
       }
-      if (!found) return false;
-    }
-    return true;
-  }
-
-  function filterNotes(selectedTag, searchTerm = '') {
-    currentTag = selectedTag;
-    currentSearch = searchTerm;
-    let visibleCount = 0;
-
-    listItems.forEach(item => {
-      const itemTags = item.getAttribute('data-tags');
-      const itemTitle = item.getAttribute('data-title') || '';
-      const itemDescription = item.getAttribute('data-description') || '';
-      const itemBody = item.getAttribute('data-body') || '';
-      
-      // Check tag filter
-      let tagMatch = false;
-      if (selectedTag === 'all' || !itemTags) {
-        tagMatch = selectedTag === 'all';
-      } else {
-        const tags = itemTags.split(',');
-        tagMatch = tags.includes(selectedTag);
-      }
-      
-      // Check search filter (title + description + body content)
-      const haystack = `${itemTitle} ${itemDescription} ${itemBody}`;
-      const searchMatch = fuzzyMatch(haystack, currentSearch);
-      
-      if (tagMatch && searchMatch) {
-        item.classList.remove('hidden');
-        visibleCount++;
-      } else {
-        item.classList.add('hidden');
-      }
-    });
-
-    // Show/hide no results message
-    if (noResults) {
-      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+      return true;
     }
 
-    // Update active state on filter buttons
+    function filterNotes(selectedTag, searchTerm = '') {
+      currentTag = selectedTag;
+      currentSearch = searchTerm;
+      let visibleCount = 0;
+
+      listItems.forEach(item => {
+        const itemTags = item.getAttribute('data-tags');
+        const itemTitle = item.getAttribute('data-title') || '';
+        const itemDescription = item.getAttribute('data-description') || '';
+        
+        // Check tag filter
+        let tagMatch = false;
+        if (selectedTag === 'all' || !itemTags) {
+          tagMatch = selectedTag === 'all';
+        } else {
+          const tags = itemTags.split(',');
+          tagMatch = tags.includes(selectedTag);
+        }
+        
+        // Check search filter (title + description)
+        const haystack = `${itemTitle} ${itemDescription}`;
+        const searchMatch = fuzzyMatch(haystack, currentSearch);
+        
+        if (tagMatch && searchMatch) {
+          item.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+
+      // Show/hide no results message
+      if (noResults) {
+        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+
+      // Update active state on filter buttons
+      filterTags.forEach(tag => {
+        if (tag.getAttribute('data-tag') === selectedTag) {
+          tag.classList.add('active');
+        } else {
+          tag.classList.remove('active');
+        }
+      });
+    }
+
+    // Add click handlers to filter buttons
     filterTags.forEach(tag => {
-      if (tag.getAttribute('data-tag') === selectedTag) {
-        tag.classList.add('active');
-      } else {
-        tag.classList.remove('active');
-      }
+      tag.addEventListener('click', () => {
+        const selectedTag = tag.getAttribute('data-tag');
+        filterNotes(selectedTag, currentSearch);
+      });
     });
-  }
 
-  // Add click handlers to filter buttons
-  filterTags.forEach(tag => {
-    tag.addEventListener('click', () => {
-      const selectedTag = tag.getAttribute('data-tag');
-      filterNotes(selectedTag, currentSearch);
+    // Add click handlers to note tags
+    noteTags.forEach(tag => {
+      tag.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const selectedTag = tag.getAttribute('data-tag');
+        filterNotes(selectedTag, currentSearch);
+        
+        // Scroll to top smoothly
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
     });
-  });
 
-  // Add click handlers to note tags
-  noteTags.forEach(tag => {
-    tag.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const selectedTag = tag.getAttribute('data-tag');
-      filterNotes(selectedTag, currentSearch);
-      
-      // Scroll to top smoothly
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  });
-
-  // Add search input handler
-  if (searchInput) {
+    // Add search input handler
     searchInput.addEventListener('input', (e) => {
       const searchTerm = e.target.value;
+      console.log('Search term:', searchTerm);
       filterNotes(currentTag, searchTerm);
     });
-  }
+  })();
 </script>
