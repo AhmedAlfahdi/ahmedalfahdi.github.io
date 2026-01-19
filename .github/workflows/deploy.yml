@@ -35,13 +35,25 @@ jobs:
         
       - name: Generate build info
         run: |
-          BUILD_DATE=$(date -u +%Y-%m-%d)
-          BUILD_TIME=$(date -u +%H:%M:%S)
+          BUILD_DATE=$(date -u +'%Y-%m-%d')
+          BUILD_TIME=$(date -u +'%H:%M:%S')
           BUILD_TIMESTAMP=$(date -u +%s)
-          echo "Generating build-info.json with timestamp: $BUILD_DATE at $BUILD_TIME UTC"
-          echo "{\"buildDate\":\"$BUILD_DATE\",\"buildTime\":\"$BUILD_TIME\",\"timestamp\":$BUILD_TIMESTAMP}" > build-info.json
+          echo "Generating build-info.json with timestamp: $BUILD_DATE at $BUILD_TIME UTC (deployment $GITHUB_RUN_NUMBER)"
+          cat <<EOF > build-info.json
+          {
+            "buildDate": "$BUILD_DATE",
+            "buildTime": "$BUILD_TIME",
+            "timestamp": $BUILD_TIMESTAMP,
+            "deployment": $GITHUB_RUN_NUMBER
+          }
+          EOF
           cat build-info.json
           ls -la build-info.json
+
+      - name: Sync build/version json into public
+        run: |
+          cp build-info.json public/build-info.json
+          cp version.json public/version.json
         
       - name: Build with Astro
         env:
