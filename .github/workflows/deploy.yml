@@ -61,8 +61,7 @@ jobs:
             "threeVersion": "$THREE_VERSION",
             "mermaidVersion": "$MERMAID_VERSION",
             "pdfjsVersion": "$PDFJS_VERSION",
-            "markedVersion": "$MARKED_VERSION",
-            "workflowRun": "$GITHUB_RUN_ID"
+            "markedVersion": "$MARKED_VERSION"
           }
           EOF
           cat build-info.json
