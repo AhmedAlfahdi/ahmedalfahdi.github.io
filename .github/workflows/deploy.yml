@@ -41,12 +41,13 @@ jobs:
           GIT_SHA=$(git rev-parse --short HEAD)
           GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
           NODE_VERSION=$(node --version)
-          ASTRO_VERSION=$(node -p "require('./package.json').dependencies.astro.replace('^', '')")
-          THREE_VERSION=$(node -p "require('./package.json').dependencies.three.replace('^', '')")
-          MERMAID_VERSION=$(node -p "require('./package.json').dependencies.mermaid.replace('^', '')")
-          PDFJS_VERSION=$(node -p "require('./package.json').dependencies['pdfjs-dist'].replace('^', '')")
-          MARKED_VERSION=$(node -p "require('./package.json').dependencies.marked.replace('^', '')")
+          ASTRO_VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.dependencies.astro.replace('^', ''))" || echo "unknown")
+          THREE_VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.dependencies.three.replace('^', ''))" || echo "unknown")
+          MERMAID_VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.dependencies.mermaid.replace('^', ''))" || echo "unknown")
+          PDFJS_VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.dependencies['pdfjs-dist'].replace('^', ''))" || echo "unknown")
+          MARKED_VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.dependencies.marked.replace('^', ''))" || echo "unknown")
           echo "Generating build-info.json with timestamp: $BUILD_DATE at $BUILD_TIME UTC (deployment $GITHUB_RUN_NUMBER)"
+          echo "Versions: Node=$NODE_VERSION, Astro=$ASTRO_VERSION, Three=$THREE_VERSION, Mermaid=$MERMAID_VERSION, PDFjs=$PDFJS_VERSION, Marked=$MARKED_VERSION"
           cat <<EOF > build-info.json
           {
             "buildDate": "$BUILD_DATE",
