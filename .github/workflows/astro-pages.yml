@@ -32,13 +32,30 @@ jobs:
           BUILD_DATE=$(date -u +'%Y-%m-%d')
           BUILD_TIME=$(date -u +'%H:%M:%S')
           TIMESTAMP=$(date -u +%s)
+          GIT_SHA=$(git rev-parse --short HEAD)
+          GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          NODE_VERSION=$(node --version)
+          ASTRO_VERSION=$(node -p "require('./package.json').dependencies.astro.replace('^', '')")
+          THREE_VERSION=$(node -p "require('./package.json').dependencies.three.replace('^', '')")
+          MERMAID_VERSION=$(node -p "require('./package.json').dependencies.mermaid.replace('^', '')")
+          PDFJS_VERSION=$(node -p "require('./package.json').dependencies['pdfjs-dist'].replace('^', '')")
+          MARKED_VERSION=$(node -p "require('./package.json').dependencies.marked.replace('^', '')")
 
           cat <<EOF > build-info.json
           {
             "buildDate": "$BUILD_DATE",
             "buildTime": "$BUILD_TIME",
             "timestamp": $TIMESTAMP,
-            "deployment": $GITHUB_RUN_NUMBER
+            "deployment": $GITHUB_RUN_NUMBER,
+            "gitSha": "$GIT_SHA",
+            "gitBranch": "$GIT_BRANCH",
+            "nodeVersion": "$NODE_VERSION",
+            "astroVersion": "$ASTRO_VERSION",
+            "threeVersion": "$THREE_VERSION",
+            "mermaidVersion": "$MERMAID_VERSION",
+            "pdfjsVersion": "$PDFJS_VERSION",
+            "markedVersion": "$MARKED_VERSION",
+            "workflowRun": "$GITHUB_RUN_ID"
           }
           EOF
 
