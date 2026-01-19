@@ -48,11 +48,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <strong>Pipeline Eng.:</strong>
             <a href="/career/pdo-pipeline-engineering" class="skill-link">View Details</a>
             <ul>
-              <li>Hydrotesting and NDT coordination</li>
-              <li>Design calculations (B31.4/B31.8)</li>
-              <li>Buckling/buoyancy assessments</li>
-              <li>Alignment drawings</li>
-              <li>Integrity reviews</li>
+              <li>Design calculations: wall thickness, buoyancy, upheaval buckling, road crossings (ASME B31.4/B31.8)</li>
+              <li>Construction support: hydrotesting, NDT coordination, HSE plan, QA/QC, ITP, AFC documentation</li>
+              <li>Flow simulation and analysis (PIPSIM, Pipeline Studio, OLGA)</li>
+              <li>Concept studies: CAPEX/OPEX evaluation, route selection, option screening</li>
+              <li>Material and corrosion assessments</li>
+              <li>Integrity management and fitness-for-service evaluations</li>
+              <li>Alignment drawings and constructability assessments</li>
             </ul>
           </li>
           <li>
@@ -255,66 +257,66 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   // Skills animation removed - items are visible by default
 
-  // Force gear animation on mobile devices - use real element instead of pseudo-element
-  function initMobileGear() {
-    const isMobile = window.innerWidth <= 768;
-    const h1Dot = document.querySelector('.h1-dot');
-    
-    if (!h1Dot) return;
-    
-    // Check if mobile gear element already exists
-    let mobileGear = h1Dot.querySelector('.mobile-gear');
-    
-    if (isMobile) {
-      // Force transparent color
-      h1Dot.style.setProperty('color', 'transparent', 'important');
-      
-      // Create real gear element if it doesn't exist
-      if (!mobileGear) {
-        mobileGear = document.createElement('span');
-        mobileGear.className = 'mobile-gear';
-        mobileGear.textContent = '⚙';
-        mobileGear.style.cssText = `
-          position: absolute;
-          left: 50%;
-          top: calc(50% + 0.15em);
-          transform: translate(-50%, calc(-50% + 0.15em));
-          font-size: 0.85em;
-          line-height: 1;
-          color: var(--accent-primary);
-          z-index: 10;
-          pointer-events: none;
-          display: inline-block;
-          animation: gear-spin 1.5s linear infinite;
-        `;
-        h1Dot.appendChild(mobileGear);
-      }
-      
-      // Ensure animation is running
-      mobileGear.style.animation = 'gear-spin 1.5s linear infinite';
-      mobileGear.style.display = 'inline-block';
-      mobileGear.style.opacity = '1';
-    } else {
-      // Remove mobile gear element on desktop
-      if (mobileGear) {
-        mobileGear.remove();
-      }
-      h1Dot.style.removeProperty('color');
-    }
-  }
-  
-  // Run immediately and on resize
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMobileGear);
-  } else {
-    initMobileGear();
-  }
-  window.addEventListener('resize', initMobileGear);
-  
-  // Also trigger on first touch to ensure animation starts on mobile
-  document.addEventListener('touchstart', function() {
-    initMobileGear();
-  }, { once: true, passive: true });
+  // Force gear animation on mobile devices - COMMENTED OUT (too distracting)
+  // function initMobileGear() {
+  //   const isMobile = window.innerWidth <= 768;
+  //   const h1Dot = document.querySelector('.h1-dot');
+  //   
+  //   if (!h1Dot) return;
+  //   
+  //   // Check if mobile gear element already exists
+  //   let mobileGear = h1Dot.querySelector('.mobile-gear');
+  //   
+  //   if (isMobile) {
+  //     // Force transparent color
+  //     h1Dot.style.setProperty('color', 'transparent', 'important');
+  //     
+  //     // Create real gear element if it doesn't exist
+  //     if (!mobileGear) {
+  //       mobileGear = document.createElement('span');
+  //       mobileGear.className = 'mobile-gear';
+  //       mobileGear.textContent = '⚙';
+  //       mobileGear.style.cssText = `
+  //         position: absolute;
+  //         left: 50%;
+  //         top: calc(50% + 0.15em);
+  //         transform: translate(-50%, calc(-50% + 0.15em));
+  //         font-size: 0.85em;
+  //         line-height: 1;
+  //         color: var(--accent-primary);
+  //         z-index: 10;
+  //         pointer-events: none;
+  //         display: inline-block;
+  //         animation: gear-spin 1.5s linear infinite;
+  //       `;
+  //       h1Dot.appendChild(mobileGear);
+  //     }
+  //     
+  //     // Ensure animation is running
+  //     mobileGear.style.animation = 'gear-spin 1.5s linear infinite';
+  //     mobileGear.style.display = 'inline-block';
+  //     mobileGear.style.opacity = '1';
+  //   } else {
+  //     // Remove mobile gear element on desktop
+  //     if (mobileGear) {
+  //       mobileGear.remove();
+  //     }
+  //     h1Dot.style.removeProperty('color');
+  //   }
+  // }
+  // 
+  // // Run immediately and on resize
+  // if (document.readyState === 'loading') {
+  //   document.addEventListener('DOMContentLoaded', initMobileGear);
+  // } else {
+  //   initMobileGear();
+  // }
+  // window.addEventListener('resize', initMobileGear);
+  // 
+  // // Also trigger on first touch to ensure animation starts on mobile
+  // document.addEventListener('touchstart', function() {
+  //   initMobileGear();
+  // }, { once: true, passive: true });
 
   // Collapsible skills list
   document.querySelectorAll('.skills-list > li').forEach((parentItem) => {
@@ -1457,18 +1459,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       padding-bottom: 0;
     }
 
-    /* Make gear icon always visible and animated on mobile (same as desktop hover) */
-    .home-wrap h1 .h1-dot {
+    /* Mobile gear animation - COMMENTED OUT (too distracting) */
+    /* .home-wrap h1 .h1-dot {
       color: transparent !important;
-    }
+    } */
 
-    /* Hide pseudo-element on mobile since we use real element */
-    .home-wrap h1 .h1-dot::after {
+    /* .home-wrap h1 .h1-dot::after {
       display: none !important;
-    }
+    } */
 
-    /* Style the real mobile gear element */
-    .home-wrap h1 .h1-dot .mobile-gear {
+    /* .home-wrap h1 .h1-dot .mobile-gear {
       position: absolute;
       left: 50%;
       top: calc(50% + 0.15em);
@@ -1483,7 +1483,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       animation: gear-spin 1.5s linear infinite !important;
       animation-play-state: running !important;
       will-change: transform !important;
-    }
+    } */
   }
 
   @media (max-width: 480px) {
