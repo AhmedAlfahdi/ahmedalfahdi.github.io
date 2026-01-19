@@ -30,8 +30,9 @@ jobs:
       - name: Build site
         run: npm run build
 
+      # Use the updated upload-pages-artifact action (v2) which uses supported upload-artifact
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v2
         with:
           path: ./dist
 
