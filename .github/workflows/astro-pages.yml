@@ -27,8 +27,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate build info
+        run: |
+          BUILD_DATE=$(date -u +'%Y-%m-%d')
+          BUILD_TIME=$(date -u +'%H:%M:%S')
+          TIMESTAMP=$(date -u +%s)
+
+          cat <<EOF > build-info.json
+          {
+            "buildDate": "$BUILD_DATE",
+            "buildTime": "$BUILD_TIME",
+            "timestamp": $TIMESTAMP
+          }
+          EOF
+
       - name: Build site
         run: npm run build
+
+      - name: Copy build info into dist
+        run: |
+          cp build-info.json dist/build-info.json
+          cp version.json dist/version.json
 
       # Use the updated upload-pages-artifact action (v2) which uses supported upload-artifact
       - name: Upload Pages artifact
