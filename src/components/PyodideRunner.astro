@@ -213,6 +213,9 @@ const { code, title = "Python Code" } = Astro.props;
     button.addEventListener('click', function() {
       const btn = this as HTMLButtonElement;
       const runner = btn.closest('.pyodide-runner') as HTMLElement;
+      const codeWrapper = runner?.querySelector('.code-editor-wrapper') as HTMLElement;
+      const toggleBtn = runner?.querySelector('.toggle-code-btn') as HTMLButtonElement;
+      const textarea = runner?.querySelector('.python-code') as HTMLTextAreaElement;
       
       if (!runner) return;
       
@@ -221,9 +224,21 @@ const { code, title = "Python Code" } = Astro.props;
         runner.classList.remove('fullscreen');
         document.body.style.overflow = '';
       } else {
-        // Enter fullscreen
+        // Enter fullscreen - show code by default
         runner.classList.add('fullscreen');
         document.body.style.overflow = 'hidden';
+        
+        // Show code editor if it's hidden
+        if (codeWrapper && codeWrapper.style.display === 'none') {
+          codeWrapper.style.display = 'flex';
+          if (toggleBtn) {
+            toggleBtn.textContent = 'Hide Code';
+          }
+          // Auto-resize to fit content
+          if (textarea) {
+            autoResizeTextarea(textarea);
+          }
+        }
       }
     });
   });
