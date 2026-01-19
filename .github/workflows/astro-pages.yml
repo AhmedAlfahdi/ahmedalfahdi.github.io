@@ -49,9 +49,9 @@ jobs:
           cp build-info.json dist/build-info.json
           cp version.json dist/version.json
 
-      # Use the updated upload-pages-artifact action (v2) which uses supported upload-artifact
+      # Use the updated upload-pages-artifact action (v3) which uses supported upload-artifact@v4
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
 
@@ -61,6 +61,10 @@ jobs:
     permissions:
       pages: write
       id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+        id: deployment
+        uses: actions/deploy-pages@v4
