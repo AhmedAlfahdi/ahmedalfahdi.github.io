@@ -37,7 +37,8 @@ jobs:
           {
             "buildDate": "$BUILD_DATE",
             "buildTime": "$BUILD_TIME",
-            "timestamp": $TIMESTAMP
+            "timestamp": $TIMESTAMP,
+            "deployment": $GITHUB_RUN_NUMBER
           }
           EOF
 
