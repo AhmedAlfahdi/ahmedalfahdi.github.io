@@ -819,37 +819,43 @@ try {
       padding-bottom: 0.25rem;
       white-space: nowrap; /* keep long equations on a single line */
       min-width: 0; /* allow scroll container to shrink */
-      /* Better scrollbar visibility */
-      scrollbar-width: thin;
-      scrollbar-color: var(--accent-primary) transparent;
     }
 
-    /* WebKit scrollbar styling for katex */
-    .katex-display::-webkit-scrollbar {
-      height: 8px;
-    }
+    /* Desktop / larger screens - custom scrollbars for KaTeX */
+    @media (min-width: 521px) {
+      .katex-display {
+        /* Better scrollbar visibility */
+        scrollbar-width: thin;
+        scrollbar-color: var(--accent-primary) transparent;
+      }
 
-    .katex-display::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 4px;
-    }
+      /* WebKit scrollbar styling for katex */
+      .katex-display::-webkit-scrollbar {
+        height: 8px;
+      }
 
-    .katex-display::-webkit-scrollbar-thumb {
-      background: var(--accent-primary);
-      border-radius: 4px;
-    }
+      .katex-display::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+      }
 
-    .katex-display::-webkit-scrollbar-thumb:hover {
-      background: var(--accent-secondary);
-    }
+      .katex-display::-webkit-scrollbar-thumb {
+        background: var(--accent-primary);
+        border-radius: 4px;
+      }
 
-    /* Light theme scrollbar */
-    :root[data-theme="light"] .katex-display::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.05);
-    }
+      .katex-display::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-secondary);
+      }
 
-    :root[data-theme="light"] .katex-display::-webkit-scrollbar-thumb {
-      background: var(--accent-primary);
+      /* Light theme scrollbar */
+      :root[data-theme="light"] .katex-display::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      :root[data-theme="light"] .katex-display::-webkit-scrollbar-thumb {
+        background: var(--accent-primary);
+      }
     }
 
     .katex-display > .katex {
@@ -923,12 +929,7 @@ try {
     @media (max-width: 520px) {
       .katex-display {
         font-size: 0.9rem; /* slight downscale for narrow screens */
-        padding-bottom: 0.5rem; /* more space for scrollbar on mobile */
-      }
-      
-      /* Larger scrollbar on mobile for better visibility */
-      .katex-display::-webkit-scrollbar {
-        height: 10px;
+        padding-bottom: 0.5rem; /* a bit more space for native scrollbar on mobile */
       }
     }
 
@@ -2143,6 +2144,8 @@ try {
         const langEl = document.createElement('span');
         langEl.className = 'code-language';
         langEl.textContent = displayLang;
+        // Tooltip: explain long-press / tap wrap toggle
+        langEl.title = 'Long-press or long-tap this label to wrap / unwrap the code block';
         preEl.appendChild(langEl);
       }
     });
