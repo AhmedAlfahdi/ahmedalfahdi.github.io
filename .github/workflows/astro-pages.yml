@@ -42,13 +42,13 @@ jobs:
           }
           EOF
 
+      - name: Sync build/version json into public
+        run: |
+          cp build-info.json public/build-info.json
+          cp version.json public/version.json
+
       - name: Build site
         run: npm run build
-
-      - name: Copy build info into dist
-        run: |
-          cp build-info.json dist/build-info.json
-          cp version.json dist/version.json
 
       # Use the updated upload-pages-artifact action (v3) which uses supported upload-artifact@v4
       - name: Upload Pages artifact
