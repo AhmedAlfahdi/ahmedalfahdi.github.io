@@ -5,8 +5,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <BaseLayout title="Website Statistics - Detailed Analytics">
   <div class="container">
     <h1>Website Statistics</h1>
-    <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
       Detailed analytics and interactive visualizations of your website traffic.
+    </p>
+    <p style="margin-bottom: 2rem;">
+      <a href="/visitors-table" style="color: var(--accent-primary); text-decoration: none; font-weight: 600; border-bottom: 2px solid var(--accent-primary); padding-bottom: 2px;">
+        View detailed visitor data table with filters →
+      </a>
     </p>
     
     <div id="stats-loading" class="loading-message">
@@ -478,7 +483,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     mapLibreCss.crossOrigin = '';
     document.head.appendChild(mapLibreCss);
 
-    // Build structured popup HTML for the world map / globe
+    // Build structured popup HTML for a single visitor
     const buildVisitorPopupHtml = (visitor) => {
       if (!visitor) return '';
 
@@ -523,6 +528,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       `;
     };
 
+    // Popup for a location group: "N visitors" header + list of IPs (no custom marker)
+    const buildLocationGroupPopupHtml = (visitors, locationLabel) => {
+      if (!visitors || visitors.length === 0) return '';
+      const count = visitors.length;
+      const header = count === 1
+        ? `<div style="font-weight: 600; margin-bottom: 0.35rem;">${visitors[0].ip}</div>`
+        : `<div style="font-weight: 600; margin-bottom: 0.5rem;">${locationLabel || 'Same location'} — ${count} visitors</div>`;
+      const blocks = visitors.map((v) => {
+        const loc = [v.city, v.regionCode, v.countryCode].filter(Boolean).join(', ') || 'Unknown';
+        const meta = [v.path || '/', loc];
+        if (v.deviceType) meta.push(v.deviceType);
+        if (v.browser || v.os) meta.push([v.browser, v.os].filter(Boolean).join(' · '));
+        if (v.timestamp) {
+          try { meta.push(new Date(v.timestamp).toLocaleString()); } catch { /* ignore */ }
+        }
+        return `<div style="margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(42,53,66,0.5);"><span style="font-weight: 600;">${v.ip}</span><br/><span style="font-size: 0.75rem; color: var(--text-muted);">${meta.join(' · ')}</span></div>`;
+      }).join('');
+      return `<div style="min-width: 240px; max-height: 320px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.8rem;">${header}${blocks}</div>`;
+    };
+
     // Forward declaration so it can be used in onload callback and later
     function renderWorldMap(data) {
       if (!mapLibreLoaded || !window.maplibregl) return;
@@ -545,6 +570,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         return;
       }
 
+      // Group by rounded lat/lng so multiple IPs from same location = one marker
+      const ROUND = 2;
+      const key = (v) => `${v.latitude.toFixed(ROUND)},${v.longitude.toFixed(ROUND)}`;
+      const groups = new Map();
+      for (const v of points) {
+        const k = key(v);
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(v);
+      }
+
       // Create map once
       if (!mapInstance) {
         mapInstance = new window.maplibregl.Map({
@@ -561,15 +596,53 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       const bounds = new window.maplibregl.LngLatBounds();
 
-      points.forEach(visitor => {
-        const lngLat = [visitor.longitude, visitor.latitude];
+      groups.forEach((visitors) => {
+        const v0 = visitors[0];
+        const lngLat = [v0.longitude, v0.latitude];
         bounds.extend(lngLat);
+
+        const locationLabel = [v0.city, v0.regionCode, v0.countryCode].filter(Boolean).join(', ') || 'Unknown';
+        const popupHtml = buildLocationGroupPopupHtml(visitors, locationLabel);
+        const count = visitors.length;
+        const tooltip = count === 1 ? '1 visitor' : `${count} visitors`;
+
+        const popup = new window.maplibregl.Popup({
+          offset: 12,
+          closeButton: false,
+          closeOnClick: false,
+        }).setLngLat(lngLat).setHTML(popupHtml);
+
+        let popupOpen = false;
+        popup.on('open', () => { popupOpen = true; });
+        popup.on('close', () => { popupOpen = false; });
 
         const marker = new window.maplibregl.Marker({ color: '#f5a524' })
           .setLngLat(lngLat)
-          .setPopup(new window.maplibregl.Popup({ offset: 12 }).setHTML(buildVisitorPopupHtml(visitor)));
+          .setPopup(popup);
 
         marker.addTo(mapInstance);
+        const markerEl = marker.getElement();
+        if (markerEl) {
+          markerEl.setAttribute('title', tooltip);
+          let closeTimeout;
+          const cancelClose = () => { clearTimeout(closeTimeout); closeTimeout = null; };
+          const doClose = () => {
+            cancelClose();
+            if (popupOpen) popup.remove();
+          };
+          markerEl.addEventListener('mouseenter', () => {
+            cancelClose();
+            if (!popupOpen) popup.addTo(mapInstance);
+            const popupEl = mapInstance.getContainer().querySelector('.maplibregl-popup');
+            if (popupEl) {
+              popupEl.addEventListener('mouseenter', cancelClose);
+              popupEl.addEventListener('mouseleave', doClose, { once: true });
+            }
+          });
+          markerEl.addEventListener('mouseleave', () => {
+            closeTimeout = setTimeout(doClose, 150);
+          });
+        }
         mapMarkers.push(marker);
       });
 

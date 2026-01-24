@@ -154,6 +154,7 @@
     // Configuration
     const API_BASE = import.meta.env.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api';
     const API_ENDPOINT = `${API_BASE}/track`;
+    const LOG_ENDPOINT = `${API_BASE}/log`; // Server-side backup endpoint
     
     let tracked = false;
     let pageStartTime = Date.now();
@@ -189,15 +190,61 @@
       }
     };
     
+    // Fallback: Image pixel tracking (harder to block)
+    const trackViaPixel = (path, referrer) => {
+      try {
+        const params = new URLSearchParams({
+          path: path || window.location.pathname,
+          ref: referrer || document.referrer || 'direct',
+          t: Date.now().toString(), // Cache buster
+        });
+        const img = new Image(1, 1);
+        img.src = `${LOG_ENDPOINT}?${params.toString()}`;
+        img.style.display = 'none';
+        document.body.appendChild(img);
+        // Remove after a delay
+        setTimeout(() => {
+          if (img.parentNode) img.parentNode.removeChild(img);
+        }, 1000);
+        return true;
+      } catch (e) {
+        console.warn('Pixel tracking failed:', e);
+        return false;
+      }
+    };
+
+    // Fallback: Server-side logging via fetch (if pixel fails)
+    const trackViaServerLog = async (path, referrer) => {
+      try {
+        const params = new URLSearchParams({
+          path: path || window.location.pathname,
+          ref: referrer || document.referrer || 'direct',
+          t: Date.now().toString(),
+        });
+        await fetch(`${LOG_ENDPOINT}?${params.toString()}`, {
+          method: 'GET',
+          mode: 'no-cors', // Works even if CORS is blocked
+          cache: 'no-store',
+        });
+        return true;
+      } catch (e) {
+        console.warn('Server log tracking failed:', e);
+        return false;
+      }
+    };
+
     const trackVisit = async () => {
       if (tracked) return;
       tracked = true;
       
+      const timestamp = new Date().toISOString();
+      const userAgent = navigator.userAgent;
+      const referrer = document.referrer || 'direct';
+      const path = window.location.pathname;
+      
+      // Try primary tracking method (detailed client-side data)
+      let primarySuccess = false;
       try {
-        const timestamp = new Date().toISOString();
-        const userAgent = navigator.userAgent;
-        const referrer = document.referrer || 'direct';
-        
         const deviceInfo = parseUserAgent(userAgent);
         const trafficSource = parseTrafficSource(referrer);
         const sessionId = getSessionId();
@@ -205,7 +252,7 @@
         const timePatterns = getTimePatterns(timestamp);
         
         const pageData = {
-          path: window.location.pathname,
+          path: path,
           referrer: referrer,
           userAgent: userAgent,
           timestamp: timestamp,
@@ -235,12 +282,13 @@
           keepalive: true,
         });
         
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.warn('Analytics tracking failed:', response.status, response.statusText, errorText);
-        } else {
+        if (response.ok) {
           const result = await response.json();
           console.log('Visit tracked successfully:', result);
+          primarySuccess = true;
+        } else {
+          const errorText = await response.text();
+          console.warn('Analytics tracking failed:', response.status, response.statusText, errorText);
         }
         
         window.addEventListener('beforeunload', () => trackPageExit(pageData));
@@ -252,7 +300,18 @@
         });
         
       } catch (error) {
-        console.error('Analytics tracking error:', error);
+        console.warn('Primary analytics tracking error:', error);
+      }
+      
+      // Fallback: If primary tracking failed, use server-side logging
+      if (!primarySuccess) {
+        console.log('Using fallback tracking methods...');
+        // Try image pixel first (hardest to block)
+        const pixelSuccess = trackViaPixel(path, referrer);
+        // If pixel also fails, try fetch with no-cors
+        if (!pixelSuccess) {
+          await trackViaServerLog(path, referrer);
+        }
       }
     };
     
