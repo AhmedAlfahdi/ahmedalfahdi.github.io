@@ -124,14 +124,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </div>
         </div>
 
-        <h2>World Map - Recent Visitors</h2>
+        <h2>World Map - Unique Visitors</h2>
         <div id="world-map" class="world-map"></div>
-        
-        <h2>Top Pages (Table)</h2>
-        <div id="top-pages-table" class="pages-table"></div>
-        
-        <h2>Traffic Sources (Detailed)</h2>
-        <div id="traffic-sources-table" class="pages-table"></div>
       </div>
     </div>
   </div>
@@ -402,6 +396,43 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   :global(.world-map .leaflet-bottom) {
     z-index: 0;
   }
+
+  /* Map popup: constrain height, fix scrollbar, and ensure readable text */
+  :global(.world-map .maplibregl-popup-content) {
+    max-height: 340px;
+    overflow: hidden;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+  }
+  :global(.world-map .maplibregl-popup-content > div > div:first-child) {
+    color: var(--text-primary);
+  }
+  :global(.world-map .maplibregl-popup-content > div) {
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    /* Force visible scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-primary, #f5a524) rgba(42, 53, 66, 0.5);
+  }
+  :global(.world-map .maplibregl-popup-content > div::-webkit-scrollbar) {
+    width: 8px;
+  }
+  :global(.world-map .maplibregl-popup-content > div::-webkit-scrollbar-track) {
+    background: rgba(42, 53, 66, 0.5);
+    border-radius: 4px;
+  }
+  :global(.world-map .maplibregl-popup-content > div::-webkit-scrollbar-thumb) {
+    background: var(--accent-primary, #f5a524);
+    border-radius: 4px;
+  }
+  :global(.world-map .maplibregl-popup-content > div::-webkit-scrollbar-thumb:hover) {
+    background: #e69518;
+  }
   
   .pages-table,
   .visitors-table {
@@ -519,8 +550,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       return `
-        <div style="min-width: 220px; font-family: var(--font-mono); font-size: 0.8rem;">
-          <div style="font-weight: 600; margin-bottom: 0.35rem;">${visitor.ip}</div>
+        <div style="min-width: 220px; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-primary);">
+          <div style="font-weight: 600; margin-bottom: 0.35rem; color: var(--text-primary);">${visitor.ip}</div>
           <ul style="padding-left: 1.1rem; margin: 0;">
             ${lines.join('')}
           </ul>
@@ -533,8 +564,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!visitors || visitors.length === 0) return '';
       const count = visitors.length;
       const header = count === 1
-        ? `<div style="font-weight: 600; margin-bottom: 0.35rem;">${visitors[0].ip}</div>`
-        : `<div style="font-weight: 600; margin-bottom: 0.5rem;">${locationLabel || 'Same location'} — ${count} visitors</div>`;
+        ? `<div style="font-weight: 600; margin-bottom: 0.35rem; color: var(--text-primary);">${visitors[0].ip}</div>`
+        : `<div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">${locationLabel || 'Same location'} — ${count} unique visitor${count === 1 ? '' : 's'}</div>`;
       const blocks = visitors.map((v) => {
         const loc = [v.city, v.regionCode, v.countryCode].filter(Boolean).join(', ') || 'Unknown';
         const meta = [v.path || '/', loc];
@@ -543,9 +574,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if (v.timestamp) {
           try { meta.push(new Date(v.timestamp).toLocaleString()); } catch { /* ignore */ }
         }
-        return `<div style="margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(42,53,66,0.5);"><span style="font-weight: 600;">${v.ip}</span><br/><span style="font-size: 0.75rem; color: var(--text-muted);">${meta.join(' · ')}</span></div>`;
+        return `<div style="margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(42,53,66,0.5);"><span style="font-weight: 600; color: var(--text-primary);">${v.ip}</span><br/><span style="font-size: 0.75rem; color: var(--text-secondary);">${meta.join(' · ')}</span></div>`;
       }).join('');
-      return `<div style="min-width: 240px; max-height: 320px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.8rem;">${header}${blocks}</div>`;
+      return `<div style="min-width: 240px; max-height: 320px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-primary);">${header}${blocks}</div>`;
     };
 
     // Forward declaration so it can be used in onload callback and later
@@ -560,17 +591,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         return;
       }
 
-      const points = data.recentVisitors.filter(v =>
+      const pointsWithCoords = data.recentVisitors.filter(v =>
         typeof v.latitude === 'number' &&
         typeof v.longitude === 'number'
       );
 
-      if (points.length === 0) {
+      if (pointsWithCoords.length === 0) {
         mapEl.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:0.9rem;">Recent visitors do not include geolocation coordinates.</div>';
         return;
       }
 
-      // Group by rounded lat/lng so multiple IPs from same location = one marker
+      // Deduplicate by IP so we only show unique visitors (one marker per IP)
+      const seenIp = new Set();
+      const points = pointsWithCoords.filter((v) => {
+        const ip = v.ip || v.ipAddress || '';
+        if (ip && seenIp.has(ip)) return false;
+        if (ip) seenIp.add(ip);
+        return true;
+      });
+
+      // Group by rounded lat/lng so unique IPs from same location = one marker
       const ROUND = 2;
       const key = (v) => `${v.latitude.toFixed(ROUND)},${v.longitude.toFixed(ROUND)}`;
       const groups = new Map();
@@ -604,7 +644,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         const locationLabel = [v0.city, v0.regionCode, v0.countryCode].filter(Boolean).join(', ') || 'Unknown';
         const popupHtml = buildLocationGroupPopupHtml(visitors, locationLabel);
         const count = visitors.length;
-        const tooltip = count === 1 ? '1 visitor' : `${count} visitors`;
+        const tooltip = count === 1 ? '1 unique visitor' : `${count} unique visitors`;
 
         const popup = new window.maplibregl.Popup({
           offset: 12,
@@ -1251,32 +1291,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               }
             }
           });
-        }
-        
-        // Top Pages Table
-        const topPagesEl = document.getElementById('top-pages-table');
-        if (data.topPages && data.topPages.length > 0) {
-          topPagesEl.innerHTML = data.topPages.map(page => `
-            <div class="table-row">
-              <span class="table-path">${page.path}</span>
-              <span class="table-count">${page.count} views</span>
-            </div>
-          `).join('');
-        } else {
-          topPagesEl.innerHTML = '<p style="padding: 1rem; color: var(--text-muted);">No page data available</p>';
-        }
-        
-        // Traffic Sources Table
-        const trafficSourcesEl = document.getElementById('traffic-sources-table');
-        if (data.trafficSources && data.trafficSources.length > 0) {
-          trafficSourcesEl.innerHTML = data.trafficSources.map(source => `
-            <div class="table-row">
-              <span class="table-path">${source.source}</span>
-              <span class="table-count">${source.count} visits</span>
-            </div>
-          `).join('');
-        } else {
-          trafficSourcesEl.innerHTML = '<p style="padding: 1rem; color: var(--text-muted);">No traffic source data available</p>';
         }
         
         // World map: store data globally for when MapLibre is ready and render
