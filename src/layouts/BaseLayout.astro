@@ -568,6 +568,9 @@ try {
       position: absolute;
       top: 0.5rem;
       left: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
       font-size: 0.7rem;
       font-family: var(--font-mono);
       color: var(--text-muted);
@@ -582,6 +585,16 @@ try {
       z-index: 2;
       transition: all 0.2s ease;
       user-select: none;
+    }
+
+    pre .code-language-icon {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    pre .code-language-icon svg {
+      display: block;
     }
 
     pre .code-language:hover {
@@ -2141,11 +2154,31 @@ try {
         const formattedLang = langMap[language.toLowerCase()] || language.toLowerCase();
         const displayLang = formattedLang.charAt(0).toUpperCase() + formattedLang.slice(1);
         
+        // Icons for common languages (inline SVG, currentColor for theme)
+        const langIcons = {
+          javascript: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2"/><path d="M15 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2"/></svg>',
+          typescript: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 12h8M8 16h5"/></svg>',
+          python: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M10 13h4"/></svg>',
+          bash: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>',
+          html: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+          css: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2"/><path d="M15 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2"/></svg>',
+          json: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2"/><path d="M15 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2"/></svg>',
+          yaml: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h6M8 16h4"/></svg>',
+          markdown: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12l4-4 4 4"/><path d="M6 12v6"/><path d="M18 12v6"/><line x1="10" y1="8" x2="10" y2="18"/><line x1="14" y1="8" x2="14" y2="18"/></svg>',
+          assembly: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>',
+          arm: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>',
+          arm64: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>',
+          xml: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+        };
+        const defaultIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>';
+        const icon = langIcons[formattedLang] || defaultIcon;
+        const safeLang = displayLang.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        
         const langEl = document.createElement('span');
         langEl.className = 'code-language';
-        langEl.textContent = displayLang;
-        // Tooltip: explain long-press / tap wrap toggle
-        langEl.title = 'Long-press or long-tap this label to wrap / unwrap the code block';
+        langEl.innerHTML = '<span class="code-language-icon">' + icon + '</span><span class="code-language-text">' + safeLang + '</span>';
+        // Tooltip: explain long-press wrap toggle and double-click copy
+        langEl.title = 'Long-press or long-tap this label to wrap / unwrap the code block. Double-click anywhere on the code block to copy it.';
         preEl.appendChild(langEl);
       }
     });

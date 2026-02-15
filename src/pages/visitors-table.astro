@@ -1,9 +1,26 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { createHash } from 'crypto';
+
+const password = import.meta.env.PUBLIC_VISITORS_TABLE_PASSWORD || 'visitors';
+const expectedHash = createHash('sha256').update(password).digest('hex');
 ---
 
 <BaseLayout title="Visitor Data Table - Website Statistics">
-  <div class="container">
+  <div class="container" data-expected-hash={expectedHash}>
+    <div id="password-gate" class="password-gate">
+      <div class="password-gate-card">
+        <h2>Password Required</h2>
+        <p class="password-gate-desc">This page is protected. Enter the password to view visitor data.</p>
+        <form id="password-form" class="password-form">
+          <input type="password" id="password-input" placeholder="Enter password" autocomplete="current-password" />
+          <button type="submit" class="btn-primary">Unlock</button>
+        </form>
+        <p id="password-error" class="password-error" style="display: none;">Incorrect password. Please try again.</p>
+      </div>
+    </div>
+
+    <div id="table-area" style="display: none;">
     <h1>Visitor Data Table</h1>
     <p style="color: var(--text-secondary); margin-bottom: 2rem;">
       Detailed view of all visitors with filtering capabilities.
@@ -60,10 +77,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <label for="filter-source">Source</label>
             <input type="text" id="filter-source" placeholder="Filter by source..." />
           </div>
+          <div class="filter-group">
+            <label for="filter-date-from">Date From</label>
+            <input type="date" id="filter-date-from" />
+          </div>
+          <div class="filter-group">
+            <label for="filter-date-to">Date To</label>
+            <input type="date" id="filter-date-to" />
+          </div>
+          <div class="filter-group filter-group-toggle">
+            <label for="filter-unique-only">View mode</label>
+            <label class="toggle-label">
+              <input type="checkbox" id="filter-unique-only" checked />
+              <span>Unique visitors only</span>
+            </label>
+            <small class="filter-hint">One row per IP; shows most recent visit and visit count</small>
+          </div>
         </div>
         <div class="filter-actions">
           <button id="clear-filters" class="btn-secondary">Clear All Filters</button>
-          <span id="filter-count" class="filter-count">Showing <span id="filter-count-value">0</span> of <span id="filter-total-value">0</span> visitors</span>
+          <span id="filter-count" class="filter-count">Showing <span id="filter-count-value">0</span> of <span id="filter-total-value">0</span> <span id="filter-count-label">visitors</span></span>
         </div>
       </div>
       
@@ -73,6 +106,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <table id="visitors-table" class="visitors-table">
             <thead>
               <tr>
+                <th data-sort="visits" class="visits-col" style="display: none;">Visits <span class="sort-indicator"></span></th>
                 <th data-sort="timestamp">Timestamp <span class="sort-indicator"></span></th>
                 <th data-sort="ip">IP Address <span class="sort-indicator"></span></th>
                 <th data-sort="path">Path <span class="sort-indicator"></span></th>
@@ -92,10 +126,71 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
       </div>
     </div>
+    </div>
   </div>
 </BaseLayout>
 
 <style>
+  .password-gate {
+    min-height: 40vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  .password-gate-card {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 360px;
+    width: 100%;
+  }
+  .password-gate-card h2 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+  }
+  .password-gate-desc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0 0 1.5rem 0;
+  }
+  .password-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .password-form input {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+  }
+  .password-form input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+  }
+  .password-form .btn-primary {
+    padding: 0.6rem 1rem;
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .password-form .btn-primary:hover {
+    filter: brightness(1.1);
+  }
+  .password-error {
+    margin: 1rem 0 0 0;
+    color: #e1695d;
+    font-size: 0.9rem;
+  }
+
   .loading-message,
   .error-message {
     padding: 1.5rem;
@@ -165,6 +260,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     outline: none;
     border-color: var(--accent-primary);
     box-shadow: 0 0 0 3px rgba(245, 165, 36, 0.1);
+  }
+
+  .filter-group-toggle .toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    text-transform: none;
+    font-weight: 500;
+  }
+  .filter-group-toggle .toggle-label input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--accent-primary);
+  }
+  .filter-hint {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
   }
   
   .filter-actions {
@@ -337,6 +451,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <script>
   if (typeof window !== 'undefined') {
+    const AUTH_KEY = 'visitors-table-auth';
     const API_BASE = import.meta.env.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api';
     const API_ENDPOINT = `${API_BASE}/stats`;
 
@@ -350,7 +465,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const contentEl = document.getElementById('table-content');
 
       try {
-        const response = await fetch(API_ENDPOINT, {
+        const response = await fetch(`${API_ENDPOINT}?limit=100000`, {
           method: 'GET',
           headers: { 'Accept': 'application/json' },
           cache: 'no-cache',
@@ -366,8 +481,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           throw new Error('Invalid data format: recentVisitors not found');
         }
 
-        // Get all visitors
-        allVisitors = data.recentVisitors;
+        // Get all visitors, excluding localhost
+        const localhostIps = ['127.0.0.1', '::1', 'localhost'];
+        allVisitors = data.recentVisitors.filter(v => {
+          const ip = (v.ip || '').toLowerCase().trim();
+          return !localhostIps.includes(ip);
+        });
         
         // Populate filter dropdowns with unique values
         populateFilterOptions(allVisitors);
@@ -434,9 +553,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         browser: document.getElementById('filter-browser').value,
         os: document.getElementById('filter-os').value,
         source: document.getElementById('filter-source').value.toLowerCase().trim(),
+        dateFrom: document.getElementById('filter-date-from').value,
+        dateTo: document.getElementById('filter-date-to').value,
       };
 
-      filteredVisitors = allVisitors.filter(visitor => {
+      let baseFiltered = allVisitors.filter(visitor => {
         if (filters.ip && !(visitor.ip || '').toLowerCase().includes(filters.ip)) return false;
         if (filters.path && !(visitor.path || '').toLowerCase().includes(filters.path)) return false;
         if (filters.city && !(visitor.city || '').toLowerCase().includes(filters.city)) return false;
@@ -445,8 +566,37 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if (filters.browser && visitor.browser !== filters.browser) return false;
         if (filters.os && visitor.os !== filters.os) return false;
         if (filters.source && !(visitor.source || visitor.sourceType || '').toLowerCase().includes(filters.source)) return false;
+        if (filters.dateFrom || filters.dateTo) {
+          const ts = visitor.timestamp ? new Date(visitor.timestamp) : null;
+          if (!ts || isNaN(ts.getTime())) return false;
+          const visitorDate = ts.toISOString().slice(0, 10);
+          if (filters.dateFrom && visitorDate < filters.dateFrom) return false;
+          if (filters.dateTo && visitorDate > filters.dateTo) return false;
+        }
         return true;
       });
+
+      const uniqueOnly = document.getElementById('filter-unique-only')?.checked ?? false;
+      if (uniqueOnly) {
+        const byIp = new Map();
+        baseFiltered.forEach(v => {
+          const ip = v.ip || 'unknown';
+          const existing = byIp.get(ip);
+          if (!existing) {
+            byIp.set(ip, { ...v, visits: 1 });
+          } else {
+            existing.visits += 1;
+            const vTs = v.timestamp ? new Date(v.timestamp).getTime() : 0;
+            const eTs = existing.timestamp ? new Date(existing.timestamp).getTime() : 0;
+            if (vTs > eTs) {
+              Object.assign(existing, v, { visits: existing.visits });
+            }
+          }
+        });
+        filteredVisitors = Array.from(byIp.values());
+      } else {
+        filteredVisitors = baseFiltered;
+      }
 
       applySort();
       renderTable();
@@ -459,8 +609,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         let aVal = a[field] || '';
         let bVal = b[field] || '';
 
-        // Handle timestamp sorting
-        if (field === 'timestamp') {
+        // Handle numeric sorting (visits, timestamp)
+        if (field === 'visits') {
+          aVal = a.visits ?? 0;
+          bVal = b.visits ?? 0;
+        } else if (field === 'timestamp') {
           aVal = aVal ? new Date(aVal).getTime() : 0;
           bVal = bVal ? new Date(bVal).getTime() : 0;
         } else {
@@ -481,10 +634,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const tbody = document.getElementById('visitors-tbody');
       if (!tbody) return;
 
+      const uniqueOnly = document.getElementById('filter-unique-only')?.checked ?? false;
+      const visitsCol = document.querySelector('.visits-col');
+      if (visitsCol) visitsCol.style.display = uniqueOnly ? '' : 'none';
+
       if (filteredVisitors.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="10" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+            <td colspan="11" style="text-align: center; padding: 2rem; color: var(--text-muted);">
               No visitors match the current filters.
             </td>
           </tr>
@@ -501,8 +658,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           .filter(Boolean)
           .join(', ') || '<span class="empty-cell">—</span>';
 
+        const visitsCell = uniqueOnly ? `<td><span class="badge">${visitor.visits ?? 1}</span></td>` : '';
         return `
           <tr>
+            ${visitsCell}
             <td>${timestamp}</td>
             <td><code>${visitor.ip || '<span class="empty-cell">—</span>'}</code></td>
             <td><code>${visitor.path || '/'}</code></td>
@@ -532,11 +691,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const updateFilterCount = () => {
       const countEl = document.getElementById('filter-count-value');
       const totalEl = document.getElementById('filter-total-value');
+      const labelEl = document.getElementById('filter-count-label');
+      const uniqueOnly = document.getElementById('filter-unique-only')?.checked ?? false;
       if (countEl) countEl.textContent = filteredVisitors.length;
       if (totalEl) totalEl.textContent = allVisitors.length;
+      if (labelEl) labelEl.textContent = uniqueOnly ? 'unique visitors' : 'visitors';
     };
 
     const clearFilters = () => {
+      const uniqueOnly = document.getElementById('filter-unique-only');
+      if (uniqueOnly) uniqueOnly.checked = false;
       document.getElementById('filter-ip').value = '';
       document.getElementById('filter-path').value = '';
       document.getElementById('filter-city').value = '';
@@ -545,15 +709,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       document.getElementById('filter-browser').value = '';
       document.getElementById('filter-os').value = '';
       document.getElementById('filter-source').value = '';
+      document.getElementById('filter-date-from').value = '';
+      document.getElementById('filter-date-to').value = '';
       applyFilters();
     };
 
-    // Event listeners
-    document.addEventListener('DOMContentLoaded', () => {
-      loadVisitors();
+    const sha256 = async (msg) => {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    };
 
-      // Filter inputs
-      ['filter-ip', 'filter-path', 'filter-city', 'filter-country', 'filter-device', 'filter-browser', 'filter-os', 'filter-source'].forEach(id => {
+    const setupTableListeners = () => {
+      ['filter-ip', 'filter-path', 'filter-city', 'filter-country', 'filter-device', 'filter-browser', 'filter-os', 'filter-source', 'filter-date-from', 'filter-date-to', 'filter-unique-only'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
           if (el.tagName === 'INPUT') {
@@ -563,14 +730,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           }
         }
       });
-
-      // Clear filters button
       const clearBtn = document.getElementById('clear-filters');
-      if (clearBtn) {
-        clearBtn.addEventListener('click', clearFilters);
-      }
-
-      // Sortable table headers
+      if (clearBtn) clearBtn.addEventListener('click', clearFilters);
       document.querySelectorAll('.visitors-table th[data-sort]').forEach(th => {
         th.addEventListener('click', () => {
           const field = th.getAttribute('data-sort');
@@ -584,6 +745,55 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           renderTable();
         });
       });
-    });
+    };
+
+    const showTable = () => {
+      document.getElementById('password-gate').style.display = 'none';
+      document.getElementById('table-area').style.display = 'block';
+      setupTableListeners();
+      loadVisitors();
+    };
+
+    const checkAuth = (expectedHash) => {
+      if (!expectedHash) return false;
+      if (sessionStorage.getItem(AUTH_KEY) === expectedHash) {
+        showTable();
+        return true;
+      }
+      return false;
+    };
+
+    const initPasswordGate = () => {
+      const container = document.querySelector('[data-expected-hash]');
+      const expectedHash = container?.getAttribute('data-expected-hash') || '';
+      if (!expectedHash) console.error('Password hash not found');
+
+      if (checkAuth(expectedHash)) return;
+
+      const form = document.getElementById('password-form');
+      const input = document.getElementById('password-input');
+      const errorEl = document.getElementById('password-error');
+      if (!form || !input) return;
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const hash = await sha256(input.value);
+        if (hash === expectedHash) {
+          sessionStorage.setItem(AUTH_KEY, hash);
+          errorEl.style.display = 'none';
+          showTable();
+        } else {
+          errorEl.style.display = 'block';
+          input.value = '';
+          input.focus();
+        }
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPasswordGate);
+    } else {
+      initPasswordGate();
+    }
   }
 </script>
