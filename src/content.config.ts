@@ -1,7 +1,9 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
+import { z } from 'astro/zod';
+import { glob } from 'astro/loaders';
 
 const coding = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/coding' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -14,7 +16,7 @@ const coding = defineCollection({
 });
 
 const notes = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/notes' }),
   schema: z.object({
     title: z.string(),
     description: z.string().optional(),
@@ -24,7 +26,7 @@ const notes = defineCollection({
 });
 
 const engineering = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/engineering' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -36,7 +38,7 @@ const engineering = defineCollection({
 });
 
 const career = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/career' }),
   schema: z.object({
     title: z.string(),
     company: z.string().optional(),

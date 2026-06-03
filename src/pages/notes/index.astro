@@ -50,7 +50,7 @@ const allTags = [...new Set(notes.flatMap(note => note.data.tags || []))].sort()
     <div class="list">
       {sortedNotes.map(note => (
         <a
-          href={`/notes/${note.slug}`}
+          href={`/notes/${note.id.split('/').pop()}`}
           class="list-item"
           data-tags={note.data.tags?.join(',') || ''}
           data-title={note.data.title.toLowerCase()}

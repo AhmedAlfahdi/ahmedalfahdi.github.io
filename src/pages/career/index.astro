@@ -30,7 +30,7 @@ const sortedCareer = timelineCareer.sort((a, b) => {
             </span>
           </div>
           <div class="content-col">
-            <a href={`/career/${job.slug}`} class="job-card">
+            <a href={`/career/${job.id.split('/').pop()}`} class="job-card">
               <h2>{job.data.role}</h2>
               <h3>{job.data.company}</h3>
               {job.data.location && <span class="location">{job.data.location}</span>}

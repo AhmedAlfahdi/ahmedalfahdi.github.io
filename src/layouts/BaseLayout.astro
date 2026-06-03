@@ -17,8 +17,9 @@ const siteVersion = versionData.version;
 import pkg from '../../package.json';
 const astroVersion = pkg.dependencies.astro.replace('^', '');
 const threeVersion = pkg.dependencies.three.replace('^', '');
-const mermaidVersion = pkg.dependencies.mermaid.replace('^', '');
-const pdfjsVersion = pkg.dependencies['pdfjs-dist'].replace('^', '');
+// CDN versions (not in package.json — loaded at runtime)
+const mermaidVersion = '11.12.2';
+const pdfjsVersion = '5.4.624';
 // KaTeX version - defined here and used in CDN link below
 const katexVersion = '0.16.9';
 // MapLibre GL JS is loaded via CDN, not in package.json - keep as constant

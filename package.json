@@ -10,19 +10,15 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.17.2",
-    "marked": "^17.0.2",
-    "mermaid": "^11.12.2",
-    "pdfjs-dist": "^5.4.624",
+    "astro": "^6.4.0",
     "rehype-katex": "^7.0.1",
-    "rehype-mermaid": "^3.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "three": "^0.182.0",
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
-    "@astrojs/mdx": "^4.3.13",
+    "@astrojs/mdx": "^6.0.0",
     "@types/three": "^0.182.0"
   }
 }

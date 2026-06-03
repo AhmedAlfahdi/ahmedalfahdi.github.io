@@ -47,7 +47,7 @@ src/
 │   ├── notes/          # Technical notes
 │   ├── coding/         # Coding projects
 │   ├── engineering/    # Engineering projects
-│   └── config.ts       # Content schemas
+│   └── content.config.ts  # Content schemas (Astro 6 Content Layer API)
 └── utils/
     ├── remark-wikilinks.mjs
     └── analytics-helpers.js

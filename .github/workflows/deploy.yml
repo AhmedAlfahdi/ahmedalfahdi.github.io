@@ -28,7 +28,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           
       - name: Install dependencies
         run: npm install
@@ -43,11 +43,8 @@ jobs:
           NODE_VERSION=$(node --version)
           ASTRO_VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.dependencies.astro.replace('^', ''))" || echo "unknown")
           THREE_VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.dependencies.three.replace('^', ''))" || echo "unknown")
-          MERMAID_VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.dependencies.mermaid.replace('^', ''))" || echo "unknown")
-          PDFJS_VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.dependencies['pdfjs-dist'].replace('^', ''))" || echo "unknown")
-          MARKED_VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.dependencies.marked.replace('^', ''))" || echo "unknown")
           echo "Generating build-info.json with timestamp: $BUILD_DATE at $BUILD_TIME UTC (deployment $GITHUB_RUN_NUMBER)"
-          echo "Versions: Node=$NODE_VERSION, Astro=$ASTRO_VERSION, Three=$THREE_VERSION, Mermaid=$MERMAID_VERSION, PDFjs=$PDFJS_VERSION, Marked=$MARKED_VERSION"
+          echo "Versions: Node=$NODE_VERSION, Astro=$ASTRO_VERSION, Three=$THREE_VERSION"
           cat <<EOF > build-info.json
           {
             "buildDate": "$BUILD_DATE",
@@ -58,10 +55,7 @@ jobs:
             "gitBranch": "$GIT_BRANCH",
             "nodeVersion": "$NODE_VERSION",
             "astroVersion": "$ASTRO_VERSION",
-            "threeVersion": "$THREE_VERSION",
-            "mermaidVersion": "$MERMAID_VERSION",
-            "pdfjsVersion": "$PDFJS_VERSION",
-            "markedVersion": "$MARKED_VERSION"
+            "threeVersion": "$THREE_VERSION"
           }
           EOF
           cat build-info.json

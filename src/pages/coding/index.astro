@@ -13,7 +13,7 @@ const sortedProjects = projects.sort((a, b) => b.data.date.valueOf() - a.data.da
     
     <div class="grid">
       {sortedProjects.map(project => (
-        <a href={`/coding/${project.slug}`} class="card">
+        <a href={`/coding/${project.id.split('/').pop()}`} class="card">
           <h2>{project.data.title}</h2>
           <p>{project.data.description}</p>
           <div class="meta">
