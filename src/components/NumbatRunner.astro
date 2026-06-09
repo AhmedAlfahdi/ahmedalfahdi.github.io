@@ -1,0 +1,480 @@
+---
+// NumbatRunner - Scientific calculator powered by Numbat WASM
+// Self-contained component: loads Numbat WASM, provides REPL with history
+---
+
+<div class="numbat-runner">
+  <!-- Header -->
+  <div class="nb-header">
+    <span class="nb-title">🧮 Numbat Calculator</span>
+    <div class="nb-header-actions">
+      <button class="nb-btn nb-btn-ghost" id="nb-btn-clear" title="Clear history">Clear</button>
+      <button class="nb-btn nb-btn-ghost" id="nb-btn-reset" title="Reset session">Reset</button>
+      <button class="nb-btn nb-btn-ghost" id="nb-btn-expand" title="Expand/collapse history">⛶</button>
+    </div>
+  </div>
+
+  <!-- History Panel -->
+  <div class="nb-history" id="nb-history">
+    <div class="nb-startup-banner" id="nb-startup">
+      <p class="nb-startup-intro">A statically-typed calculator that tracks physical units — no more mixing meters with seconds by accident. Define variables, write functions, and convert between any units.</p>
+      <p class="nb-startup-note">Numbers use <code>_</code> as thousands separator (e.g.&nbsp;<code>299_792_458</code>) — purely cosmetic, commas are reserved for lists.</p>
+      <div class="nb-startup-example"><span class="nb-startup-prompt">&gt;</span> <span class="nb-startup-code">2 m + 3 ft</span></div>
+      <div class="nb-startup-example"><span class="nb-startup-prompt">&gt;</span> <span class="nb-startup-code">60 mph -> m/s</span></div>
+      <div class="nb-startup-example"><span class="nb-startup-prompt">&gt;</span> <span class="nb-startup-code">100 degree_celsius -> degree_fahrenheit</span></div>
+      <div class="nb-startup-example"><span class="nb-startup-prompt">&gt;</span> <span class="nb-startup-code">100 degree_celsius to degree_fahrenheit</span></div>
+      <div class="nb-startup-example"><span class="nb-startup-prompt">&gt;</span> <span class="nb-startup-code">let mass = 80 kg</span></div>
+      <div class="nb-startup-example"><span class="nb-startup-prompt">&gt;</span> <span class="nb-startup-code">let energy = 0.5 * mass * (30 mph)^2</span></div>
+      <div class="nb-startup-example"><span class="nb-startup-prompt">&gt;</span> <span class="nb-startup-code">energy -> kJ</span></div>
+      <div class="nb-startup-example"><span class="nb-startup-prompt">&gt;</span> <span class="nb-startup-code">list</span></div>
+      <div class="nb-startup-tips">
+        <span>Convert with <code>-></code> or <code>to</code></span>
+        <span><kbd>Enter</kbd> run</span>
+        <span><kbd>Tab</kbd> complete</span>
+        <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> history</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="nb-input-area">
+    <div class="nb-input-row">
+      <textarea
+        id="nb-input"
+        class="nb-input"
+        rows="1"
+        placeholder="Enter a Numbat expression…"
+        spellcheck="false"
+        autofocus
+      ></textarea>
+      <script is:inline>document.getElementById('nb-input')?.focus()</script>
+      <button class="nb-btn nb-btn-run" id="nb-btn-run" title="Run (Enter)">⏎</button>
+    </div>
+
+    <!-- Operator Buttons -->
+    <div class="nb-operator-row">
+      <button class="nb-chip nb-op" data-op=" + ">+</button>
+      <button class="nb-chip nb-op" data-op=" - ">&minus;</button>
+      <button class="nb-chip nb-op" data-op=" * ">&times;</button>
+      <button class="nb-chip nb-op" data-op=" / ">&divide;</button>
+      <button class="nb-chip nb-op" data-op="^">^</button>
+      <span class="nb-op-spacer"></span>
+      <button class="nb-chip nb-const" data-const="c">c</button>
+      <button class="nb-chip nb-const" data-const="h">h</button>
+      <button class="nb-chip nb-const" data-const="G">G</button>
+      <button class="nb-chip nb-const" data-const="pi">&pi;</button>
+      <button class="nb-chip nb-const" data-const="e">e</button>
+      <button class="nb-chip nb-const" data-const="k_B">k<sub>B</sub></button>
+      <button class="nb-chip nb-const" data-const="N_A">N<sub>A</sub></button>
+      <button class="nb-chip nb-const" data-const="g0">g<sub>0</sub></button>
+      <button class="nb-chip nb-const" data-const="eps0">&epsilon;<sub>0</sub></button>
+      <button class="nb-chip nb-const" data-const="mu0">&mu;<sub>0</sub></button>
+      <button class="nb-chip nb-const" data-const="R">R</button>
+      <button class="nb-chip nb-const" data-const="atm">atm</button>
+      <span class="nb-chip-sep"></span>
+      <button class="nb-chip nb-unit" data-const="degree_celsius">&deg;C</button>
+      <button class="nb-chip nb-unit" data-const="degree_fahrenheit">&deg;F</button>
+      <button class="nb-chip nb-unit" data-const="kelvin">K</button>
+    </div>
+
+    <!-- Completions dropdown -->
+    <div class="nb-completions" id="nb-completions" style="display:none;"></div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="nb-status" id="nb-status">
+    <span class="nb-status-text">Loading Numbat engine&hellip;</span>
+    <span class="nb-status-right">
+      <a href="https://numbat.dev/docs/tutorial/" target="_blank" class="nb-status-link">Tutorial</a>
+      <span class="nb-status-sep">|</span>
+      <a href="https://numbat.dev/docs/prelude/list-units/" target="_blank" class="nb-status-link">Units</a>
+      <span class="nb-status-sep">|</span>
+      <a href="https://numbat.dev/docs/examples/example-voyager/" target="_blank" class="nb-status-link">Example</a>
+    </span>
+  </div>
+</div>
+
+<style>
+  /* ── Terminal Theme ── */
+  .numbat-runner {
+    --term-bg: #0c0d0f;
+    --term-surface: #131518;
+    --term-border: #252830;
+    --term-text: #c8ccd4;
+    --term-dim: #5c6370;
+    --term-green: #4ade80;
+    --term-green-dim: #166534;
+    --term-amber: #f59e0b;
+    --term-red: #f87171;
+    --term-prompt: #22c55e;
+
+    background: var(--term-bg);
+    border: 1px solid var(--term-border);
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-width: 900px;
+    margin: 1.5rem auto;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    box-shadow: 0 0 0 1px rgba(74,222,128,0.06), 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  /* Light mode terminal */
+  :root[data-theme="light"] .numbat-runner {
+    --term-bg: #fafbfc;
+    --term-surface: #f0f2f5;
+    --term-border: #d1d5db;
+    --term-text: #1a1c20;
+    --term-dim: #6b7280;
+    --term-green: #047857;
+    --term-green-dim: #d1fae5;
+    --term-amber: #c87d0a;
+    --term-red: #dc2626;
+    --term-prompt: #047857;
+    box-shadow: 0 0 0 1px rgba(4,120,87,0.10), 0 4px 20px rgba(0,0,0,0.10);
+  }
+
+  .nb-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.4rem 0.85rem; background: var(--term-surface);
+    border-bottom: 1px solid var(--term-border);
+  }
+  .nb-title { font-weight: 700; color: var(--term-green); font-size: 0.85rem; letter-spacing: 0.5px; }
+  .nb-header-actions { display: flex; gap: 0.35rem; }
+  .nb-btn { padding: 0.25rem 0.55rem; border: 1px solid var(--term-border); border-radius: 3px; cursor: pointer; font-family: var(--font-mono); font-size: 0.72rem; transition: all 0.12s; }
+  .nb-btn-ghost { background: transparent; color: var(--term-dim); }
+  .nb-btn-ghost:hover { background: var(--term-bg); color: var(--term-green); border-color: var(--term-green); }
+  .nb-btn-run { background: var(--term-green-dim); color: var(--term-green); border: 1px solid var(--term-green); font-weight: 700; font-size: 0.9rem; padding: 0.25rem 0.7rem; flex-shrink: 0; }
+  .nb-btn-run:hover { background: var(--term-green); color: var(--term-bg); }
+
+  .nb-history { flex: 0 0 360px; height: 360px; overflow-y: auto; padding: 0.5rem 0.85rem; display: flex; flex-direction: column; background: var(--term-bg); }
+  .nb-history.nb-expanded { flex: 1 1 auto; height: auto; max-height: none; }
+  .nb-startup-banner { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.2rem 0.75rem; gap: 0.35rem; opacity: 0.75; }
+  .nb-startup-intro { font-size: 0.76rem; color: var(--term-dim); text-align: center; line-height: 1.55; max-width: 520px; margin: 0 0 0.2rem; }
+  .nb-startup-note { font-size: 0.68rem; color: var(--term-dim); text-align: center; opacity: 0.7; margin: 0; }
+  .nb-startup-note code { font-family: var(--font-mono); font-size: 0.66rem; background: var(--term-surface); color: var(--term-amber); padding: 0.05rem 0.25rem; border-radius: 2px; }
+  .nb-startup-example { font-family: var(--font-mono); font-size: 0.8rem; display: flex; align-items: center; gap: 0.4rem; }
+  .nb-startup-prompt { color: var(--term-prompt); font-weight: 600; }
+  .nb-startup-code { color: var(--term-text); }
+  .nb-startup-tips { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; justify-content: center; margin-top: 0.5rem; font-size: 0.7rem; color: var(--term-dim); }
+  .nb-startup-tips kbd { font-family: var(--font-mono); font-size: 0.68rem; background: var(--term-surface); border: 1px solid var(--term-border); border-radius: 2px; padding: 0.05rem 0.3rem; color: var(--term-green); }
+  .nb-startup-tips code { font-family: var(--font-mono); font-size: 0.68rem; background: var(--term-surface); border: 1px solid var(--term-border); border-radius: 2px; padding: 0.05rem 0.3rem; color: var(--term-amber); }
+
+  /* Dynamic elements — :global() needed because JS-created DOM lacks Astro's [data-astro-cid] */
+  .numbat-runner :global(.nb-history-entry) { border-bottom: 1px solid rgba(37,40,48,0.5); padding: 0.35rem 0; }
+  .numbat-runner :global(.nb-history-entry):last-child { border-bottom: none; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-history-entry) { border-bottom-color: rgba(0,0,0,0.06); }
+  .numbat-runner :global(.nb-entry-input) { color: var(--term-dim); font-size: 0.8rem; word-break: break-all; }
+  .numbat-runner :global(.nb-entry-num) { color: #f5a524; font-weight: 700; margin-right: 0.1rem; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-num) { color: #c87d0a; }
+  .numbat-runner :global(.nb-entry-input)::before { content: '> '; color: var(--term-prompt); font-weight: 600; }
+  .numbat-runner :global(.nb-entry-output) { color: var(--term-text); font-size: 0.9rem; padding: 0.1rem 0 0 1rem; line-height: 1.5; }
+  .numbat-runner :global(.nb-entry-output.nb-error) { color: var(--term-red); }
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-error) { color: var(--term-red); }
+
+  .nb-input-area { border-top: 1px solid var(--term-border); padding: 0.5rem 0.85rem 0.45rem; position: relative; }
+  .nb-input-row { display: flex; gap: 0.4rem; align-items: stretch; }
+  .nb-input { flex: 1; background: var(--term-surface); color: var(--term-text); border: 1px solid var(--term-border); border-radius: 3px; padding: 0.45rem 0.6rem; font-family: var(--font-mono); font-size: 0.875rem; resize: none; outline: none; caret-color: var(--term-green); transition: border-color 0.15s, box-shadow 0.15s; }
+  .nb-input:focus { border-color: var(--term-green); box-shadow: 0 0 0 2px rgba(74,222,128,0.25), 0 0 12px rgba(74,222,128,0.1); }
+  .nb-input::placeholder { color: var(--term-dim); }
+
+  .nb-operator-row { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.4rem; align-items: center; }
+  .nb-chip { padding: 0.18rem 0.45rem; border: 1px solid var(--term-border); border-radius: 3px; background: var(--term-surface); color: var(--term-dim); cursor: pointer; font-family: var(--font-mono); font-size: 0.78rem; transition: all 0.12s; user-select: none; }
+  .nb-chip:hover { background: var(--term-green-dim); color: var(--term-green); border-color: var(--term-green); }
+  .nb-chip:active { background: var(--term-green); color: var(--term-bg); }
+  .nb-op { font-weight: 700; font-size: 0.85rem; }
+  .nb-op-spacer { flex: 1; min-width: 0.4rem; }
+  .nb-const { font-style: italic; }
+  .nb-chip-sep { width: 0; margin: 0 0.25rem; }
+  .nb-unit { color: var(--term-amber); font-weight: 600; font-style: normal; letter-spacing: 0.5px; }
+  .nb-unit:hover { background: rgba(245,158,11,0.15); color: var(--term-amber); border-color: var(--term-amber); }
+  .nb-unit:active { background: var(--term-amber); color: var(--term-bg); }
+
+  .nb-completions { position: absolute; bottom: 100%; left: 0.85rem; right: 0.85rem; background: var(--term-surface); border: 1px solid var(--term-green); border-radius: 4px 4px 0 0; max-height: 140px; overflow-y: auto; box-shadow: 0 -4px 16px rgba(0,0,0,0.4), 0 0 0 1px rgba(74,222,128,0.1); z-index: 10; }
+  :root[data-theme="light"] .nb-completions { box-shadow: 0 -4px 16px rgba(0,0,0,0.12), 0 0 0 1px rgba(4,120,87,0.18); }
+  .numbat-runner :global(.nb-completion-item) { padding: 0.28rem 0.65rem; cursor: pointer; color: var(--term-dim); font-size: 0.8rem; border-bottom: 1px solid rgba(37,40,48,0.3); transition: all 0.1s; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-completion-item) { border-bottom-color: rgba(0,0,0,0.05); }
+  .numbat-runner :global(.nb-completion-item):last-child { border-bottom: none; }
+  .numbat-runner :global(.nb-completion-item):hover { background: var(--term-green-dim); color: var(--term-green); }
+  .numbat-runner :global(.nb-completion-item.active) { background: var(--term-green); color: var(--term-bg); font-weight: 600; border-left: 3px solid var(--term-green); padding-left: calc(0.65rem - 3px); }
+
+  .nb-status { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 0.85rem; background: var(--term-surface); border-top: 1px solid var(--term-border); font-size: 0.72rem; color: var(--term-dim); }
+  .nb-status-right { display: flex; gap: 0.35rem; align-items: center; }
+  .nb-status-link { color: var(--term-green); text-decoration: none; }
+  .nb-status-link:hover { color: var(--term-amber); }
+  .nb-status-sep { color: var(--term-border); }
+
+  .nb-history::-webkit-scrollbar { width: 6px; }
+  .nb-history::-webkit-scrollbar-track { background: transparent; }
+  .nb-history::-webkit-scrollbar-thumb { background: var(--term-border); border-radius: 3px; }
+  .nb-history::-webkit-scrollbar-thumb:hover { background: var(--term-green); }
+</style>
+
+<script type="module">
+  import init, { setup_panic_hook, Numbat, FormatType } from '/vendor/numbat/numbat_wasm.js';
+
+  // ── State ──
+  let numbat = null, loadPromise = null;
+  let commandHistory = [], historyCursor = -1, draftInput = '', entryCounter = 0;
+
+  // ── DOM refs ──
+  const historyEl = document.getElementById('nb-history');
+  const startupEl = document.getElementById('nb-startup');
+  const inputEl = document.getElementById('nb-input');
+  const statusText = document.querySelector('#nb-status .nb-status-text');
+  const completionsEl = document.getElementById('nb-completions');
+  const runBtn = document.getElementById('nb-btn-run');
+  const clearBtn = document.getElementById('nb-btn-clear');
+  const resetBtn = document.getElementById('nb-btn-reset');
+  const expandBtn = document.getElementById('nb-btn-expand');
+
+  function escapeHTML(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+  function setStatus(t) { if (statusText) statusText.textContent = t; }
+
+  // ── Load WASM ──
+  async function loadNumbat() {
+    if (numbat) return numbat;
+    if (loadPromise) return loadPromise;
+    setStatus('Loading Numbat engine…');
+    loadPromise = (async () => {
+      try {
+        await init('/vendor/numbat/numbat_wasm_bg.wasm');
+        setup_panic_hook();
+        numbat = Numbat.new(true, true, FormatType.Html);
+        setStatus('Ready.'); return numbat;
+      } catch (err) {
+        console.error('Numbat load failed:', err);
+        setStatus('Engine failed: ' + (err.message || 'unknown error') + ' — refresh to retry');
+        loadPromise = null; throw err;
+      }
+    })();
+    return loadPromise;
+  }
+
+  function scrollToBottom() { requestAnimationFrame(() => { historyEl.scrollTop = historyEl.scrollHeight; }); }
+
+  function appendHistory(input, output, isError) {
+    if (startupEl) startupEl.style.display = 'none';
+    const entry = document.createElement('div'); entry.className = 'nb-history-entry';
+    const inputLine = document.createElement('div'); inputLine.className = 'nb-entry-input';
+    entryCounter++;
+    inputLine.innerHTML = `<span class="nb-entry-num">[${entryCounter}]</span> ` + escapeHTML(input);
+    const outputLine = document.createElement('div');
+    outputLine.className = 'nb-entry-output' + (isError ? ' nb-error' : '');
+    outputLine.innerHTML = output;
+    entry.appendChild(inputLine); entry.appendChild(outputLine);
+    historyEl.appendChild(entry); scrollToBottom();
+  }
+
+  function processInput(raw) {
+    const trimmed = raw.trim(); if (!trimmed) return;
+    const last = commandHistory[commandHistory.length - 1];
+    if (last !== trimmed) commandHistory.push(trimmed);
+    historyCursor = -1; draftInput = '';
+
+    const cmdResult = numbat.try_run_command(trimmed);
+    if (cmdResult.is_command) {
+      if (cmdResult.should_reset) {
+        numbat.free(); numbat = Numbat.new(true, true, FormatType.Html);
+        historyEl.innerHTML = ''; if (startupEl) startupEl.style.display = '';
+        entryCounter = 0; setStatus('Session reset.');
+      } else if (cmdResult.should_clear) {
+        historyEl.innerHTML = ''; if (startupEl) startupEl.style.display = '';
+        entryCounter = 0;
+      }
+      if (cmdResult.output && cmdResult.output.trim()) appendHistory(trimmed, cmdResult.output, false);
+      return;
+    }
+    const result = numbat.interpret(trimmed);
+    appendHistory(trimmed, result.output, result.is_error);
+    setStatus(result.is_error ? 'Error — see above' : 'Ready.');
+  }
+
+  function insertAtCursor(text) {
+    const s = inputEl.selectionStart, e = inputEl.selectionEnd;
+    inputEl.value = inputEl.value.substring(0, s) + text + inputEl.value.substring(e);
+    inputEl.selectionStart = inputEl.selectionEnd = s + text.length;
+    inputEl.focus();
+  }
+
+  // ── Completions ──
+  async function updateCompletions() {
+    if (!numbat) return;
+    const val = inputEl.value, cursor = inputEl.selectionStart;
+    const before = val.substring(0, cursor);
+    const match = before.match(/(\w[\w_]*)$/);
+    if (!match || match[1].length < 1) { completionsEl.style.display = 'none'; return; }
+    const prefix = match[1];
+    const completions = numbat.get_completions_for(prefix);
+    if (!completions || completions.length === 0) { completionsEl.style.display = 'none'; return; }
+    const filtered = completions.filter(c => c.startsWith(prefix));
+    if (filtered.length === 0) { completionsEl.style.display = 'none'; return; }
+    completionsEl.innerHTML = filtered.slice(0, 10).map((c, i) =>
+      `<div class="nb-completion-item${i === 0 ? ' active' : ''}" data-completion="${c}">${c}</div>`
+    ).join('');
+    completionsEl.style.display = 'block';
+    completionsEl.dataset.prefix = prefix;
+    completionsEl.dataset.prefixStart = String(cursor - prefix.length);
+  }
+
+  function applyCompletion(completion) {
+    const prefixStart = parseInt(completionsEl.dataset.prefixStart || '0');
+    const val = inputEl.value, cursor = inputEl.selectionStart;
+    inputEl.value = val.substring(0, prefixStart) + completion + val.substring(cursor);
+    inputEl.selectionStart = inputEl.selectionEnd = prefixStart + completion.length;
+    completionsEl.style.display = 'none';
+    inputEl.focus();
+  }
+
+  function replaceInline(completion) {
+    const prefixStart = parseInt(completionsEl.dataset.prefixStart || '0');
+    const val = inputEl.value, cursor = inputEl.selectionStart;
+    inputEl.value = val.substring(0, prefixStart) + completion + val.substring(cursor);
+    inputEl.selectionStart = inputEl.selectionEnd = prefixStart + completion.length;
+  }
+
+  function restorePrefix() {
+    const prefix = completionsEl.dataset.prefix || '';
+    const prefixStart = parseInt(completionsEl.dataset.prefixStart || '0');
+    const val = inputEl.value, cursor = inputEl.selectionStart;
+    inputEl.value = val.substring(0, prefixStart) + prefix + val.substring(cursor);
+    inputEl.selectionStart = inputEl.selectionEnd = prefixStart + prefix.length;
+    completionsEl.style.display = 'none';
+    inputEl.focus();
+  }
+
+  // ── Completions keyboard nav ──
+  function getActiveIdx() {
+    const items = completionsEl.querySelectorAll('.nb-completion-item');
+    for (let i = 0; i < items.length; i++) { if (items[i].classList.contains('active')) return i; }
+    return -1;
+  }
+
+  function setActiveIdx(idx) {
+    const items = completionsEl.querySelectorAll('.nb-completion-item');
+    items.forEach(el => el.classList.remove('active'));
+    if (idx >= 0 && idx < items.length) {
+      items[idx].classList.add('active');
+      items[idx].scrollIntoView({ block: 'nearest' });
+      replaceInline(items[idx].dataset.completion);
+    }
+  }
+
+  // ── Keyboard handler ──
+  inputEl.addEventListener('keydown', async (e) => {
+    const completionsOpen = completionsEl.style.display === 'block';
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      if (!completionsOpen) {
+        if (!numbat) await loadNumbat();
+        await updateCompletions();
+      } else {
+        const items = completionsEl.querySelectorAll('.nb-completion-item');
+        if (items.length === 0) return;
+        const idx = getActiveIdx();
+        const next = (idx < 0 || idx >= items.length - 1) ? 0 : idx + 1;
+        setActiveIdx(next);
+      }
+      return;
+    }
+
+    if (completionsOpen && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      e.preventDefault();
+      const items = completionsEl.querySelectorAll('.nb-completion-item');
+      if (items.length === 0) return;
+      const idx = getActiveIdx();
+      if (e.key === 'ArrowDown') setActiveIdx(idx < 0 ? 0 : Math.min(idx + 1, items.length - 1));
+      else setActiveIdx(idx < 0 ? items.length - 1 : Math.max(idx - 1, 0));
+      return;
+    }
+
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (completionsOpen) {
+        const idx = getActiveIdx();
+        const items = completionsEl.querySelectorAll('.nb-completion-item');
+        if (idx >= 0 && idx < items.length) { applyCompletion(items[idx].dataset.completion); return; }
+      }
+      await handleRun();
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      if (completionsOpen) { restorePrefix(); return; }
+      completionsEl.style.display = 'none';
+      return;
+    }
+
+    if (e.key === 'ArrowUp' && !completionsOpen && inputEl.selectionStart === 0) {
+      if (commandHistory.length === 0) return;
+      if (historyCursor === -1) { draftInput = inputEl.value; historyCursor = commandHistory.length - 1; }
+      else if (historyCursor > 0) historyCursor--;
+      inputEl.value = commandHistory[historyCursor] || '';
+      e.preventDefault(); return;
+    }
+
+    if (e.key === 'ArrowDown' && !completionsOpen && inputEl.selectionStart === inputEl.value.length) {
+      if (historyCursor === -1) return;
+      if (historyCursor < commandHistory.length - 1) { historyCursor++; inputEl.value = commandHistory[historyCursor] || ''; }
+      else { historyCursor = -1; inputEl.value = draftInput; }
+      e.preventDefault(); return;
+    }
+
+    if (completionsOpen && e.key.length === 1) completionsEl.style.display = 'none';
+  });
+
+  // ── Input handler (completions + auto-resize) ──
+  let completionTimeout;
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+    clearTimeout(completionTimeout);
+    if (numbat) completionTimeout = setTimeout(updateCompletions, 150);
+  });
+
+  // ── Completions click ──
+  completionsEl.addEventListener('click', (e) => {
+    const item = e.target.closest('.nb-completion-item');
+    if (item) applyCompletion(item.dataset.completion);
+  });
+
+  // ── Run ──
+  async function handleRun() {
+    const raw = inputEl.value; if (!raw.trim()) return;
+    inputEl.value = ''; completionsEl.style.display = 'none';
+    try { if (!numbat) { setStatus('Loading Numbat engine…'); await loadNumbat(); } }
+    catch (err) { console.error('Run failed:', err); return; }
+    processInput(raw);
+  }
+
+  // ── Button handlers ──
+  runBtn.addEventListener('click', handleRun);
+
+  document.querySelectorAll('.nb-op').forEach(b => b.addEventListener('click', () => insertAtCursor(b.dataset.op)));
+  document.querySelectorAll('.nb-const, .nb-unit').forEach(b => b.addEventListener('click', () => { insertAtCursor(b.dataset.const + ' '); inputEl.focus(); }));
+
+  clearBtn.addEventListener('click', () => {
+    historyEl.innerHTML = ''; if (startupEl) startupEl.style.display = '';
+    entryCounter = 0; setStatus('History cleared.');
+  });
+
+  expandBtn.addEventListener('click', () => {
+    historyEl.classList.toggle('nb-expanded');
+    expandBtn.textContent = historyEl.classList.contains('nb-expanded') ? '⊟' : '⛶';
+    scrollToBottom();
+  });
+
+  resetBtn.addEventListener('click', async () => {
+    if (!numbat) return;
+    numbat.free(); numbat = Numbat.new(true, true, FormatType.Html);
+    historyEl.innerHTML = ''; if (startupEl) startupEl.style.display = '';
+    commandHistory = []; historyCursor = -1; entryCounter = 0;
+    setStatus('Session reset.');
+  });
+
+  // ── Preload ──
+  setTimeout(loadNumbat, 800);
+</script>

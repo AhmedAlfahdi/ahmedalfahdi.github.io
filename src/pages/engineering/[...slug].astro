@@ -57,12 +57,48 @@ const { Content } = await render(project);
   .prose {
     color: var(--text-secondary);
     line-height: 1.6;
-    max-width: 65ch;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
   .prose :global(h2) {
     color: var(--text-primary);
-    margin-top: 2rem;
+    margin-top: 2.5rem;
     border-left: 3px solid var(--accent-secondary);
     padding-left: 1rem;
+  }
+  .prose :global(h3) {
+    color: var(--text-primary);
+    margin-top: 2rem;
+  }
+  .prose :global(table) {
+    display: table;
+    width: fit-content;
+    max-width: 100%;
+    table-layout: auto;
+    border-collapse: collapse;
+    margin: 1.5rem auto;
+  }
+  .prose :global(table th),
+  .prose :global(table td) {
+    padding: 0.4rem 0.6rem;
+  }
+  .prose :global(ul),
+  .prose :global(ol) {
+    padding-left: 1.5rem;
+  }
+  .prose :global(li) {
+    margin: 0.35rem 0;
+  }
+  .prose :global(.pdf-viewer-wrapper) {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .prose :global(hr) {
+    border: none;
+    border-top: 1px solid var(--border-light);
+    margin: 2.5rem 0;
   }
 </style>

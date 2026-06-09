@@ -1,0 +1,589 @@
+---
+title: "The Standard Atmosphere — Anderson Chapter 3"
+description: "Rigorous mathematical treatment of the Standard Atmosphere from Anderson's Introduction to Flight (2021), with full derivations of the hydrostatic equation, pressure/density integration, and altitude definitions."
+date: 2025-12-20
+tags: ["aerospace", "atmosphere", "thermodynamics", "flight", "anderson", "isa", "mathematics"]
+---
+
+# The Standard Atmosphere
+
+*Based on Chapter 3 of* Introduction to Flight *by John D. Anderson, Jr. and Mary L. Bowden (McGraw-Hill, 2021).*
+
+Aircraft performance depends critically on the properties of the air through which they fly. The **standard atmosphere** defines these properties — pressure, temperature, density, and viscosity — as functions of altitude, providing a common reference for all aerospace calculations.
+
+---
+
+## 1. Definition of Altitude
+
+Anderson begins with a careful distinction between two types of altitude.
+
+### 1.1 Geometric Altitude $h_G$
+
+The **geometric altitude** is the actual height above sea level, measured along a straight line. It is the distance you would measure with a tape measure.
+
+### 1.2 Geopotential Altitude $h$
+
+The **geopotential altitude** accounts for the variation of gravity with height. Newton's law of gravitation gives:
+
+$$
+g = g_0 \left(\frac{r_e}{r_e + h_G}\right)^2
+$$
+
+where $g_0 = 9.80665$ m/s² and $r_e = 6,356,766$ m (Earth's effective radius at 45° latitude). The geopotential altitude is defined such that the work done against gravity equals $g_0 h$:
+
+$$
+g_0 h \equiv \int_0^{h_G} g \, dh_G
+$$
+
+Substituting $g(h_G)$ and integrating:
+
+$$
+\begin{aligned}
+g_0 h &= g_0 r_e^2 \int_0^{h_G} \frac{dh_G}{(r_e + h_G)^2} \\[4pt]
+&= g_0 r_e^2 \left[\frac{1}{r_e} - \frac{1}{r_e + h_G}\right] \\[4pt]
+&= g_0 \frac{r_e h_G}{r_e + h_G}
+\end{aligned}
+$$
+
+Therefore:
+
+$$
+\boxed{h = \frac{r_e}{r_e + h_G} h_G}
+$$
+
+At $h_G = 65,000$ ft (≈ 20 km), the difference is only about 0.3%. For most aircraft performance work below 80,000 ft, $h \approx h_G$ is a safe approximation.
+
+---
+
+## 2. The Hydrostatic Equation
+
+Consider a small fluid element of cross-sectional area $dA$ and height $dh_G$:
+
+- **Downward force**: weight $W = \rho g (dA \, dh_G)$
+- **Upward pressure force**: $p \, dA$
+- **Downward pressure force**: $(p + dp) \, dA$
+
+For a stationary fluid in equilibrium:
+
+$$
+p \, dA = (p + dp) \, dA + \rho g (dA \, dh_G)
+$$
+
+Simplifying:
+
+$$
+\boxed{dp = -\rho g \, dh_G}
+$$
+
+This is the **hydrostatic equation** — pressure decreases with altitude because the weight of the air column above decreases. In terms of geopotential altitude:
+
+$$
+\boxed{dp = -\rho g_0 \, dh}
+$$
+
+---
+
+## 3. The Perfect Gas Equation of State
+
+Air behaves as a perfect gas for the pressure and temperature ranges of the standard atmosphere:
+
+$$
+\boxed{p = \rho R T}
+$$
+
+where $R = 287.05287$ J/(kg·K) is the specific gas constant for dry air. For air, the ratio of specific heats is $\gamma = c_p/c_v = 1.4$.
+
+---
+
+## 4. Temperature Distribution — The Lapse Rate Model
+
+The standard atmosphere divides the atmosphere into **gradient layers** (temperature varies linearly) and **isothermal layers** (temperature constant).
+
+### 4.1 Gradient Layers
+
+In a gradient layer, temperature varies linearly with geopotential altitude:
+
+$$
+\boxed{T = T_b + a (h - h_b)}
+$$
+
+where $a = dT/dh$ is the **lapse rate**. A negative lapse rate means temperature *decreases* with altitude.
+
+### 4.2 ISA Layer Definitions
+
+| Layer | $h$ (km) | $T_b$ (K) | $a$ (K/km) | $p_b$ (Pa) |
+|---|---|---|---|---|
+| Troposphere | 0 — 11 | 288.15 | −6.5 | 1.01325 × 10⁵ |
+| Tropopause | 11 — 20 | 216.65 | 0 | 2.2632 × 10⁴ |
+| Stratosphere 1 | 20 — 32 | 216.65 | +1.0 | 5.4749 × 10³ |
+| Stratosphere 2 | 32 — 47 | 228.65 | +2.8 | 8.6802 × 10² |
+| Stratopause | 47 — 51 | 270.65 | 0 | 1.1091 × 10² |
+| Mesosphere 1 | 51 — 71 | 270.65 | −2.8 | 6.6939 × 10¹ |
+| Mesosphere 2 | 71 — 84.85 | 214.65 | −2.0 | 3.9564 × 10⁰ |
+| Lower Thermosphere | 84.85 — 91 | 186.95 | 0 | 2.1410 × 10⁻¹ |
+| Upper Thermosphere | 91 — 105 | 186.95 | +1.5 | 6.96 × 10⁻² |
+
+---
+
+## 5. Pressure Integration — Gradient Layers
+
+Combining the hydrostatic equation with the perfect gas law eliminates density:
+
+$$
+\frac{dp}{p} = -\frac{g_0}{R} \frac{dh}{T}
+$$
+
+For a gradient layer where $T = T_b + a(h - h_b)$, substitute and integrate:
+
+$$
+\begin{aligned}
+\int_{p_b}^{p} \frac{dp}{p} &= -\frac{g_0}{R} \int_{h_b}^{h} \frac{dh}{T_b + a(h - h_b)} \\[4pt]
+\ln\frac{p}{p_b} &= -\frac{g_0}{aR} \ln\frac{T}{T_b}
+\end{aligned}
+$$
+
+Therefore, for **gradient layers** ($a \neq 0$):
+
+$$
+\boxed{\frac{p}{p_b} = \left(\frac{T}{T_b}\right)^{-g_0/(aR)}}
+$$
+
+### Example: Troposphere (0–11 km)
+
+$a = -0.0065$ K/m, so the exponent is:
+
+$$
+-\frac{g_0}{aR} = -\frac{9.80665}{(-0.0065)(287.05287)} = 5.256
+$$
+
+Thus:
+
+$$
+\frac{p}{p_b} = \left(\frac{T}{288.15}\right)^{5.256}
+$$
+
+At 11 km: $T = 288.15 - 0.0065 \times 11,000 = 216.65$ K
+
+$$
+\frac{p}{p_b} = \left(\frac{216.65}{288.15}\right)^{5.256} = 0.2234
+$$
+
+So $p = 0.2234 \times 101,325 = 22,632$ Pa — pressure at the tropopause.
+
+---
+
+## 6. Pressure Integration — Isothermal Layers
+
+For isothermal layers ($a = 0$, $T = T_b = \text{constant}$):
+
+$$
+\frac{dp}{p} = -\frac{g_0}{RT_b} dh
+$$
+
+Integrating:
+
+$$
+\boxed{\frac{p}{p_b} = \exp\left[-\frac{g_0}{RT_b}(h - h_b)\right]}
+$$
+
+### The Scale Height
+
+The quantity $H = RT_b/g_0$ is the **atmospheric scale height**. In isothermal layers:
+
+$$
+p = p_b \exp\left(-\frac{h - h_b}{H}\right)
+$$
+
+At the tropopause ($T = 216.65$ K): $H = 287.05 \times 216.65 / 9.80665 = 6,342$ m. Every 6.34 km, pressure drops by $1/e \approx 37\%$ of its value.
+
+---
+
+## 7. Density Distribution
+
+Once pressure and temperature are known, density follows from the perfect gas law:
+
+$$
+\boxed{\rho = \frac{p}{RT}}
+$$
+
+At any altitude, relative density is:
+
+$$
+\frac{\rho}{\rho_b} = \frac{p/p_b}{T/T_b}
+$$
+
+For gradient layers:
+
+$$
+\frac{\rho}{\rho_b} = \left(\frac{T}{T_b}\right)^{-[g_0/(aR) + 1]}
+$$
+
+For the troposphere, the density exponent is $-[5.256 + 1] = -6.256$:
+
+At 11 km:
+
+$$
+\frac{\rho}{\rho_{SL}} = \left(\frac{216.65}{288.15}\right)^{-6.256} = \left(\frac{216.65}{288.15}\right)^{6.256} = 0.297
+$$
+
+Density at the tropopause is only 29.7% of sea-level density, compared to 22.3% for pressure. Density drops faster than pressure because of the simultaneous temperature decrease.
+
+---
+
+## 8. Speed of Sound
+
+From thermodynamics, the speed of sound in a perfect gas:
+
+$$
+\boxed{a = \sqrt{\gamma R T}}
+$$
+
+For air ($\gamma = 1.4$, $R = 287.05$ J/(kg·K)):
+
+$$
+a = \sqrt{1.4 \times 287.05 \times T} = 20.05 \sqrt{T} \text{ m/s}
+$$
+
+| Altitude | $T$ (K) | $a$ (m/s) | Mach 1 equivalent |
+|---|---|---|---|
+| Sea level | 288.15 | 340.3 | 1,225 km/h |
+| 11 km | 216.65 | 295.1 | 1,062 km/h |
+| 20 km | 216.65 | 295.1 | 1,062 km/h |
+| 47 km | 270.65 | 329.8 | 1,187 km/h |
+| 85 km | 186.95 | 274.1 | 987 km/h |
+
+---
+
+## 9. Viscosity — Sutherland's Law
+
+Anderson presents Sutherland's law for the temperature dependence of viscosity:
+
+$$
+\boxed{\frac{\mu}{\mu_0} = \left(\frac{T}{T_0}\right)^{3/2} \frac{T_0 + S}{T + S}}
+$$
+
+where $S = 110.4$ K (Sutherland's constant for air) and $\mu_0 = 1.7894 \times 10^{-5}$ Pa·s at $T_0 = 288.15$ K.
+
+In the troposphere, as temperature drops, viscosity decreases — at 11 km, $\mu \approx 1.42 \times 10^{-5}$ Pa·s.
+
+---
+
+## 10. Pressure, Density, and Temperature Altitudes
+
+Anderson defines three important derived altitudes:
+
+### Pressure Altitude
+
+The altitude in the standard atmosphere corresponding to a given pressure. If a pressure gauge reads 70 kPa, the pressure altitude is the ISA altitude where $p = 70$ kPa. This is what an altimeter displays when set to 29.92 inHg.
+
+### Density Altitude
+
+The altitude in the standard atmosphere corresponding to a given density:
+
+$$
+h_d = h + \frac{T_0}{a}\left[1 - \left(\frac{\rho_{actual}}{\rho_0}\right)^{-1/[g_0/(aR)+1]}\right]
+$$
+
+High density altitude (hot day, high elevation) degrades aircraft performance because the engine produces less power and the wings produce less lift.
+
+### Temperature Altitude
+
+The altitude in the standard atmosphere where $T = T_{actual}$. In the troposphere:
+
+$$
+h_T = \frac{T_0 - T_{actual}}{|a|}
+$$
+
+---
+
+## ISA Properties Calculator
+
+Enter an altitude (0–105 km) and click **Calculate** to view the ISA temperature profile. Hover over the curve for exact values at any altitude.
+
+<style>{`.plot-desktop{display:block}.plot-mobile-msg{display:none;padding:2rem 1.5rem;margin:1rem 0;border:1px solid var(--border-light);border-radius:6px;text-align:center;color:var(--text-secondary);font-size:.9rem;line-height:1.6}@media(max-width:640px){.plot-desktop{display:none}.plot-mobile-msg{display:block}}`}</style>
+
+<div class="plot-desktop">
+<div style="display:flex; gap:1rem; align-items:flex-end; margin-bottom:0.75rem; flex-wrap:wrap;">
+  <div>
+    <label for="anderson-alt-input" style="display:block; font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.25rem;">Altitude (km):</label>
+    <input type="number" id="anderson-alt-input" value="11" step="0.1" min="0" max="105" style="width:120px; padding:0.4rem; background:var(--bg-primary); border:1px solid var(--border-light); color:var(--text-primary); border-radius:4px; font-family:var(--font-mono);" />
+  </div>
+  <button id="anderson-calc-btn" style="padding:0.45rem 1rem; background:var(--bg-tertiary); border:1px solid var(--accent-secondary); color:var(--accent-secondary); cursor:pointer; font-family:var(--font-mono);">Calculate</button>
+</div>
+
+<div style="width:100%; margin-bottom:1rem;">
+<canvas id="anderson-canvas" width="700" height="380" style="width:100%; background:var(--bg-primary); border:1px solid var(--border-light); cursor:crosshair;"></canvas>
+</div>
+
+<div style="display:flex; gap:1.5rem; margin-top:0.4rem; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-secondary); flex-wrap:wrap;">
+  <span><span style="color:#f5a524;">●</span> Gradient layer</span>
+  <span><span style="color:#62c7ff;">●</span> Isothermal layer</span>
+  <span><span style="border-bottom:1px dashed rgba(98,199,255,0.5); padding-bottom:1px;">- - -</span> Layer boundary</span>
+  <span><span style="color:#62c7ff;">◎</span> 0 °C (273.15 K)</span>
+</div>
+</div>
+
+<div class="plot-mobile-msg">
+  This interactive plot requires a larger screen.<br/>
+  Please view this page on a computer to explore the ISA temperature profile.
+</div>
+
+<script>{`
+(function() {
+  var input = document.getElementById('anderson-alt-input');
+  var btn = document.getElementById('anderson-calc-btn');
+  var canvas = document.getElementById('anderson-canvas');
+  if (!input || !btn || !canvas) return;
+  var ctx = canvas.getContext('2d');
+  var layers = [
+    {hb:0,Tb:288.15,lam:-0.0065},{hb:11000,Tb:216.65,lam:0},{hb:20000,Tb:216.65,lam:0.001},
+    {hb:32000,Tb:228.65,lam:0.0028},{hb:47000,Tb:270.65,lam:0},{hb:51000,Tb:270.65,lam:-0.0028},
+    {hb:71000,Tb:214.65,lam:-0.002},{hb:84852,Tb:186.95,lam:0},{hb:91000,Tb:186.95,lam:0.0015},
+    {hb:105000,Tb:207.95,lam:0}
+  ];
+  var layerNames = [
+    {lo:0,hi:11,name:'Troposphere'},{lo:11,hi:20,name:'Tropopause'},{lo:20,hi:32,name:'Stratosphere\u00a01'},
+    {lo:32,hi:47,name:'Stratosphere\u00a02'},{lo:47,hi:51,name:'Stratopause'},
+    {lo:51,hi:71,name:'Mesosphere\u00a01'},{lo:71,hi:84.85,name:'Mesosphere\u00a02'},
+    {lo:84.85,hi:91,name:'Lower\u00a0Thermosphere'},{lo:91,hi:105,name:'Upper\u00a0Thermosphere'}
+  ];
+  function getLayerName(altKm) {
+    for (var i=layerNames.length-1;i>=0;i--) if (altKm>=layerNames[i].lo&&altKm<=layerNames[i].hi) return layerNames[i].name;
+    return '';
+  }
+  function isaT(h) { for (var i=layers.length-1;i>=0;i--) if (h>=layers[i].hb) return layers[i].Tb+layers[i].lam*(h-layers[i].hb); return 0; }
+  var lastW = 0, lastH = 0;
+  function drawPlot(hkm) {
+    var dpr = window.devicePixelRatio || 1, rect = canvas.getBoundingClientRect();
+    var w = Math.floor(rect.width * dpr), h = Math.floor(rect.height * dpr);
+    if (Math.abs(w - lastW) > 1 || Math.abs(h - lastH) > 1) { canvas.width = w; canvas.height = h; lastW = w; lastH = h; }
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    var W = rect.width, H = rect.height, p = {t:30,r:35,b:40,l:58};
+    var pw = W-p.l-p.r, ph = H-p.t-p.b;
+    var cs = getComputedStyle(document.documentElement);
+    var bg = cs.getPropertyValue('--bg-primary').trim() || '#0b1015';
+    var bg2 = cs.getPropertyValue('--bg-secondary').trim() || '#161f29';
+    var txt = cs.getPropertyValue('--text-secondary').trim() || '#9ea7b3';
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+    var half = 30, lo = Math.max(0, hkm - half), hi = Math.min(105, hkm + half);
+    var tlo = 999, thi = -999;
+    for (var a = lo; a <= hi; a += 0.5) { var T = isaT(a*1000); if (T < tlo) tlo = T; if (T > thi) thi = T; }
+    tlo = Math.floor((tlo - 5) / 5) * 5; thi = Math.ceil((thi + 5) / 5) * 5;
+    function tX(T) { return p.l + pw * (T - tlo) / (thi - tlo); }
+    function tY(a) { return p.t + ph * (1 - (a - lo) / (hi - lo)); }
+    // --- Grid ---
+    ctx.strokeStyle = 'rgba(128,128,128,0.12)'; ctx.lineWidth = 0.5;
+    for (var i = 0; i <= 6; i++) { var a = lo + (hi-lo)*i/6, y = tY(a); ctx.beginPath(); ctx.moveTo(p.l,y); ctx.lineTo(W-p.r,y); ctx.stroke(); }
+    for (var j = 0; j <= 6; j++) { var T = tlo + (thi-tlo)*j/6, x = tX(T); ctx.beginPath(); ctx.moveTo(x,p.t); ctx.lineTo(x,H-p.b); ctx.stroke(); }
+    // Minor vertical grid
+    ctx.strokeStyle = 'rgba(128,128,128,0.06)'; ctx.lineWidth = 0.3;
+    ctx.setLineDash([2,10]);
+    for (var jj = 0; jj < 6; jj++) { var T = tlo + (thi-tlo)*(jj+0.5)/6, x = tX(T); ctx.beginPath(); ctx.moveTo(x,p.t); ctx.lineTo(x,H-p.b); ctx.stroke(); }
+    ctx.setLineDash([]);
+    // --- Axis labels ---
+    ctx.fillStyle = txt; ctx.font = '10px monospace'; ctx.textAlign = 'right';
+    for (var i = 0; i <= 6; i++) { var a = lo + (hi-lo)*i/6; ctx.fillText(Math.round(a)+' km', p.l-5, tY(a)+4); }
+    ctx.textAlign = 'center';
+    for (var j = 0; j <= 6; j++) { var T = tlo + (thi-tlo)*j/6; ctx.fillText(Math.round(T)+' K', tX(T), H-14); }
+
+    // --- Area fill under curve ---
+    var isoRegions = [[11,20],[47,51],[84.85,91]];
+    function isIsothermal(a) { for (var r=0;r<isoRegions.length;r++) if (a>=isoRegions[r][0] && a<=isoRegions[r][1]) return true; return false; }
+    ctx.save();
+    ctx.beginPath(); ctx.rect(p.l, p.t, pw, ph); ctx.clip();
+    var accent = '#f5a524', iso = '#62c7ff';
+    ctx.beginPath(); ctx.moveTo(tX(isaT(lo*1000)), tY(lo));
+    for (var k = lo; k <= hi; k += 0.25) { ctx.lineTo(tX(isaT(k*1000)), tY(k)); }
+    ctx.lineTo(tX(isaT(hi*1000)), H-p.b); ctx.lineTo(tX(isaT(lo*1000)), H-p.b);
+    ctx.closePath();
+    var grad = ctx.createLinearGradient(0, p.t, 0, H-p.b);
+    grad.addColorStop(0, 'rgba(245,165,36,0.06)');
+    grad.addColorStop(0.5, 'rgba(98,199,255,0.03)');
+    grad.addColorStop(1, 'rgba(98,199,255,0.01)');
+    ctx.fillStyle = grad; ctx.fill();
+    ctx.restore();
+
+    // --- Temperature curve ---
+    var isoRegions = [[11,20],[47,51],[84.85,91]];
+    function isIsothermal(a) { for (var r=0;r<isoRegions.length;r++) if (a>=isoRegions[r][0] && a<=isoRegions[r][1]) return true; return false; }
+    var prevIso = null, lastX = 0, lastY = 0;
+    for (var k = lo; k <= hi; k += 0.2) {
+      var Tk = isaT(k*1000), x = tX(Tk), y = tY(k);
+      var curIso = isIsothermal(k);
+      if (curIso !== prevIso) {
+        if (k > lo) { ctx.stroke(); ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke(); }
+        ctx.beginPath(); ctx.moveTo(x, y);
+        ctx.strokeStyle = curIso ? iso : accent;
+        ctx.lineWidth = 2.5;
+        prevIso = curIso;
+      } else { ctx.lineTo(x, y); }
+      lastX = x; lastY = y;
+    }
+    ctx.stroke();
+
+    // --- Data point markers ---
+    for (var k = Math.ceil(lo/10)*10; k <= hi; k += 10) {
+      var Tk = isaT(k*1000);
+      ctx.fillStyle = isIsothermal(k) ? iso : accent;
+      var r = (k % 20 === 0) ? 3.5 : 2;
+      ctx.beginPath(); ctx.arc(tX(Tk), tY(k), r, 0, Math.PI*2); ctx.fill();
+    }
+
+    // --- Layer boundaries ---
+    var bounds = [11,20,32,47,51,71,84.85,91,105];
+    ctx.save();
+    ctx.beginPath(); ctx.rect(p.l, p.t, pw, ph); ctx.clip();
+    ctx.setLineDash([4,7]); ctx.strokeStyle = 'rgba(98,199,255,0.40)'; ctx.lineWidth = 0.5;
+
+    for (var b = 0; b < bounds.length; b++) {
+      if (bounds[b] >= lo && bounds[b] <= hi) {
+        var by = tY(bounds[b]);
+        ctx.beginPath(); ctx.moveTo(p.l,by); ctx.lineTo(W-p.r,by); ctx.stroke();
+        var skipLabel = bounds[b] === Math.round(hkm);
+        if (!skipLabel) {
+          var lblW = ctx.measureText(bounds[b]+' km').width + 8;
+          ctx.fillStyle = bg; ctx.fillRect(p.l-2, by-8, lblW, 15);
+          ctx.fillStyle = iso; ctx.font = '9px monospace'; ctx.textAlign = 'left';
+          ctx.fillText(bounds[b]+' km', p.l+3, by+3);
+        }
+      }
+    }
+    ctx.setLineDash([]);
+    ctx.restore();
+
+    // --- 0\u00b0C reference line ---
+    var fx = tX(273.15);
+    if (fx > p.l && fx < W-p.r) {
+      ctx.setLineDash([3,8]); ctx.strokeStyle = 'rgba(98,199,255,0.25)'; ctx.lineWidth = 0.6;
+      ctx.beginPath(); ctx.moveTo(fx,p.t); ctx.lineTo(fx,H-p.b); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = iso; ctx.font = '9px monospace'; ctx.textAlign = 'center'; ctx.fillText('0\u00b0C', fx, p.t-6);
+    }
+
+    // --- Selected altitude marker ---
+    var iT = isaT(hkm*1000), ix = tX(iT), iy = tY(hkm);
+    ctx.strokeStyle = accent; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.35;
+    ctx.beginPath(); ctx.arc(ix, iy, 9, 0, Math.PI*2); ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.strokeStyle = accent; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(ix, iy, 6, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = accent;
+    ctx.beginPath(); ctx.arc(ix, iy, 3.5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = accent; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'left';
+    var lx = ix+12, ly = iy+5;
+    if (lx+85 > W-p.r) lx = ix-95;
+    if (ly > H-p.b) ly = iy-8;
+    ctx.fillText(hkm.toFixed(1)+' km, '+iT.toFixed(1)+' K', lx, ly);
+
+    // --- Axis titles ---
+    ctx.fillStyle = txt; ctx.font = '11px monospace'; ctx.textAlign = 'center';
+    ctx.fillText('Temperature (K)', W/2, H-2);
+    ctx.save(); ctx.translate(12, H/2); ctx.rotate(-Math.PI/2); ctx.fillText('Altitude (km)', 0, 0); ctx.restore();
+
+    // --- Hover info box (follows cursor) ---
+    if (canvas._hover && canvas._hover.onCurve) {
+      var hd = canvas._hover;
+      var layerName = getLayerName(hd.alt);
+      var nLines = layerName ? 3 : 2;
+      var boxW = 146, boxH = 18 + nLines*15;
+      // Position above-right of cursor, with edge avoidance
+      var boxX = hd.mx + 16, boxY = hd.my - boxH - 10;
+      if (boxX + boxW > W - p.r) boxX = hd.mx - boxW - 16;
+      if (boxY < p.t) boxY = hd.my + 16;
+      ctx.globalAlpha = 0.93;
+      ctx.fillStyle = bg;
+      ctx.fillRect(boxX, boxY, boxW, boxH);
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = accent; ctx.lineWidth = 0.6;
+      ctx.strokeRect(boxX, boxY, boxW, boxH);
+      ctx.fillStyle = accent; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'left';
+      ctx.fillText(hd.alt.toFixed(1)+' km', boxX+12, boxY+18);
+      ctx.fillStyle = txt; ctx.font = '10px monospace';
+      ctx.fillText(hd.T.toFixed(1)+' K  ('+(hd.T-273.15).toFixed(1)+'°C)', boxX+12, boxY+33);
+      if (layerName) {
+        ctx.fillStyle = iso; ctx.font = '9px monospace';
+        ctx.fillText(layerName, boxX+12, boxY+46);
+      }
+    }
+
+    canvas._isa = {lo:lo, hi:hi, tlo:tlo, thi:thi, tX:tX, tY:tY};
+  }
+  drawPlot(11);
+  canvas._hover = null;
+  canvas.onmousemove = function(e) {
+    var r = canvas.getBoundingClientRect();
+    var mx = e.clientX - r.left, my = e.clientY - r.top;
+    var d = canvas._isa; if (!d) return;
+    var p2 = {t:30,r:35,b:40,l:58};
+    var bestA = 0, bestT = 0, bestD = Infinity, onCurve = false;
+    if (mx >= p2.l && mx <= r.width-p2.r && my >= p2.t && my <= r.height-p2.b) {
+      for (var s = d.lo; s <= d.hi; s += 0.25) {
+        var TT = isaT(s*1000), sx = d.tX(TT), sy = d.tY(s);
+        var dist = (mx-sx)*(mx-sx)+(my-sy)*(my-sy);
+        if (dist < bestD) { bestD = dist; bestA = s; bestT = TT; }
+      }
+      onCurve = bestD < 200;
+    }
+    canvas._hover = onCurve ? {alt:bestA, T:bestT, onCurve:true, mx:mx, my:my} : null;
+    drawPlot(parseFloat(input.value) || 11);
+  };
+  canvas.onmouseleave = function() { canvas._hover = null; drawPlot(parseFloat(input.value) || 11); };
+  btn.addEventListener('click', function() {
+    var hkm = parseFloat(input.value) || 11;
+    drawPlot(hkm);
+  });
+  window.addEventListener('resize', function() { drawPlot(parseFloat(input.value) || 11); });
+})();
+`}</script>
+
+---
+
+## Quick Reference — Key ISA Values
+
+| Altitude (km) | $T$ (K) | $p/p_{SL}$ | $\rho/\rho_{SL}$ | $a$ (m/s) | Layer |
+|---|---|---|---|---|---|
+| 0 | 288.2 | 1.000 | 1.000 | 340.3 | Troposphere |
+| 5 | 255.7 | 0.533 | 0.601 | 320.6 | Troposphere |
+| 11 | 216.7 | 0.223 | 0.297 | 295.1 | Tropopause |
+| 20 | 216.7 | 0.054 | 0.072 | 295.1 | Stratosphere |
+| 32 | 228.7 | 0.0086 | 0.011 | 303.1 | Stratosphere |
+| 47 | 270.7 | 0.0011 | 0.0012 | 329.8 | Stratopause |
+| 51 | 270.7 | 0.00066 | 0.00070 | 329.8 | Mesosphere |
+| 71 | 214.7 | 0.000039 | 0.000053 | 293.7 | Mesosphere |
+| 85 | 187.0 | 0.0000037 | 0.0000058 | 274.1 | Thermosphere |
+| 105 | 208.0 | 0.00000034 | 0.00000047 | 289.0 | Thermosphere |
+
+**Notes:**
+- $p_{SL} = 101,325$ Pa, $\rho_{SL} = 1.225$ kg/m³
+- At 11 km: ~75% of the atmosphere's mass lies below this altitude
+- At 47 km: pressure is ~0.1% of sea level — 99.9% of the atmosphere is below
+- The lapse rate exponent in the troposphere is 5.256 — memorise this number for exams
+- Density drops faster than pressure due to simultaneous temperature decrease
+- The coldest point in the atmosphere is the mesopause at ~85 km (−86 °C)
+- All data follows the ISO 2533:1975 / U.S. Standard Atmosphere 1976 model
+
+---
+
+## Summary of Key Equations
+
+Anderson's Chapter 3 provides the mathematical foundation for all later chapters on aerodynamics and aircraft performance. The key results are:
+
+| Equation | Formula | Use |
+|---|---|---|
+| **Hydrostatic** | $dp = -\rho g_0 dh$ | Foundation of atmospheric model |
+| **Geopotential altitude** | $h = \frac{r_e}{r_e + h_G} h_G$ | Relates geopotential to geometric altitude |
+| **Gradient layer pressure** | $\frac{p}{p_b} = \left(\frac{T}{T_b}\right)^{-g_0/(aR)}$ | Pressure in troposphere, stratosphere, mesosphere |
+| **Isothermal layer pressure** | $\frac{p}{p_b} = \exp\left[-\frac{g_0}{RT_b}(h-h_b)\right]$ | Pressure in tropopause, stratopause |
+| **Density** | $\rho = p/(RT)$ | Derived from pressure and temperature |
+| **Speed of sound** | $a = \sqrt{\gamma R T}$ | Mach number calculations |
+| **Sutherland's law** | $\frac{\mu}{\mu_0} = \left(\frac{T}{T_0}\right)^{3/2} \frac{T_0 + S}{T + S}$ | Viscosity at any altitude |
+
+---
+
+## References
+
+1. Anderson, J.D. and Bowden, M.L. — *Introduction to Flight*, 9th Edition, Chapter 3, McGraw-Hill, 2021
+2. U.S. Standard Atmosphere, 1976 — NOAA/NASA/USAF
+3. ISO 2533:1975 — *Standard Atmosphere*
+
+---
+
+*All derivations follow Anderson's notation and methodology. Geopotential altitude $h$ is used throughout unless geometric altitude $h_G$ is explicitly noted.*

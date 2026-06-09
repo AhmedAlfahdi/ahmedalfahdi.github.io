@@ -20,6 +20,8 @@ const threeVersion = pkg.dependencies.three.replace('^', '');
 // CDN versions (not in package.json — loaded at runtime)
 const mermaidVersion = '11.12.2';
 const pdfjsVersion = '5.4.624';
+// Numbat version — self-hosted WASM
+const numbatVersion = '1.23.0';
 // KaTeX version - defined here and used in CDN link below
 const katexVersion = '0.16.9';
 // MapLibre GL JS is loaded via CDN, not in package.json - keep as constant
@@ -104,20 +106,20 @@ try {
           noteBorderColor: '#f5a524',
         } : {
           darkMode: false,
-          background: '#f5f7fa',
-          primaryColor: '#d6dde6',
-          primaryTextColor: '#1a2029',
-          primaryBorderColor: '#b8c1cc',
-          lineColor: '#0077cc',
-          secondaryColor: '#e8ecf1',
-          tertiaryColor: '#d6dde6',
-          textColor: '#495463',
-          mainBkgColor: '#d6dde6',
-          secondBkgColor: '#e8ecf1',
-          tertiaryBkgColor: '#f5f7fa',
-          noteBkgColor: '#b8c1cc',
-          noteTextColor: '#1a2029',
-          noteBorderColor: '#d68910',
+          background: '#e2e7ed',
+          primaryColor: '#c8d0d9',
+          primaryTextColor: '#111820',
+          primaryBorderColor: '#a0aab6',
+          lineColor: '#0066aa',
+          secondaryColor: '#d6dce3',
+          tertiaryColor: '#c8d0d9',
+          textColor: '#3d4855',
+          mainBkgColor: '#c8d0d9',
+          secondBkgColor: '#d6dce3',
+          tertiaryBkgColor: '#e2e7ed',
+          noteBkgColor: '#a0aab6',
+          noteTextColor: '#111820',
+          noteBorderColor: '#c87d0a',
         }
       });
     };
@@ -186,21 +188,21 @@ try {
     :root[data-theme="light"] {
       color-scheme: light;
       /* Light Theme - Engineering / Industrial palette */
-      --bg-primary: #f5f7fa;      /* light blueprint paper */
-      --bg-secondary: #e8ecf1;    /* light steel */
-      --bg-tertiary: #d6dde6;     /* light panel */
-      --panel-glow: rgba(245, 165, 36, 0.08);
+      --bg-primary: #e2e7ed;      /* blueprint paper — darkened for depth */
+      --bg-secondary: #d6dce3;    /* light steel — stronger separation */
+      --bg-tertiary: #c8d0d9;     /* panel — clear layer contrast */
+      --panel-glow: rgba(245, 165, 36, 0.10);
 
-      --text-primary: #1a2029;
-      --text-secondary: #495463;
-      --text-muted: #6b7785;
+      --text-primary: #111820;
+      --text-secondary: #3d4855;
+      --text-muted: #5a6574;
 
-      --accent-primary: #d68910;  /* darker hazard amber for better contrast */
-      --accent-secondary: #0077cc;/* darker blueprint cyan for better contrast */
-      --accent-emerald: #059669;  /* darker system healthy */
+      --accent-primary: #c87d0a;  /* hazard amber — deeper for light bg */
+      --accent-secondary: #0066aa;/* blueprint cyan — deeper for light bg */
+      --accent-emerald: #047857;  /* system healthy — deeper for light bg */
 
-      --border-strong: #b8c1cc;
-      --border-light: #d1d9e2;
+      --border-strong: #a0aab6;
+      --border-light: #bcc5cf;
     }
 
     * {
@@ -234,10 +236,10 @@ try {
     /* Light theme body adjustments */
     :root[data-theme="light"] body {
       background-image:
-        radial-gradient(circle at 20% 20%, rgba(98, 199, 255, 0.08), transparent 35%),
-        radial-gradient(circle at 80% 0%, rgba(245, 165, 36, 0.12), transparent 30%),
-        repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.02) 1px, transparent 1px, transparent 32px),
-        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.02) 1px, transparent 1px, transparent 32px);
+        radial-gradient(circle at 20% 20%, rgba(0, 102, 170, 0.10), transparent 35%),
+        radial-gradient(circle at 80% 0%, rgba(200, 125, 10, 0.14), transparent 30%),
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.04) 1px, transparent 1px, transparent 32px),
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.04) 1px, transparent 1px, transparent 32px);
     }
 
     /* Custom Scrollbar */
@@ -282,8 +284,8 @@ try {
 
     /* Light theme navigation */
     :root[data-theme="light"] nav {
-      background: linear-gradient(180deg, #ffffff 0%, #f5f7fa 100%);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      background: linear-gradient(180deg, #eaedf2 0%, #dee3e9 100%);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
     }
 
     nav ul {
@@ -292,10 +294,10 @@ try {
       max-width: 1200px;
       margin: 0 auto;
       justify-content: center;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 0;
       overflow: visible;
-      padding-right: 6rem;
+      padding-right: 5rem;
     }
 
     .menu-toggle {
@@ -328,11 +330,11 @@ try {
       text-decoration: none;
       font-weight: 600;
       transition: color 0.15s ease, filter 0.15s ease, text-shadow 0.15s ease;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
+      letter-spacing: 1px;
       display: block;
-      padding: 1rem 1.75rem;
+      padding: 1rem 0.95rem;
       position: relative;
       border: none;
       outline: none;
@@ -383,10 +385,10 @@ try {
 
     /* Light theme container */
     :root[data-theme="light"] .container {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(245, 247, 250, 0.95));
+      background: linear-gradient(135deg, rgba(250, 251, 253, 0.98), rgba(232, 236, 241, 0.95));
       box-shadow:
-        inset 0 1px 0 rgba(0, 0, 0, 0.02),
-        0 8px 24px rgba(0, 0, 0, 0.08);
+        inset 0 1px 0 rgba(0, 0, 0, 0.04),
+        0 8px 28px rgba(0, 0, 0, 0.12);
     }
 
     .container::before,
@@ -992,9 +994,16 @@ try {
     .callout-warn { border-left-color: #f5a524; }
 
     table {
-      width: 100%;
+      display: table;
+      width: fit-content;
+      max-width: 100%;
+      table-layout: auto;
+      box-sizing: border-box;
       border-collapse: collapse;
-      margin: 1.5rem 0;
+      margin-top: 1.5rem;
+      margin-bottom: 1.5rem;
+      margin-left: auto;
+      margin-right: auto;
       border: 1px solid var(--border-strong);
       background: var(--bg-tertiary);
       transition: background 0.3s ease;
@@ -1146,11 +1155,11 @@ try {
 
     /* Light theme scroll progress */
     :root[data-theme="light"] .scroll-progress {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(240, 244, 248, 0.95);
       color: var(--text-primary);
       box-shadow:
-        inset 0 1px 0 rgba(0, 0, 0, 0.02),
-        0 8px 18px rgba(0, 0, 0, 0.12);
+        inset 0 1px 0 rgba(0, 0, 0, 0.03),
+        0 8px 20px rgba(0, 0, 0, 0.16);
     }
 
     .scroll-progress.at-bottom {
@@ -1177,19 +1186,19 @@ try {
 
     /* Light theme scroll progress at bottom */
     :root[data-theme="light"] .scroll-progress.at-bottom {
-      background: rgba(255, 255, 255, 0.98);
+      background: rgba(240, 244, 248, 0.98);
       border-color: var(--accent-primary);
       color: var(--accent-primary);
     }
 
     :root[data-theme="light"] .scroll-progress.at-bottom:hover {
-      background: rgba(245, 247, 250, 1);
+      background: rgba(226, 231, 237, 1);
       border-color: var(--accent-primary);
       transform: scale(1.05);
       box-shadow:
-        inset 0 1px 0 rgba(0, 0, 0, 0.02),
-        0 8px 18px rgba(0, 0, 0, 0.12),
-        0 0 20px rgba(214, 137, 16, 0.25);
+        inset 0 1px 0 rgba(0, 0, 0, 0.03),
+        0 8px 20px rgba(0, 0, 0, 0.16),
+        0 0 20px rgba(200, 125, 10, 0.25);
     }
 
     /* Site Info Button */
@@ -1232,20 +1241,20 @@ try {
 
     /* Light theme site info button */
     :root[data-theme="light"] .site-info-btn {
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(240, 244, 248, 0.95);
       color: var(--accent-secondary);
       box-shadow:
-        inset 0 1px 0 rgba(0, 0, 0, 0.02),
-        0 4px 12px rgba(0, 0, 0, 0.08);
+        inset 0 1px 0 rgba(0, 0, 0, 0.03),
+        0 4px 14px rgba(0, 0, 0, 0.12);
     }
 
     :root[data-theme="light"] .site-info-btn:hover {
-      background: rgba(0, 119, 204, 0.08);
+      background: rgba(0, 102, 170, 0.10);
       border-color: var(--accent-secondary);
       box-shadow:
-        inset 0 1px 0 rgba(0, 0, 0, 0.02),
-        0 4px 12px rgba(0, 0, 0, 0.08),
-        0 0 20px rgba(0, 119, 204, 0.25);
+        inset 0 1px 0 rgba(0, 0, 0, 0.03),
+        0 4px 14px rgba(0, 0, 0, 0.12),
+        0 0 20px rgba(0, 102, 170, 0.28);
     }
 
     /* Site Info Modal */
@@ -1271,7 +1280,7 @@ try {
 
     /* Light theme modal overlay */
     :root[data-theme="light"] .site-info-overlay {
-      background: rgba(107, 119, 133, 0.4);
+      background: rgba(90, 101, 116, 0.48);
     }
 
     .site-info-content {
@@ -1293,10 +1302,10 @@ try {
 
     /* Light theme modal content */
     :root[data-theme="light"] .site-info-content {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(245, 247, 250, 0.98));
+      background: linear-gradient(135deg, rgba(248, 250, 253, 0.98), rgba(232, 236, 242, 0.98));
       box-shadow:
-        inset 0 1px 0 rgba(0, 0, 0, 0.02),
-        0 20px 40px rgba(0, 0, 0, 0.15);
+        inset 0 1px 0 rgba(0, 0, 0, 0.03),
+        0 20px 40px rgba(0, 0, 0, 0.18);
     }
 
     .site-info-close {
@@ -1796,6 +1805,7 @@ try {
           <li><a href="/projects" class="nav-link">Personal Projects</a></li>
           <li><a href="/notes" class="nav-link">Notes</a></li>
           <li><a href="/engineering" class="nav-link">Engineering</a></li>
+          <li><a href="/numbat" class="nav-link">Numbat</a></li>
         </ul>
         <!-- Site Info Button -->
         <button id="site-info-btn" class="site-info-btn" aria-label="Site Information" title="Site Information">
@@ -1889,6 +1899,15 @@ try {
               <strong>MapLibre GL JS</strong>
             </span>
             {maplibreVersion} <span class="license">(BSD 2-Clause)</span>
+          </li>
+          <li>
+            <span
+              class="stat-label-tooltip"
+              data-tooltip="Numbat is a statically-typed scientific calculator with first-class physical units, running in the browser via WebAssembly."
+            >
+              <strong>Numbat</strong>
+            </span>
+            {numbatVersion} <span class="license">(MIT / Apache 2.0)</span>
           </li>
           <li>
             <span

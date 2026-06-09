@@ -19,10 +19,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <div class="about-section">
       <h2>About Me</h2>
       <p>
-        I am a mechanical engineer with hands-on experience in the Oil & Gas industry—specifically upstream (Wireline & Tubing Conveyed Perforation, TCP) and midstream (pipeline) sectors. My practical background includes both field operations (TCP/Wireline support, pipeline integrity) and design/simulation tasks. Notably, I used Ansys extensively for my Bachelor's degree thesis, as well as SolidWorks for technical design and modeling.
+        I'm a mechanical engineer with a background that spans both ends of the pipeline, from the field to the desk. On the upstream side I've worked Wireline and TCP jobs, assembling tools, handling explosives, and supporting perforation operations on site. On the midstream side I've been involved in pipeline design, construction support, and integrity work, covering everything from wall thickness calculations to walking spreads during hydrotesting.
       </p>
       <p>
-        Outside of engineering, I'm passionate about software development and reverse engineering, frequently using automation, scripting, and process optimization to streamline tasks and deepen my technical knowledge.
+        For simulation and design I lean on Ansys and SolidWorks. Ansys in particular was the backbone of my Bachelor's thesis. I also work with pipeline-specific tools like PIPSIM, Pipeline Studio, and OLGA for flow modeling and feasibility studies.
+      </p>
+      <p>
+        Outside of engineering I spend a lot of time with software: scripting, automation, reverse engineering, and building tools that make technical work faster. I work mostly in Assembly, C, and Python, and I'm comfortable across both Windows and Linux. Lately I've been getting deeper into Docker and low-level system internals.
       </p>
 
       <div class="skills">
@@ -573,11 +576,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* Light theme UTC badge */
   :root[data-theme="light"] .utc-badge {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(245, 247, 250, 0.95));
-    color: rgba(214, 137, 16, 0.85);
+    background: linear-gradient(135deg, rgba(248, 250, 253, 0.95), rgba(232, 236, 242, 0.95));
+    color: rgba(200, 125, 10, 0.88);
     box-shadow: 
-      inset 0 1px 0 rgba(0, 0, 0, 0.02),
-      0 4px 12px rgba(0, 0, 0, 0.08);
+      inset 0 1px 0 rgba(0, 0, 0, 0.03),
+      0 4px 14px rgba(0, 0, 0, 0.12);
   }
 
   @media (max-width: 768px) {
@@ -890,7 +893,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* Light theme skills section */
   :root[data-theme="light"] .skills {
-    background: #ffffff;
+    background: #f0f3f7;
+    box-shadow:
+      inset 0 1px 0 rgba(0, 0, 0, 0.03),
+      0 4px 14px rgba(0, 0, 0, 0.10);
   }
 
   .skills::before {
@@ -908,7 +914,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* Light theme skills label */
   :root[data-theme="light"] .skills::before {
-    background: var(--bg-primary);
+    background: #e2e7ed;
   }
 
   .skills h3 {
@@ -1143,7 +1149,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* Light theme section cards */
   :root[data-theme="light"] .section-card {
-    background: #ffffff;
+    background: #f0f3f7;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
   }
 
   .section-card:nth-child(1) {
@@ -1283,8 +1290,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* Light theme contact section */
   :root[data-theme="light"] .contact-section {
-    background: #ffffff;
+    background: #f0f3f7;
     border-top-color: var(--border-strong);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
   }
 
   .contact-section h2 {
@@ -1321,7 +1329,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* Light theme contact links */
   :root[data-theme="light"] .contact-link {
-    background: var(--bg-secondary);
+    background: #e2e7ed;
+    border-color: var(--border-strong);
   }
 
   .contact-link::before {

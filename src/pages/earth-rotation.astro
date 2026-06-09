@@ -953,7 +953,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const theme = document.documentElement.getAttribute('data-theme') || 'dark';
       if (theme === 'light') {
         return {
-          background: '#f5f7fa',
+          background: '#e2e7ed',
           axisColor: '#7890a8',
           textColor: '#1a2029',
           zeroLineColor: '#d97706',
@@ -1343,14 +1343,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   /* Light theme fullscreen button */
   :root[data-theme="light"] .fullscreen-btn {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(240, 244, 248, 0.95);
     color: var(--text-primary);
     border-color: var(--border-strong);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
   }
 
   :root[data-theme="light"] .fullscreen-btn:hover {
-    background: rgba(215, 137, 16, 0.15);
+    background: rgba(200, 125, 10, 0.15);
     border-color: var(--accent-primary);
     color: var(--accent-primary);
   }

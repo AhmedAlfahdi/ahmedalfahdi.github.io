@@ -63,10 +63,11 @@ const { Content } = await render(note);
   }
   .prose :global(table) {
     display: block;
-    width: 100%;
+    width: fit-content;
+    max-width: 100%;
     overflow-x: auto;
     border-collapse: collapse;
-    margin: 1.5rem 0;
+    margin: 1.5rem auto;
   }
   .prose :global(table th),
   .prose :global(table td) {

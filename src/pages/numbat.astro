@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NumbatRunner from '../components/NumbatRunner.astro';
+---
+
+<BaseLayout title="Numbat Calculator — Ahmed N. Alfahdi">
+  <div style="max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem 0;">
+    <h1 style="font-size: 1.6rem; color: var(--accent-primary); margin-bottom: 0.4rem; text-align: center;">
+      Numbat Calculator
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 0.85rem; text-align: center; margin-bottom: 0;">
+      High-precision scientific calculator with first-class physical units. Powered by <a href="https://github.com/sharkdp/numbat" target="_blank" style="color: var(--accent-secondary);">Numbat</a>.
+    </p>
+  </div>
+  <NumbatRunner />
+</BaseLayout>

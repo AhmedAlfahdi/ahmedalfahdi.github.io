@@ -1,23 +1,48 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-// Simple static demo content
+import { getCollection } from 'astro:content';
+
+const projects = await getCollection('engineering');
+const orion = projects.find(p => p.id === 'orion-project');
 ---
 
 <BaseLayout title="Engineering Projects">
   <div class="container">
     <h1>Engineering Projects</h1>
-    <p class="intro">This page is dedicated to exploring and studying engineering projects in depth.</p>
+    <p class="intro">In-depth mechanical and aerospace engineering analysis, design studies, and technical investigations.</p>
 
     <div class="grid">
-      <div class="card">
-        <div class="status-badge">On-going Work</div>
-        <h2>Project Orion</h2>
-        <p>
-          Under development: a deep look into the Orion project.
-        </p>
-        <div class="meta">
-          <span class="category">[CAT] Engineering Demo</span>
-          <time>2025-12-08</time>
+      {orion && (
+        <a href={`/engineering/${orion.id}`} class="card">
+          <div class="status-badge">{orion.data.status}</div>
+          <h2>{orion.data.title}</h2>
+          <p>{orion.data.description}</p>
+          <div class="meta">
+            <span class="category">[{orion.data.category}]</span>
+            <time>{orion.data.date.toLocaleDateString()}</time>
+          </div>
+        </a>
+      )}
+    </div>
+
+    <div class="upcoming-section">
+      <h2>In Progress</h2>
+      <div class="grid">
+        <div class="card card-placeholder">
+          <div class="status-badge status-pending">In Progress</div>
+          <h2>Machine Design</h2>
+          <p>Mechanical component design and analysis using parametric CAD and simulation tools.</p>
+          <div class="meta">
+            <span class="category">[Mechanical]</span>
+          </div>
+        </div>
+        <div class="card card-placeholder">
+          <div class="status-badge status-pending">In Progress</div>
+          <h2>FEA Analysis</h2>
+          <p>Finite element analysis case studies covering stress, thermal, and modal simulations.</p>
+          <div class="meta">
+            <span class="category">[Simulation]</span>
+          </div>
         </div>
       </div>
     </div>
@@ -31,7 +56,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 2rem;
   }
   .card {
@@ -43,29 +68,42 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     transition: border-color 0.2s;
     position: relative;
   }
-  .card:hover {
+  a.card:hover {
     border-color: var(--accent-primary);
+  }
+  .card-placeholder {
+    opacity: 0.45;
+    cursor: default;
+    pointer-events: none;
+    user-select: none;
   }
   .status-badge {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    font-size: 0.7rem;
-    padding: 0.2rem 0.5rem;
+    font-size: 0.68rem;
+    padding: 0.2rem 0.6rem;
     background: var(--bg-primary);
     border: 1px solid var(--border-light);
     color: var(--accent-secondary);
     text-transform: uppercase;
+    font-family: var(--font-mono);
+  }
+  .status-pending {
+    color: var(--text-muted);
+    border-color: var(--border-light);
   }
   .card h2 {
     margin: 0 0 0.5rem 0;
     color: var(--text-primary);
-    padding-right: 4rem;
+    padding-right: 7rem;
+    font-size: 1.15rem;
   }
   .card p {
     color: var(--text-secondary);
     font-size: 0.9rem;
     margin-bottom: 1rem;
+    line-height: 1.5;
   }
   .meta {
     display: flex;
@@ -73,5 +111,25 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     font-size: 0.8rem;
     color: var(--text-muted);
     font-family: var(--font-mono);
+  }
+  .category {
+    color: var(--accent-primary);
+  }
+  .upcoming-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-light);
+  }
+  .upcoming-section h2 {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
   }
 </style>
