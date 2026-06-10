@@ -12,5 +12,34 @@ import NumbatRunner from '../components/NumbatRunner.astro';
       High-precision scientific calculator with first-class physical units. Powered by <a href="https://github.com/sharkdp/numbat" target="_blank" style="color: var(--accent-secondary);">Numbat</a>.
     </p>
   </div>
+
+  <div style="max-width: 960px; margin: 0 auto; padding: 0.75rem 1rem;">
+    <style>
+      .nb-tips-outer { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; justify-content: center; font-size: 0.78rem; }
+      .nb-tip { color: var(--text-secondary); }
+      .nb-tip code { font-family: var(--font-mono, 'Fira Mono', monospace); font-size: 0.76rem; background: var(--bg-tertiary, rgba(128,128,128,0.12)); color: var(--accent-secondary); padding: 0.08rem 0.4rem; border-radius: 3px; white-space: nowrap; }
+      .nb-tip-label { color: var(--text-tertiary); font-weight: 600; }
+    </style>
+    <div class="nb-tips-outer">
+      <span class="nb-tip"><span class="nb-tip-label">Commands:</span>
+        <code>list</code>
+        <code>list functions</code>
+        <code>list variables</code>
+        <code>list units</code>
+        <code>list dimensions</code>
+      </span>
+      <span class="nb-tip"><span class="nb-tip-label">Info:</span>
+        <code>info sum</code>
+        <code>info c</code>
+        <code>info meter</code>
+        <code>info pi</code>
+      </span>
+      <span class="nb-tip"><span class="nb-tip-label">More:</span>
+        <code>help</code>
+        <code>clear</code>
+      </span>
+    </div>
+  </div>
+
   <NumbatRunner />
 </BaseLayout>

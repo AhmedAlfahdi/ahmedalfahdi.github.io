@@ -166,17 +166,66 @@
   .numbat-runner :global(.nb-history-entry) { border-bottom: 1px solid rgba(37,40,48,0.5); padding: 0.35rem 0; }
   .numbat-runner :global(.nb-history-entry):last-child { border-bottom: none; }
   :root[data-theme="light"] .numbat-runner :global(.nb-history-entry) { border-bottom-color: rgba(0,0,0,0.06); }
-  .numbat-runner :global(.nb-entry-input) { color: var(--term-dim); font-size: 0.8rem; word-break: break-all; }
+  .numbat-runner :global(.nb-entry-input) { color: var(--term-dim); font-size: 0.8rem; word-break: break-all; white-space: pre-wrap; }
   .numbat-runner :global(.nb-entry-num) { color: #f5a524; font-weight: 700; margin-right: 0.1rem; }
   :root[data-theme="light"] .numbat-runner :global(.nb-entry-num) { color: #c87d0a; }
   .numbat-runner :global(.nb-entry-input)::before { content: '> '; color: var(--term-prompt); font-weight: 600; }
-  .numbat-runner :global(.nb-entry-output) { color: var(--term-text); font-size: 0.9rem; padding: 0.1rem 0 0 1rem; line-height: 1.5; }
+  .numbat-runner :global(.nb-entry-output) { color: var(--term-text); font-size: 0.9rem; padding: 0.1rem 0 0 1rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
   .numbat-runner :global(.nb-entry-output.nb-error) { color: var(--term-red); }
   .numbat-runner :global(.nb-entry-output) :global(.numbat-error) { color: var(--term-red); }
 
+  /* jQuery Terminal formatter classes — used by try_run_command (list, info, help, etc.).
+     The WASM hardcodes JqueryTerminalFormatter for commands regardless of FormatType setting.
+     These are the same colors as the numbat-* classes below. */
+  .numbat-runner :global(.nb-entry-output) :global(.hl-value)       { color: #f3f99d; }
+  .numbat-runner :global(.nb-entry-output) :global(.hl-unit)        { color: #99ecfe; }
+  .numbat-runner :global(.nb-entry-output) :global(.hl-keyword)     { color: #ff69c0; font-weight: 700; }
+  .numbat-runner :global(.nb-entry-output) :global(.hl-identifier)  { color: var(--term-text); }
+  .numbat-runner :global(.nb-entry-output) :global(.hl-type-identifier) { color: #57c7ff; font-style: italic; }
+  .numbat-runner :global(.nb-entry-output) :global(.hl-operator)    { font-weight: 700; }
+  .numbat-runner :global(.nb-entry-output) :global(.hl-string)      { color: #59f78d; }
+  .numbat-runner :global(.nb-entry-output) :global(.hl-dimmed)      { color: #888; }
+  .numbat-runner :global(.nb-entry-output) :global(.hl-emphasized)  { font-weight: 700; }
+  .numbat-runner :global(.nb-entry-output) :global(.hl-decorator)   { color: #59f78d; }
+  .numbat-runner :global(.nb-entry-output) :global(.hl-diagnostic-red)  { color: #ff5b56; }
+  .numbat-runner :global(.nb-entry-output) :global(.hl-diagnostic-blue) { color: #56c7ff; }
+  .numbat-runner :global(.nb-entry-output) :global(.hl-diagnostic-bold) { font-weight: 700; }
+
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-output) :global(.hl-value)       { color: #b06d00; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-output) :global(.hl-unit)        { color: #007398; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-output) :global(.hl-keyword)     { color: #c0276b; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-output) :global(.hl-string)      { color: #0f7a3f; }
+
+  /* Numbat HTML formatter syntax highlighting — matches terminal theme */
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-value)       { color: #f3f99d; }  /* yellow — numeric results */
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-unit)        { color: #99ecfe; }  /* cyan — physical units */
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-keyword)     { color: #ff69c0; font-weight: 700; }  /* pink — keywords like let, fn */
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-identifier)  { color: var(--term-text); }  /* variable names */
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-type-identifier) { color: #57c7ff; font-style: italic; }  /* blue italic — type names */
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-operator)    { font-weight: 700; }  /* bold — operators */
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-string)      { color: #59f78d; }  /* green — string literals */
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-dimmed)      { color: #888; }  /* dimmed/comments */
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-emphasized)  { font-weight: 700; }  /* emphasized */
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-decorator)   { color: #59f78d; }  /* green — decorators like @name */
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-diagnostic-red)  { color: #ff5b56; }  /* error diagnostics */
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-diagnostic-blue) { color: #56c7ff; }  /* info diagnostics */
+  .numbat-runner :global(.nb-entry-output) :global(.numbat-diagnostic-bold) { font-weight: 700; }  /* bold diagnostics */
+
+  /* Light theme overrides for Numbat syntax highlighting */
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-output) :global(.numbat-value)       { color: #b06d00; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-output) :global(.numbat-unit)        { color: #007398; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-output) :global(.numbat-keyword)     { color: #c0276b; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-output) :global(.numbat-type-identifier) { color: #006eb3; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-output) :global(.numbat-string)      { color: #0f7a3f; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-output) :global(.numbat-dimmed)      { color: #777; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-output) :global(.numbat-decorator)   { color: #0f7a3f; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-output) :global(.numbat-diagnostic-red)  { color: #c41a16; }
+  :root[data-theme="light"] .numbat-runner :global(.nb-entry-output) :global(.numbat-diagnostic-blue) { color: #006eb3; }
+
   .nb-input-area { border-top: 1px solid var(--term-border); padding: 0.5rem 0.85rem 0.45rem; position: relative; }
   .nb-input-row { display: flex; gap: 0.4rem; align-items: stretch; }
-  .nb-input { flex: 1; background: var(--term-surface); color: var(--term-text); border: 1px solid var(--term-border); border-radius: 3px; padding: 0.45rem 0.6rem; font-family: var(--font-mono); font-size: 0.875rem; resize: none; outline: none; caret-color: var(--term-green); transition: border-color 0.15s, box-shadow 0.15s; }
+
+  .nb-input { flex: 1; background: var(--term-surface); color: var(--term-text); border: 1px solid var(--term-border); border-radius: 3px; padding: 0.45rem 0.6rem; font-family: var(--font-mono); font-size: 0.875rem; resize: none; outline: none; caret-color: var(--term-green); white-space: pre-wrap; transition: border-color 0.15s, box-shadow 0.15s; }
   .nb-input:focus { border-color: var(--term-green); box-shadow: 0 0 0 2px rgba(74,222,128,0.25), 0 0 12px rgba(74,222,128,0.1); }
   .nb-input::placeholder { color: var(--term-dim); }
 
@@ -234,6 +283,7 @@
   function setStatus(t) { if (statusText) statusText.textContent = t; }
 
   // ── Load WASM ──
+
   async function loadNumbat() {
     if (numbat) return numbat;
     if (loadPromise) return loadPromise;
@@ -254,6 +304,12 @@
   }
 
   function scrollToBottom() { requestAnimationFrame(() => { historyEl.scrollTop = historyEl.scrollHeight; }); }
+
+  // Convert jQuery Terminal [[;;;class]text] bracket format to HTML spans.
+  // The Numbat WASM hardcodes JqueryTerminalFormatter for commands (list, info, help).
+  function jtToHtml(text) {
+    return text.replace(/\[\[;;;([^\]]+)\]([^]*?)\]/g, (_, cls, content) => `<span class="hl-${cls}">${content}</span>`);
+  }
 
   function appendHistory(input, output, isError) {
     if (startupEl) startupEl.style.display = 'none';
@@ -284,7 +340,7 @@
         historyEl.innerHTML = ''; if (startupEl) startupEl.style.display = '';
         entryCounter = 0;
       }
-      if (cmdResult.output && cmdResult.output.trim()) appendHistory(trimmed, cmdResult.output, false);
+      if (cmdResult.output && cmdResult.output.trim()) appendHistory(trimmed, jtToHtml(cmdResult.output), false);
       return;
     }
     const result = numbat.interpret(trimmed);
@@ -299,7 +355,6 @@
     inputEl.focus();
   }
 
-  // ── Completions ──
   async function updateCompletions() {
     if (!numbat) return;
     const val = inputEl.value, cursor = inputEl.selectionStart;
@@ -429,8 +484,6 @@
   // ── Input handler (completions + auto-resize) ──
   let completionTimeout;
   inputEl.addEventListener('input', () => {
-    inputEl.style.height = 'auto';
-    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
     clearTimeout(completionTimeout);
     if (numbat) completionTimeout = setTimeout(updateCompletions, 150);
   });
