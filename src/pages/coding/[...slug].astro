@@ -18,7 +18,6 @@ const { Content } = await render(project);
   <div class="container">
     <a href="/coding" class="back-link">← Back to Coding</a>
     <article class="content">
-      <h1>{project.data.title}</h1>
       <div class="meta">
         <time>{project.data.date.toLocaleDateString()}</time>
         {project.data.tags && (

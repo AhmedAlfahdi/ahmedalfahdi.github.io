@@ -12,9 +12,9 @@ const { code, title = "Python Code" } = Astro.props;
   <div class="pyodide-header">
     <span class="pyodide-title">{title}</span>
     <div class="header-buttons">
-      <button class="toggle-code-btn" title="Show/Hide Code">Show Code</button>
+      <button class="toggle-code-btn" title="Show code">&lt;/&gt;</button>
       <button class="fullscreen-btn" title="Fullscreen (F11)">⛶</button>
-      <button class="run-button">Run</button>
+      <button class="run-button" title="Run (Ctrl+Enter)">▶</button>
     </div>
   </div>
   <div class="code-editor-wrapper" style="display: none;">
@@ -195,7 +195,7 @@ const { code, title = "Python Code" } = Astro.props;
       if (codeWrapper.style.display === 'none') {
         // Show code
         codeWrapper.style.display = 'flex';
-        btn.textContent = 'Hide Code';
+        btn.title = 'Hide code';
         // Auto-resize to fit content
         if (textarea) {
           autoResizeTextarea(textarea);
@@ -203,7 +203,7 @@ const { code, title = "Python Code" } = Astro.props;
       } else {
         // Hide code
         codeWrapper.style.display = 'none';
-        btn.textContent = 'Show Code';
+        btn.title = 'Show code';
       }
     });
   });
@@ -232,7 +232,7 @@ const { code, title = "Python Code" } = Astro.props;
         if (codeWrapper && codeWrapper.style.display === 'none') {
           codeWrapper.style.display = 'flex';
           if (toggleBtn) {
-            toggleBtn.textContent = 'Hide Code';
+            toggleBtn.title = 'Hide code';
           }
           // Auto-resize to fit content
           if (textarea) {
@@ -396,8 +396,8 @@ sys.stdout = StringIO()
     color: var(--text-primary);
     border: 1px solid var(--border-light);
     padding: 0.4rem 0.8rem;
-    border-radius: 4px;
-    cursor: pointer;
+    border-radius: 4px; min-width: 2.6em; text-align: center;
+    cursor: pointer; line-height: 1;
     font-family: var(--font-mono);
     font-size: 0.85rem;
     transition: all 0.2s ease;
@@ -414,13 +414,10 @@ sys.stdout = StringIO()
     color: var(--text-primary);
     border: 1px solid var(--border-light);
     padding: 0.4rem 0.8rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
+    border-radius: 4px; min-width: 2.6em; text-align: center;
+    cursor: pointer; font-family: var(--font-mono); font-size: 0.8rem;
     transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    line-height: 1;
   }
 
   .fullscreen-btn:hover {
@@ -433,10 +430,9 @@ sys.stdout = StringIO()
   .run-button {
     background: var(--accent-secondary);
     color: white;
-    border: none;
-    padding: 0.4rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
+    border: 1px solid transparent; padding: 0.4rem 0.8rem;
+    border-radius: 4px; min-width: 2.6em; text-align: center;
+    cursor: pointer; line-height: 1;
     font-family: var(--font-mono);
     font-size: 0.85rem;
     transition: all 0.2s ease;

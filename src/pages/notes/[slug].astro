@@ -18,7 +18,6 @@ const { Content } = await render(note);
   <div class="container">
     <a href="/notes" class="back-link">← Back to Notes</a>
     <article class="content">
-      <h1>{note.data.title}</h1>
       <div class="meta">
         <time>{note.data.date.toLocaleDateString()}</time>
       </div>
