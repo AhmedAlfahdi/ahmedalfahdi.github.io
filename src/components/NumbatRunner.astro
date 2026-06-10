@@ -49,6 +49,7 @@
       ></textarea>
       <script is:inline>document.getElementById('nb-input')?.focus()</script>
       <button class="nb-btn nb-btn-run" id="nb-btn-run" title="Run (Enter)">⏎</button>
+      <button class="nb-btn nb-btn-ghost nb-btn-popout" id="nb-btn-popout" title="Open in pop-up editor">↗</button>
     </div>
 
     <!-- Operator Buttons -->
@@ -91,6 +92,20 @@
       <span class="nb-status-sep">|</span>
       <a href="https://numbat.dev/docs/examples/example-voyager/" target="_blank" class="nb-status-link">Example</a>
     </span>
+  </div>
+</div>
+
+<!-- Pop-up editor overlay -->
+<div class="nb-popout-overlay" id="nb-popout-overlay" style="display:none;">
+  <div class="nb-popout-modal">
+    <div class="nb-popout-header">
+      <span class="nb-popout-title">Numbat Editor</span>
+      <button class="nb-btn nb-btn-ghost" id="nb-popout-close" title="Close (Escape)">✕</button>
+    </div>
+    <textarea id="nb-popout-input" class="nb-popout-textarea" spellcheck="false" placeholder="Enter a Numbat expression…"></textarea>
+    <div class="nb-popout-actions">
+      <button class="nb-btn nb-btn-run" id="nb-popout-run" title="Run (Ctrl+Enter)">⏎ Run</button>
+    </div>
   </div>
 </div>
 
@@ -259,6 +274,44 @@
   .nb-history::-webkit-scrollbar-track { background: transparent; }
   .nb-history::-webkit-scrollbar-thumb { background: var(--term-border); border-radius: 3px; }
   .nb-history::-webkit-scrollbar-thumb:hover { background: var(--term-green); }
+
+  /* ── Pop-up editor overlay ── */
+  .nb-popout-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center;
+  }
+  .nb-popout-modal {
+    background: var(--term-bg); border: 1px solid var(--term-border); border-radius: 6px;
+    width: min(720px, 95vw); max-height: 90vh; display: flex; flex-direction: column;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  }
+  .nb-popout-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--term-border);
+  }
+  .nb-popout-title { color: var(--term-dim); font-size: 0.8rem; font-weight: 600; }
+
+  .nb-popout-textarea {
+    flex: 1; min-height: 200px; resize: vertical;
+    background: var(--term-surface); color: var(--term-text);
+    border: none; outline: none; resize: none;
+    padding: 0.65rem 0.75rem;
+    font-family: var(--font-mono); font-size: 0.875rem; line-height: 1.55;
+    white-space: pre-wrap; tab-size: 2;
+    caret-color: var(--term-green);
+  }
+  .nb-popout-textarea::placeholder { color: var(--term-dim); }
+  .nb-popout-textarea:focus { box-shadow: inset 0 0 0 2px var(--term-green); }
+
+  .nb-popout-actions {
+    display: flex; justify-content: flex-end; gap: 0.4rem;
+    padding: 0.5rem 0.75rem; border-top: 1px solid var(--term-border);
+  }
+  .nb-btn-popout { opacity: 0; transition: opacity 0.15s; }
+  .nb-input-row:hover .nb-btn-popout { opacity: 1; }
+  :root[data-theme="light"] .nb-popout-modal { background: #f5f5f5; }
+  :root[data-theme="light"] .nb-popout-textarea { background: #fafafa; }
+  :root[data-theme="light"] .nb-popout-overlay { background: rgba(0,0,0,0.3); }
 </style>
 
 <script type="module">
@@ -278,6 +331,11 @@
   const clearBtn = document.getElementById('nb-btn-clear');
   const resetBtn = document.getElementById('nb-btn-reset');
   const expandBtn = document.getElementById('nb-btn-expand');
+
+  // ── Pop-up editor refs ──
+  const popoutOverlay = document.getElementById('nb-popout-overlay');
+  const popoutInput = document.getElementById('nb-popout-input');
+  const popoutRunBtn = document.getElementById('nb-popout-run');
 
   function escapeHTML(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
   function setStatus(t) { if (statusText) statusText.textContent = t; }
@@ -526,6 +584,49 @@
     historyEl.innerHTML = ''; if (startupEl) startupEl.style.display = '';
     commandHistory = []; historyCursor = -1; entryCounter = 0;
     setStatus('Session reset.');
+  });
+
+  // ── Pop-up editor ──
+  function openPopout() {
+    popoutInput.value = inputEl.value;
+    popoutOverlay.style.display = 'flex';
+    popoutInput.focus();
+    popoutInput.selectionStart = popoutInput.value.length;
+    inputEl.style.display = 'none'; // prevent tabbing into hidden textarea
+  }
+
+  function closePopout() {
+    inputEl.value = popoutInput.value;
+    inputEl.style.display = '';
+    popoutOverlay.style.display = 'none';
+    inputEl.focus();
+    // Trigger any input handlers
+    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  async function runFromPopout() {
+    const raw = popoutInput.value; if (!raw.trim()) return;
+    inputEl.value = raw;
+    closePopout();
+    try { if (!numbat) { setStatus('Loading Numbat engine…'); await loadNumbat(); } }
+    catch (err) { console.error('Run failed:', err); return; }
+    processInput(raw);
+    inputEl.value = '';
+  }
+
+  document.getElementById('nb-btn-popout').addEventListener('click', openPopout);
+  popoutRunBtn.addEventListener('click', runFromPopout);
+  document.getElementById('nb-popout-close').addEventListener('click', closePopout);
+
+  popoutOverlay.addEventListener('click', (e) => { if (e.target === popoutOverlay) closePopout(); });
+  popoutInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); closePopout(); }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); runFromPopout(); }
+  });
+
+  // Sync popout content back to main input on each keystroke
+  popoutInput.addEventListener('input', () => {
+    inputEl.value = popoutInput.value;
   });
 
   // ── Preload ──
