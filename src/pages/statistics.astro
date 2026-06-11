@@ -63,6 +63,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <div class="stat-label">Bounce Rate</div>
           <div class="stat-value" id="bounce-rate" data-value="0">0%</div>
         </div>
+        <div class="stat-card" data-stat="pages">
+          <div class="stat-label">Pages per Session</div>
+          <div class="stat-value" id="avg-pages" data-value="0">0</div>
+          <div class="stat-hint">Avg pages viewed per visit</div>
+        </div>
       </div>
       
       <!-- Charts Section -->
@@ -126,6 +131,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         <h2>World Map - Unique Visitors</h2>
         <div id="world-map" class="world-map"></div>
+
+        <h2>Visitors by Country</h2>
+        <div class="chart-wrapper">
+          <div class="chart-container chart-container-large">
+            <canvas id="countries-chart"></canvas>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1026,6 +1038,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         setTimeout(() => animateValue(document.getElementById('avg-time'), '0s', avgTime, 800), 600);
         setTimeout(() => animateValue(document.getElementById('avg-scroll'), '0%', avgScroll, 800), 700);
         setTimeout(() => animateValue(document.getElementById('bounce-rate'), '0%', bounceRate, 800), 800);
+        setTimeout(() => animateValue(document.getElementById('avg-pages'), 0, data.avgPagesPerSession || 0, 1000), 900);
         
         // Add click interaction to highlight related data
         document.querySelectorAll('.stat-card').forEach(card => {
@@ -1293,6 +1306,47 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           });
         }
         
+        // Countries Chart (NEW)
+        const ctxCountries = document.getElementById('countries-chart');
+        if (ctxCountries && data.countries && data.countries.length > 0) {
+          const topCountries = data.countries.slice(0, 15);
+          new Chart(ctxCountries, {
+            type: 'bar',
+            data: {
+              labels: topCountries.map(c => c.name),
+              datasets: [{
+                label: 'Page Views',
+                data: topCountries.map(c => c.count),
+                backgroundColor: topCountries.map((_, i) => {
+                  const alpha = 0.9 - (i * 0.04);
+                  return `rgba(245, 165, 36, ${alpha})`;
+                }),
+                borderColor: colors.primary.replace('0.8', '1'),
+                borderWidth: 1,
+                borderRadius: 3
+              }]
+            },
+            options: {
+              ...chartConfig,
+              indexAxis: 'y',
+              plugins: {
+                ...chartConfig.plugins,
+                legend: { display: false },
+                tooltip: {
+                  ...chartConfig.plugins.tooltip,
+                  callbacks: {
+                    label: function(context) {
+                      const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                      const pct = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                      return `${context.parsed} views (${pct}%)`;
+                    }
+                  }
+                }
+              }
+            }
+          });
+        }
+
         // World map: store data globally for when MapLibre is ready and render
         window.__statsDataForMap = data;
         if (mapLibreLoaded && window.maplibregl) {
