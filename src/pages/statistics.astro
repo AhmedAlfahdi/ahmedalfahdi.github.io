@@ -1067,7 +1067,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           new Chart(ctxTraffic, {
             type: 'doughnut',
             data: {
-              labels: data.trafficSources.slice(0, 6).map(s => s.source),
+              labels: data.trafficSources.slice(0, 6).map(s => s.name),
               datasets: [{
                 data: data.trafficSources.slice(0, 6).map(s => s.count),
                 backgroundColor: [
@@ -1138,7 +1138,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           new Chart(ctxDevice, {
             type: 'pie',
             data: {
-              labels: data.deviceTypes.map(d => d.type.charAt(0).toUpperCase() + d.type.slice(1)),
+              labels: data.deviceTypes.map(d => d.name.charAt(0).toUpperCase() + d.name.slice(1)),
               datasets: [{
                 data: data.deviceTypes.map(d => d.count),
                 backgroundColor: [colors.primary, colors.secondary, colors.success],
@@ -1198,7 +1198,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           new Chart(ctxBrowsers, {
             type: 'bar',
             data: {
-              labels: data.browsers.map(b => b.browser),
+              labels: data.browsers.map(b => b.name),
               datasets: [{
                 label: 'Visits',
                 data: data.browsers.map(b => b.count),
@@ -1225,7 +1225,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           new Chart(ctxOS, {
             type: 'bar',
             data: {
-              labels: data.operatingSystems.map(o => o.os),
+              labels: data.operatingSystems.map(o => o.name),
               datasets: [{
                 label: 'Visits',
                 data: data.operatingSystems.map(o => o.count),
