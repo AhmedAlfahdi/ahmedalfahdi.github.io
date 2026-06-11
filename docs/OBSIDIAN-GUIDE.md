@@ -138,65 +138,6 @@ pie title Pets
     "Rats" : 15
 ```
 
-## File Organization
-
-Recommended structure:
-
-```
-src/pages/notes/
-├── index.astro              (notes listing page)
-├── obsidian-demo.mdx        (example note)
-├── programming/
-│   ├── javascript.mdx
-│   └── python.mdx
-├── mathematics/
-│   ├── calculus.mdx
-│   └── algebra.mdx
-└── projects/
-    ├── project-1.mdx
-    └── project-2.mdx
-```
-
-## Automation Ideas
-
-### Script to Convert Wiki-Links
-
-Create a Node.js script to automate conversion:
-
-```javascript
-const fs = require('fs');
-
-function convertWikiLinks(content) {
-  return content.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (match, link, display) => {
-    const slug = link.toLowerCase().replace(/\s+/g, '-');
-    const text = display || link;
-    return `[${text}](/notes/${slug})`;
-  });
-}
-
-// Use on your files
-const content = fs.readFileSync('note.md', 'utf8');
-const converted = convertWikiLinks(content);
-fs.writeFileSync('note-converted.md', converted);
-```
-
-### Obsidian Templater Template
-
-Create a template in Obsidian for web-ready notes:
-
-```markdown
----
-layout: ../../layouts/BaseLayout.astro
-title: <% tp.file.title %>
-description: 
-date: <% tp.date.now("YYYY-MM-DD") %>
----
-
-# <% tp.file.title %>
-
-Your content here...
-```
-
 ## Best Practices
 
 1. **Use meaningful filenames**: `advanced-javascript.mdx` not `note-1.mdx`
@@ -208,7 +149,7 @@ Your content here...
 ## Troubleshooting
 
 **Mermaid not rendering?**
-- Check syntax at [Mermaid Live Editor](https://mermaid.live)
+- Check syntax at Mermaid Live Editor
 - Ensure you're using the `<Mermaid>` component for `.mdx` files
 - For `.md` files, use code blocks with `mermaid` language
 
@@ -221,20 +162,3 @@ Your content here...
 - Check that all imports are correct
 - Verify frontmatter YAML is valid
 - Look for unclosed tags or brackets
-
-## Example Workflow
-
-1. Write notes in Obsidian as usual
-2. When ready to publish:
-   - Export note to `src/pages/notes/`
-   - Add frontmatter
-   - Convert wiki-links
-   - Convert Mermaid (if using MDX)
-   - Test locally
-   - Commit and push
-3. GitHub Actions deploys automatically
-
----
-
-Happy note publishing! 📝✨
-

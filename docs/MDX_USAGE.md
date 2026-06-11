@@ -5,10 +5,10 @@ This guide explains how to add content to your website using MDX (Markdown + JSX
 ## Content Structure
 
 Your content lives in `src/content/`:
--   `coding/`: Programming projects
--   `notes/`: Obsidian notes
--   `engineering/`: Engineering projects
--   `career/`: Professional experience
+- `coding/`: Programming projects
+- `notes/`: Obsidian notes
+- `engineering/`: Engineering projects
+- `career/`: Professional experience
 
 ## Creating a New Page
 
@@ -82,14 +82,14 @@ graph TD
 
 ## Obsidian Features
 
--   **Math**: Use `$` for inline math ($E=mc^2$) and `$$` for block math.
--   **Callouts**: Use blockquotes with types (e.g., `> [!NOTE]`).
--   **Tables**: Standard Markdown tables are supported.
--   **Task Lists**: Use `- [ ]` and `- [x]`.
+- **Math**: Use `$` for inline math ($E=mc^2$) and `$$` for block math.
+- **Callouts**: Use blockquotes with types (e.g., `> [!NOTE]`).
+- **Tables**: Standard Markdown tables are supported.
+- **Task Lists**: Use `- [ ]` and `- [x]`.
 
 ## Preventing Ordered List Numbering
 
-If you have a numbered label (like `3. Section name:`) followed by bullet points, MDX will interpret the number as the start of an ordered list and renumber your bullets. To prevent this while maintaining the theme's amber color:
+If you have a numbered label followed by bullet points, MDX will interpret the number as the start of an ordered list. To prevent this:
 
 **Use the `section-label` class:**
 
@@ -97,12 +97,6 @@ If you have a numbered label (like `3. Section name:`) followed by bullet points
 <p class="section-label"><strong>3. Integration benefits:</strong></p>
 - First bullet point
 - Second bullet point
-- Third bullet point
 ```
 
-This prevents MDX from creating an ordered list while keeping the amber accent color (`--accent-primary`) that matches your theme's section headings.
-
-**Why this works:**
-- The HTML `<p>` tag bypasses MDX's markdown parser, so `3.` isn't interpreted as a list item
-- The `section-label` class applies the theme's accent color and proper spacing
-- The bullets below remain as a normal unordered list with `#` markers
+This prevents MDX from creating an ordered list while keeping the amber accent color.

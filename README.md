@@ -4,10 +4,10 @@ A modern personal website built with Astro and Three.js, featuring interactive 3
 
 ## Features
 
-- **Interactive 3D Models** - WebGL rendering with Three.js (GLTF/GLB formats)
-- **Career & Experience** - Professional timeline with PDF certifications
-- **Technical Notes** - Engineering content with Mermaid diagrams and LaTeX math
-- **Privacy-Friendly Analytics** - Custom tracking with MapLibre-powered world map
+- **Interactive 3D Models** — WebGL rendering with Three.js (GLTF/GLB formats)
+- **Career & Experience** — Professional timeline with PDF certifications
+- **Technical Notes** — Engineering content with Mermaid diagrams and LaTeX math
+- **Privacy-Friendly Analytics** — Custom tracking with MapLibre-powered world map
 
 ## Quick Start
 
@@ -18,9 +18,16 @@ npm run dev
 
 Visit `http://localhost:4321` to preview.
 
-## Notes
+## Analytics
 
-- **DarkReader Plugin**: This website already has a dark theme built-in. Please disable DarkReader or similar dark mode browser extensions when viewing this site, as they may interfere with the styling and cause display issues.
+Visitor tracking is powered by a separate Vercel serverless API backed by Vercel KV (Redis).
+
+- **API endpoint**: `https://analytics-api-one.vercel.app/api`
+- **Source repo**: [AhmedAlfahdi/analytics-api](https://github.com/AhmedAlfahdi/analytics-api)
+- **Endpoints**: `/track` (POST), `/stats` (GET), `/log` (GET), `/badge` (GET)
+- **Configured via**: `PUBLIC_ANALYTICS_API` environment variable (fallback hardcoded in components)
+
+The API is deployed independently — changes to this repo don't affect it.
 
 ## Project Structure
 
@@ -36,27 +43,37 @@ src/
 │   └── BaseLayout.astro
 ├── pages/              # Site routes
 │   ├── index.astro
-│   ├── about.md
 │   ├── career/         # Career pages
 │   ├── notes/          # Technical notes
 │   ├── coding/         # Coding projects
 │   ├── engineering/    # Engineering projects
 │   └── statistics.astro
 ├── content/            # MDX content collections
-│   ├── career/         # Career entries
-│   ├── notes/          # Technical notes
-│   ├── coding/         # Coding projects
-│   ├── engineering/    # Engineering projects
-│   └── content.config.ts  # Content schemas (Astro 6 Content Layer API)
+│   ├── career/
+│   ├── notes/
+│   ├── coding/
+│   ├── engineering/
+│   └── content.config.ts
 └── utils/
     ├── remark-wikilinks.mjs
     └── analytics-helpers.js
 
 public/
-├── career/             # PDF certificates and documents
+├── career/             # PDF certificates
 ├── models/             # 3D model files (.glb)
 ├── pdfs/               # General PDF files
 └── vendor/             # Third-party scripts
+
+docs/                   # Feature & integration guides
+├── SETUP.md
+├── MDX_USAGE.md
+├── OBSIDIAN-GUIDE.md
+├── 3D-MODELS-GUIDE.md
+├── PDF-VIEWER-GUIDE.md
+├── PYODIDE-EXAMPLE.md
+├── MOLECULAR-VISUALIZATION.md
+├── CODE-WRAP-TOGGLE.md
+└── LIGHT-THEME-IMPLEMENTATION.md
 
 astro.config.mjs        # Astro configuration
 package.json            # Dependencies
@@ -65,15 +82,18 @@ tsconfig.json           # TypeScript config
 
 ## Deployment
 
-Deployed to GitHub Pages via GitHub Actions. Update `astro.config.mjs` with your site URL.
+Deployed to GitHub Pages via GitHub Actions (`.github/workflows/astro-pages.yml`). The build step passes `PUBLIC_ANALYTICS_API` from a repository secret (or falls back to the hardcoded URL).
 
 ## Tech Stack
 
-- **Astro** - Static site generator
-- **Three.js** - 3D graphics
-- **MapLibre GL JS** - Vector maps for analytics
-- **MDX** - Markdown with components
-- **Mermaid.js** - Diagrams
-- **KaTeX** - Math rendering
+- **Astro** — Static site generator
+- **Three.js** — 3D graphics
+- **MapLibre GL JS** — Vector maps for analytics
+- **MDX** — Markdown with components
+- **Mermaid.js** — Diagrams
+- **KaTeX** — Math rendering
 
-See `package.json` for full dependency versions.
+## Notes
+
+- **DarkReader Plugin**: This website has a built-in dark theme. Disable DarkReader or similar extensions when viewing — they interfere with the styling.
+- See `docs/` for detailed guides on MDX usage, Obsidian integration, 3D models, and more.
