@@ -1249,11 +1249,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         // Visits by Hour Chart
         const ctxHour = document.getElementById('visits-by-hour-chart');
         if (ctxHour && data.visitsByHour && data.visitsByHour.length > 0) {
-          const sortedHours = data.visitsByHour.sort((a, b) => a.hour - b.hour);
+          const sortedHours = data.visitsByHour.sort((a, b) => parseInt(a.name) - parseInt(b.name));
           new Chart(ctxHour, {
             type: 'line',
             data: {
-              labels: sortedHours.map(h => `${h.hour}:00`),
+              labels: sortedHours.map(h => `${h.name}:00`),
               datasets: [{
                 label: 'Visits',
                 data: sortedHours.map(h => h.count),
@@ -1281,12 +1281,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if (ctxDay && data.visitsByDay && data.visitsByDay.length > 0) {
           const dayOrder = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
           const sortedDays = data.visitsByDay.sort((a, b) => 
-            dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day)
+            dayOrder.indexOf(a.name) - dayOrder.indexOf(b.name)
           );
           new Chart(ctxDay, {
             type: 'bar',
             data: {
-              labels: sortedDays.map(d => d.day.substring(0, 3)),
+              labels: sortedDays.map(d => d.name.substring(0, 3)),
               datasets: [{
                 label: 'Visits',
                 data: sortedDays.map(d => d.count),
