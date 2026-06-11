@@ -59,6 +59,8 @@ jobs:
           cp version.json public/version.json
 
       - name: Build site
+        env:
+          PUBLIC_ANALYTICS_API: ${{ secrets.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api' }}
         run: npm run build
 
       # Use the updated upload-pages-artifact action (v3) which uses supported upload-artifact@v4

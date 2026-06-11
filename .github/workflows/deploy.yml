@@ -1,98 +1,17 @@
-name: Deploy to GitHub Pages
+# ⚠️ DEPRECATED — use astro-pages.yml instead
+# This workflow is no longer active.
+# All deployment configuration has been consolidated into .github/workflows/astro-pages.yml
+# which includes PUBLIC_ANALYTICS_API env variable support.
+#
+# To restore this workflow, remove this banner and re-enable in GitHub Actions.
+
+name: Deploy to GitHub Pages (DEPRECATED)
 
 on:
-  # Trigger on push to main branch
-  push:
-    branches: [ main ]
-  # Allow manual trigger
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow only one concurrent deployment
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
-  build:
+  noop:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          
-      - name: Install dependencies
-        run: npm install
-        
-      - name: Generate build info
-        run: |
-          BUILD_DATE=$(date -u +'%Y-%m-%d')
-          BUILD_TIME=$(date -u +'%H:%M:%S')
-          BUILD_TIMESTAMP=$(date -u +%s)
-          GIT_SHA=$(git rev-parse --short HEAD)
-          GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-          NODE_VERSION=$(node --version)
-          ASTRO_VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.dependencies.astro.replace('^', ''))" || echo "unknown")
-          THREE_VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.dependencies.three.replace('^', ''))" || echo "unknown")
-          echo "Generating build-info.json with timestamp: $BUILD_DATE at $BUILD_TIME UTC (deployment $GITHUB_RUN_NUMBER)"
-          echo "Versions: Node=$NODE_VERSION, Astro=$ASTRO_VERSION, Three=$THREE_VERSION"
-          cat <<EOF > build-info.json
-          {
-            "buildDate": "$BUILD_DATE",
-            "buildTime": "$BUILD_TIME",
-            "timestamp": $BUILD_TIMESTAMP,
-            "deployment": $GITHUB_RUN_NUMBER,
-            "gitSha": "$GIT_SHA",
-            "gitBranch": "$GIT_BRANCH",
-            "nodeVersion": "$NODE_VERSION",
-            "astroVersion": "$ASTRO_VERSION",
-            "threeVersion": "$THREE_VERSION"
-          }
-          EOF
-          cat build-info.json
-          ls -la build-info.json
-
-      - name: Sync build/version json into public
-        run: |
-          cp build-info.json public/build-info.json
-          cp version.json public/version.json
-        
-      - name: Build with Astro
-        env:
-          PUBLIC_ANALYTICS_API: ${{ secrets.PUBLIC_ANALYTICS_API || 'https://analytics-api-one.vercel.app/api' }}
-          PUBLIC_VISITORS_TABLE_PASSWORD: ${{ secrets.PUBLIC_VISITORS_TABLE_PASSWORD || 'visitors' }}
-        run: npm run build
-        
-      - name: Verify build info in dist
-        run: |
-          if [ -f dist/_astro/build-info.*.json ] || grep -r "buildDate" dist/ 2>/dev/null; then
-            echo "Build info found in dist"
-          else
-            echo "Warning: Build info may not be bundled correctly"
-          fi
-        
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
+      - run: echo "This workflow is deprecated. Use astro-pages.yml instead."
