@@ -17,8 +17,6 @@ const {
   format = 'pdf',
 } = Astro.props;
 
-const isPdf = format === 'pdf';
-
 const fmConfig = {
   pdf:   { label: 'PDF',  color: 'var(--accent-primary)' },
   txt:   { label: 'TXT',  color: 'var(--accent-secondary)' },
@@ -36,11 +34,8 @@ const fmConfig = {
       <div class="file-thumbnail-inner">
         <div class="file-icon-area" style={`color: ${fmConfig.color}`}>
           <svg class="file-icon" viewBox="0 0 40 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- document body -->
             <path d="M4 0h22l14 14v30a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4z" fill="currentColor" opacity="0.12"/>
-            <!-- folded corner -->
             <path d="M26 0v10a4 4 0 0 0 4 4h10L26 0z" fill="currentColor" opacity="0.20"/>
-            <!-- format label background stripe -->
             <rect x="0" y="30" width="40" height="18" rx="2" fill="currentColor" opacity="0.18"/>
             <text x="20" y="42.5" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="9" fill="currentColor" opacity="0.9">{fmConfig.label}</text>
           </svg>
@@ -56,175 +51,8 @@ const fmConfig = {
         <div class="file-thumbnail-hint">Click to open in new tab</div>
       </div>
     </a>
-
-    {isPdf && (
-      <div class="file-card-actions">
-        <button class="file-preview-btn" data-file-preview-btn data-file-src={src}>
-          <svg class="file-preview-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-          </svg>
-          Preview
-        </button>
-      </div>
-    )}
   </div>
-
-  {isPdf && (
-    <div class="file-preview-panel" data-file-preview-panel hidden>
-      <div class="file-preview-toolbar">
-        <button class="file-prev-btn" data-file-prev disabled aria-label="Previous page">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <span class="file-page-info" data-file-page-info>—</span>
-        <button class="file-next-btn" data-file-next disabled aria-label="Next page">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-        <span class="file-preview-spacer"></span>
-        <a href={src} class="file-open-link" target="_blank" rel="noopener noreferrer">Open in tab ↗</a>
-      </div>
-      <div class="file-canvas-wrap" data-file-canvas-wrap>
-        <canvas class="file-canvas" data-file-canvas></canvas>
-      </div>
-      <div class="file-preview-loading" data-file-preview-loading>
-        <span class="file-preview-spinner"></span>
-        Loading PDF&hellip;
-      </div>
-      <div class="file-preview-error" data-file-preview-error hidden>
-        Unable to render preview. <a href={src} target="_blank" rel="noopener noreferrer">Open PDF in new tab</a> instead.
-      </div>
-    </div>
-  )}
 </div>
-
-<script>
-  (function() {
-    const PDFJS_VERSION = '5.4.624';
-    const PDFJS_CDN = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}/build/pdf.min.mjs`;
-    const PDFJS_WORKER = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}/build/pdf.worker.min.mjs`;
-
-    let pdfjsLib = null;
-
-    async function ensurePdfJs() {
-      if (pdfjsLib) return pdfjsLib;
-      pdfjsLib = await import(PDFJS_CDN);
-      pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
-      return pdfjsLib;
-    }
-
-    function setupPreview(wrapper) {
-      const previewBtn = wrapper.querySelector('[data-file-preview-btn]');
-      const previewPanel = wrapper.querySelector('[data-file-preview-panel]');
-      const canvas = wrapper.querySelector('[data-file-canvas]');
-      const canvasWrap = wrapper.querySelector('[data-file-canvas-wrap]');
-      const loadingEl = wrapper.querySelector('[data-file-preview-loading]');
-      const errorEl = wrapper.querySelector('[data-file-preview-error]');
-      const pageInfo = wrapper.querySelector('[data-file-page-info]');
-      const prevBtn = wrapper.querySelector('[data-file-prev]');
-      const nextBtn = wrapper.querySelector('[data-file-next]');
-      const src = previewBtn?.dataset.fileSrc;
-
-      if (!previewBtn || !previewPanel || !canvas || !src) return;
-
-      let pdfDoc = null;
-      let currentPage = 1;
-      let totalPages = 0;
-      let renderTask = null;
-
-      const showLoading = () => {
-        loadingEl.hidden = false;
-        errorEl.hidden = true;
-        canvas.style.display = 'none';
-      };
-
-      const showError = () => {
-        loadingEl.hidden = true;
-        errorEl.hidden = false;
-        canvas.style.display = 'none';
-      };
-
-      const renderPage = async (pageNum) => {
-        if (!pdfDoc) return;
-        if (renderTask) await renderTask.cancel();
-
-        const page = await pdfDoc.getPage(pageNum);
-        const wrapperWidth = canvasWrap.clientWidth;
-
-        const scale = Math.min(
-          (wrapperWidth - 12) / page.getViewport({ scale: 1 }).width,
-          2.5
-        );
-        const viewport = page.getViewport({ scale });
-
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        canvas.style.display = 'block';
-        canvas.style.width = `${viewport.width}px`;
-        canvas.style.height = `${viewport.height}px`;
-
-        const ctx = canvas.getContext('2d');
-        renderTask = page.render({ canvasContext: ctx, viewport });
-        await renderTask.promise;
-        renderTask = null;
-
-        currentPage = pageNum;
-        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-        prevBtn.disabled = currentPage <= 1;
-        nextBtn.disabled = currentPage >= totalPages;
-        loadingEl.hidden = true;
-      };
-
-      previewBtn.addEventListener('click', async () => {
-        if (!previewPanel.hidden) {
-          previewPanel.hidden = true;
-          previewBtn.classList.remove('active');
-          if (renderTask) { renderTask.cancel(); renderTask = null; }
-          pdfDoc?.destroy();
-          pdfDoc = null;
-          return;
-        }
-
-        previewPanel.hidden = false;
-        previewBtn.classList.add('active');
-        showLoading();
-        pageInfo.textContent = '—';
-        prevBtn.disabled = true;
-        nextBtn.disabled = true;
-
-        try {
-          const lib = await ensurePdfJs();
-          pdfDoc = await lib.getDocument(src).promise;
-          totalPages = pdfDoc.numPages;
-          await renderPage(1);
-        } catch (e) {
-          console.error('PDF preview error:', e);
-          showError();
-        }
-      });
-
-      prevBtn.addEventListener('click', () => {
-        if (currentPage > 1) renderPage(currentPage - 1);
-      });
-
-      nextBtn.addEventListener('click', () => {
-        if (currentPage < totalPages) renderPage(currentPage + 1);
-      });
-
-      let resizeTimer;
-      window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => {
-          if (!previewPanel.hidden && pdfDoc) {
-            renderPage(currentPage);
-          }
-        }, 200);
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.file-viewer-wrapper').forEach(setupPreview);
-    });
-  })();
-</script>
 
 <style>
   .file-viewer-wrapper {
@@ -245,7 +73,6 @@ const fmConfig = {
     box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.03), 0 8px 24px rgba(0, 0, 0, 0.10);
   }
 
-  /* ---- Card ---- */
   .file-card {
     display: flex;
     flex-direction: column;
@@ -356,201 +183,6 @@ const fmConfig = {
     transform: translateY(0);
   }
 
-  /* ---- Card actions (PDF only) ---- */
-  .file-card-actions {
-    display: flex;
-    justify-content: center;
-    padding: 0.4rem 1rem 0.7rem;
-    border-top: 1px solid var(--border-light);
-    margin: 0 1rem;
-  }
-
-  .file-preview-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-strong);
-    color: var(--text-secondary);
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    cursor: pointer;
-    border-radius: 3px;
-    transition: all 0.2s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .file-preview-btn:hover {
-    background: rgba(245, 165, 36, 0.08);
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-  }
-
-  .file-preview-btn.active {
-    background: rgba(245, 165, 36, 0.12);
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-  }
-
-  :root[data-theme="light"] .file-preview-btn:hover {
-    background: rgba(200, 125, 10, 0.10);
-  }
-
-  :root[data-theme="light"] .file-preview-btn.active {
-    background: rgba(200, 125, 10, 0.14);
-  }
-
-  .file-preview-icon {
-    flex-shrink: 0;
-  }
-
-  /* ---- Preview panel ---- */
-  .file-preview-panel {
-    border-top: 1px solid var(--border-strong);
-    background: var(--bg-primary);
-    transition: background 0.3s ease;
-  }
-
-  :root[data-theme="light"] .file-preview-panel {
-    background: #e8ecf1;
-  }
-
-  .file-preview-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.5rem 1rem;
-    background: rgba(12, 20, 28, 0.85);
-    border-bottom: 1px solid var(--border-strong);
-    transition: background 0.3s ease;
-  }
-
-  :root[data-theme="light"] .file-preview-toolbar {
-    background: rgba(214, 220, 227, 0.95);
-  }
-
-  .file-prev-btn,
-  .file-next-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 28px;
-    background: transparent;
-    border: 1px solid var(--border-strong);
-    color: var(--text-secondary);
-    cursor: pointer;
-    border-radius: 3px;
-    transition: all 0.15s ease;
-  }
-
-  .file-prev-btn:hover:not(:disabled),
-  .file-next-btn:hover:not(:disabled) {
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-    background: rgba(245, 165, 36, 0.08);
-  }
-
-  .file-prev-btn:disabled,
-  .file-next-btn:disabled {
-    opacity: 0.35;
-    cursor: default;
-  }
-
-  .file-page-info {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--text-secondary);
-    min-width: 100px;
-    text-align: center;
-  }
-
-  .file-preview-spacer {
-    flex: 1;
-  }
-
-  .file-open-link {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--accent-secondary);
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: color 0.15s;
-    white-space: nowrap;
-  }
-
-  .file-open-link:hover {
-    color: var(--accent-primary);
-  }
-
-  .file-canvas-wrap {
-    display: flex;
-    justify-content: center;
-    padding: 0.4rem;
-    min-height: 200px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .file-canvas {
-    display: block;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-    border-radius: 2px;
-    max-width: 100%;
-    height: auto;
-  }
-
-  :root[data-theme="light"] .file-canvas {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
-  }
-
-  /* ---- Loading ---- */
-  .file-preview-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 2rem;
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-  }
-
-  .file-preview-spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--border-strong);
-    border-top-color: var(--accent-primary);
-    border-radius: 50%;
-    animation: file-spin 0.7s linear infinite;
-  }
-
-  @keyframes file-spin {
-    to { transform: rotate(360deg); }
-  }
-
-  /* ---- Error ---- */
-  .file-preview-error {
-    padding: 2rem;
-    text-align: center;
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-  }
-
-  .file-preview-error a {
-    color: var(--accent-secondary);
-    font-weight: 600;
-  }
-
-  .file-preview-error a:hover {
-    color: var(--accent-primary);
-  }
-
-  /* ---- Responsive ---- */
   @media (max-width: 768px) {
     .file-viewer-wrapper {
       width: 100%;
@@ -569,25 +201,6 @@ const fmConfig = {
     .file-icon {
       width: 34px;
       height: 40px;
-    }
-
-    .file-card-actions {
-      padding: 0.3rem 0.75rem 0.6rem;
-      margin: 0 0.75rem;
-    }
-
-    .file-canvas-wrap {
-      padding: 0.5rem;
-    }
-
-    .file-preview-toolbar {
-      padding: 0.4rem 0.75rem;
-      gap: 0.25rem;
-    }
-
-    .file-page-info {
-      font-size: 0.72rem;
-      min-width: 80px;
     }
   }
 </style>
