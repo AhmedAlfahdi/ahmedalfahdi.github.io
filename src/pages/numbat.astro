@@ -41,11 +41,11 @@ import NumbatRunner from '../components/NumbatRunner.astro';
     </div>
   </div>
 
-  <!-- PWA Install Banner — shown on first visit when beforeinstallprompt fires -->
-  <div id="nb-install-banner" class="nb-install-banner" style="display:none;">
+  <!-- PWA Install Banner — always visible, prompts native install when beforeinstallprompt fires -->
+  <div id="nb-install-banner" class="nb-install-banner">
     <div class="nb-install-banner-inner">
       <span class="nb-install-icon">📥</span>
-      <span class="nb-install-text">
+      <span class="nb-install-text" id="nb-install-text">
         <strong>Install for offline use</strong>
         <span class="nb-install-sub">Use Numbat anywhere, no internet needed</span>
       </span>
@@ -57,33 +57,64 @@ import NumbatRunner from '../components/NumbatRunner.astro';
   <NumbatRunner />
 
   <script>
-    // Capture beforeinstallprompt so we can show our own install button immediately.
-    // Without this, Chrome waits for engagement heuristics (multiple visits, time on site).
-    let installPrompt = null;
-    const banner = document.getElementById('nb-install-banner');
+    (() => {
+      const banner = document.getElementById('nb-install-banner');
+      const btn = document.getElementById('nb-install-btn');
+      const dismiss = document.getElementById('nb-install-dismiss');
+      const textEl = document.getElementById('nb-install-text');
+      let installPrompt = null;
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      installPrompt = e;
-      if (banner) banner.style.display = 'block';
-    });
+      // Already installed? Hide the banner.
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        banner.style.display = 'none';
+        return;
+      }
 
-    // Also show if the app is already installed (check display-mode)
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      if (banner) banner.style.display = 'none';
-    }
+      // Listen for the native prompt event (Chrome/Edge).
+      // This fires asynchronously — sometimes on first visit, sometimes later.
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        installPrompt = e;
+      });
 
-    document.getElementById('nb-install-btn')?.addEventListener('click', async () => {
-      if (!installPrompt) return;
-      installPrompt.prompt();
-      const { outcome } = await installPrompt.userChoice;
-      if (banner) banner.style.display = 'none';
-      installPrompt = null;
-    });
+      // Click handler: use native prompt if available, otherwise show manual steps.
+      btn.addEventListener('click', async () => {
+        if (installPrompt) {
+          installPrompt.prompt();
+          const { outcome } = await installPrompt.userChoice;
+          if (outcome === 'accepted') {
+            banner.style.display = 'none';
+          }
+          installPrompt = null;
+        } else {
+          // beforeinstallprompt hasn't fired yet — show manual install instruction
+          const isMac = navigator.platform.includes('Mac');
+          const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+          const isAndroid = /android/.test(navigator.userAgent.toLowerCase());
+          const isChrome = /chrome|edg/i.test(navigator.userAgent);
 
-    document.getElementById('nb-install-dismiss')?.addEventListener('click', () => {
-      if (banner) banner.style.display = 'none';
-    });
+          let hint = '';
+          if (isIOS) {
+            hint = 'Tap <strong>Share</strong> → <strong>Add to Home Screen</strong> in Safari';
+          } else if (isAndroid && isChrome) {
+            hint = 'Tap <strong>⋮</strong> → <strong>Install app</strong> in Chrome';
+          } else if (isChrome) {
+            hint = 'Click <strong>⋮</strong> → <strong>Cast, save & share</strong> → <strong>Install page as app…</strong> in Chrome, or look for the install icon (⊕) in the address bar';
+          } else {
+            hint = 'Look for <strong>Install</strong> in your browser menu, or use Chrome/Edge for one-click install';
+          }
+          textEl.innerHTML = `<strong>Manual install</strong><span class="nb-install-sub">${hint}</span>`;
+          // Revert after 8 seconds
+          setTimeout(() => {
+            textEl.innerHTML = '<strong>Install for offline use</strong><span class="nb-install-sub">Use Numbat anywhere, no internet needed</span>';
+          }, 8000);
+        }
+      });
+
+      dismiss.addEventListener('click', () => {
+        banner.style.display = 'none';
+      });
+    })();
   </script>
 
   <style>
@@ -102,16 +133,17 @@ import NumbatRunner from '../components/NumbatRunner.astro';
       border: 1px solid var(--border-light, rgba(255,255,255,0.06));
       font-size: 0.82rem;
     }
-    .nb-install-icon { font-size: 1.3rem; }
+    .nb-install-icon { font-size: 1.3rem; flex-shrink: 0; }
     .nb-install-text {
       display: flex;
       flex-direction: column;
       gap: 0.1rem;
       flex: 1;
       color: var(--text-secondary);
+      transition: opacity 0.3s;
     }
     .nb-install-text strong { color: var(--text-primary); }
-    .nb-install-sub { font-size: 0.72rem; opacity: 0.7; }
+    .nb-install-sub { font-size: 0.72rem; opacity: 0.7; line-height: 1.4; }
     .nb-install-btn {
       padding: 0.35rem 0.9rem;
       border: none;
@@ -123,6 +155,7 @@ import NumbatRunner from '../components/NumbatRunner.astro';
       cursor: pointer;
       white-space: nowrap;
       transition: background 0.2s;
+      flex-shrink: 0;
     }
     .nb-install-btn:hover { background: var(--accent-secondary, #2ecc71); }
     .nb-install-dismiss {
@@ -133,6 +166,7 @@ import NumbatRunner from '../components/NumbatRunner.astro';
       cursor: pointer;
       padding: 0.2rem;
       opacity: 0.5;
+      flex-shrink: 0;
     }
     .nb-install-dismiss:hover { opacity: 1; }
   </style>
