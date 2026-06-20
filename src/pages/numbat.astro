@@ -41,5 +41,99 @@ import NumbatRunner from '../components/NumbatRunner.astro';
     </div>
   </div>
 
+  <!-- PWA Install Banner — shown on first visit when beforeinstallprompt fires -->
+  <div id="nb-install-banner" class="nb-install-banner" style="display:none;">
+    <div class="nb-install-banner-inner">
+      <span class="nb-install-icon">📥</span>
+      <span class="nb-install-text">
+        <strong>Install for offline use</strong>
+        <span class="nb-install-sub">Use Numbat anywhere, no internet needed</span>
+      </span>
+      <button id="nb-install-btn" class="nb-install-btn">Install</button>
+      <button id="nb-install-dismiss" class="nb-install-dismiss" aria-label="Dismiss">✕</button>
+    </div>
+  </div>
+
   <NumbatRunner />
+
+  <script>
+    // Capture beforeinstallprompt so we can show our own install button immediately.
+    // Without this, Chrome waits for engagement heuristics (multiple visits, time on site).
+    let installPrompt = null;
+    const banner = document.getElementById('nb-install-banner');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      installPrompt = e;
+      if (banner) banner.style.display = 'block';
+    });
+
+    // Also show if the app is already installed (check display-mode)
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      if (banner) banner.style.display = 'none';
+    }
+
+    document.getElementById('nb-install-btn')?.addEventListener('click', async () => {
+      if (!installPrompt) return;
+      installPrompt.prompt();
+      const { outcome } = await installPrompt.userChoice;
+      if (banner) banner.style.display = 'none';
+      installPrompt = null;
+    });
+
+    document.getElementById('nb-install-dismiss')?.addEventListener('click', () => {
+      if (banner) banner.style.display = 'none';
+    });
+  </script>
+
+  <style>
+    .nb-install-banner {
+      max-width: 960px;
+      margin: 0.5rem auto 0;
+      padding: 0 1rem;
+    }
+    .nb-install-banner-inner {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      background: var(--bg-secondary, rgba(255,255,255,0.04));
+      border: 1px solid var(--border-light, rgba(255,255,255,0.06));
+      font-size: 0.82rem;
+    }
+    .nb-install-icon { font-size: 1.3rem; }
+    .nb-install-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      flex: 1;
+      color: var(--text-secondary);
+    }
+    .nb-install-text strong { color: var(--text-primary); }
+    .nb-install-sub { font-size: 0.72rem; opacity: 0.7; }
+    .nb-install-btn {
+      padding: 0.35rem 0.9rem;
+      border: none;
+      border-radius: 5px;
+      background: var(--accent-primary, #3498db);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .nb-install-btn:hover { background: var(--accent-secondary, #2ecc71); }
+    .nb-install-dismiss {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 0.9rem;
+      cursor: pointer;
+      padding: 0.2rem;
+      opacity: 0.5;
+    }
+    .nb-install-dismiss:hover { opacity: 1; }
+  </style>
 </BaseLayout>
