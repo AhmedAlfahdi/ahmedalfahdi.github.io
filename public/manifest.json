@@ -1,0 +1,48 @@
+{
+  "name": "Ahmed N. Alfahdi — Personal Site",
+  "short_name": "Alfahdi",
+  "description": "Personal website with interactive 3D models, Numbat scientific calculator, career documentation, and technical notes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b1015",
+  "theme_color": "#0b1015",
+  "orientation": "any",
+  "categories": ["education", "science", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/screenshot-numbat.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Numbat scientific calculator with physical units"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Numbat Calculator",
+      "short_name": "Numbat",
+      "description": "Scientific calculator with physical units",
+      "url": "/numbat"
+    }
+  ]
+}

@@ -65,7 +65,9 @@ try {
   <meta name="description" content={description}>
   <meta name="color-scheme" content="dark">
   <meta name="darkreader-lock">
-  <meta name="theme-color" content="#0b1015" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#0b1015">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <title>{title}</title>
   <!-- KaTeX CSS for Math Rendering -->
   <link rel="stylesheet" href={`https://cdn.jsdelivr.net/npm/katex@${katexVersion}/dist/katex.min.css`} integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
@@ -1956,6 +1958,11 @@ try {
       </div>
     </div>
   </div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
 </body>
 </html>
 
