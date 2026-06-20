@@ -70,8 +70,35 @@ import NumbatRunner from '../components/NumbatRunner.astro';
         return;
       }
 
+      // ── Browser detection ──
+      const ua = navigator.userAgent;
+      const isFirefox = /firefox/i.test(ua) && !/seamonkey/i.test(ua);
+      const isChrome = /chrome|chromium|edg/i.test(ua) && !/firefox|opr|brave/i.test(ua) && !isFirefox;
+      const isIOS = /iphone|ipad|ipod/.test(ua.toLowerCase());
+      const isAndroid = /android/.test(ua.toLowerCase());
+      const isSafari = /safari/i.test(ua) && !isChrome && !isFirefox && !isAndroid;
+
+      // Firefox desktop: no PWA install support at all.
+      // Show a permanent banner explaining the limitation.
+      if (isFirefox && !isAndroid) {
+        textEl.innerHTML = '<strong>Firefox doesn&rsquo;t support app installation</strong><span class="nb-install-sub">Open this page in <strong>Chrome</strong> or <strong>Edge</strong> for one-click install and offline use</span>';
+        btn.textContent = 'Open in Chrome';
+        btn.addEventListener('click', () => {
+          // Copy URL and provide a protocol link — most reliable cross-platform approach
+          const url = window.location.href;
+          navigator.clipboard.writeText(url).catch(() => {});
+          textEl.innerHTML = '<strong>URL copied!</strong><span class="nb-install-sub">Paste it into Chrome or Edge to install</span>';
+          // Try to open via protocol handler
+          window.open('googlechromes://' + url.replace(/^https?:\/\//, ''), '_blank');
+          setTimeout(() => {
+            textEl.innerHTML = '<strong>Firefox doesn&rsquo;t support app installation</strong><span class="nb-install-sub">Open this page in <strong>Chrome</strong> or <strong>Edge</strong> for one-click install and offline use</span>';
+          }, 5000);
+        });
+        dismiss.addEventListener('click', () => { banner.style.display = 'none'; });
+        return;
+      }
+
       // Listen for the native prompt event (Chrome/Edge).
-      // This fires asynchronously — sometimes on first visit, sometimes later.
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         installPrompt = e;
@@ -87,24 +114,19 @@ import NumbatRunner from '../components/NumbatRunner.astro';
           }
           installPrompt = null;
         } else {
-          // beforeinstallprompt hasn't fired yet — show manual install instruction
-          const isMac = navigator.platform.includes('Mac');
-          const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
-          const isAndroid = /android/.test(navigator.userAgent.toLowerCase());
-          const isChrome = /chrome|edg/i.test(navigator.userAgent);
-
           let hint = '';
           if (isIOS) {
             hint = 'Tap <strong>Share</strong> → <strong>Add to Home Screen</strong> in Safari';
           } else if (isAndroid && isChrome) {
-            hint = 'Tap <strong>⋮</strong> → <strong>Install app</strong> in Chrome';
+            hint = 'Tap <strong>⋮</strong> → <strong>Install app</strong>';
           } else if (isChrome) {
-            hint = 'Click <strong>⋮</strong> → <strong>Cast, save & share</strong> → <strong>Install page as app…</strong> in Chrome, or look for the install icon (⊕) in the address bar';
+            hint = 'Look for the install icon (⊕) in the address bar, or <strong>⋮</strong> → <strong>Cast, save & share</strong> → <strong>Install page as app…</strong>';
+          } else if (isSafari) {
+            hint = 'Safari desktop doesn&rsquo;t support PWA install. Try Chrome or Edge instead.';
           } else {
-            hint = 'Look for <strong>Install</strong> in your browser menu, or use Chrome/Edge for one-click install';
+            hint = 'Use Chrome or Edge for one-click install and full offline support.';
           }
           textEl.innerHTML = `<strong>Manual install</strong><span class="nb-install-sub">${hint}</span>`;
-          // Revert after 8 seconds
           setTimeout(() => {
             textEl.innerHTML = '<strong>Install for offline use</strong><span class="nb-install-sub">Use Numbat anywhere, no internet needed</span>';
           }, 8000);
