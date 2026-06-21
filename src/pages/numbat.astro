@@ -4,8 +4,8 @@ import NumbatRunner from '../components/NumbatRunner.astro';
 ---
 
 <BaseLayout title="Numbat Calculator — Ahmed N. Alfahdi">
-  <div style="max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem 0;">
-    <h1 style="font-size: 1.6rem; color: var(--accent-primary); margin-bottom: 0.4rem; text-align: center;">
+  <div style="max-width: 960px; margin: 0 auto; padding: 0.75rem 1rem 0;">
+    <h1 style="font-size: 1.6rem; color: var(--accent-primary); margin-top: 0; margin-bottom: 0.4rem; text-align: center;">
       Numbat Calculator
     </h1>
     <p style="color: var(--text-secondary); font-size: 0.85rem; text-align: center; margin-bottom: 0;">
@@ -63,6 +63,18 @@ import NumbatRunner from '../components/NumbatRunner.astro';
       const dismiss = document.getElementById('nb-install-dismiss');
       const textEl = document.getElementById('nb-install-text');
       let installPrompt = null;
+
+      // ── Visit frequency gate ──
+      // Only show the install banner to frequent visitors (3+ visits).
+      const VISIT_KEY = 'nb-visit-count';
+      const VISIT_THRESHOLD = 3;
+      let visitCount = parseInt(localStorage.getItem(VISIT_KEY) || '0', 10);
+      visitCount += 1;
+      localStorage.setItem(VISIT_KEY, String(visitCount));
+      if (visitCount < VISIT_THRESHOLD) {
+        banner.style.display = 'none';
+        return;
+      }
 
       // Already installed? Hide the banner.
       if (window.matchMedia('(display-mode: standalone)').matches) {

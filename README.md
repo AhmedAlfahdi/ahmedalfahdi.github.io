@@ -33,36 +33,64 @@ The API is deployed independently — changes to this repo don't affect it.
 
 ```
 src/
-├── components/          # Astro components
-│   ├── Model3D.astro   # 3D model viewer
-│   ├── PDFViewer.astro # PDF document viewer
-│   ├── Mermaid.astro   # Diagram renderer
-│   ├── MathZoom.astro  # Math formula zoom
-│   └── VisitorTracker.astro
+├── components/              # Astro components
+│   ├── CPURegisters.astro   # CPU register visualization
+│   ├── MathZoom.astro       # Math formula zoom
+│   ├── Mermaid.astro        # Diagram renderer
+│   ├── Model3D.astro        # 3D model viewer
+│   ├── NumbatRunner.astro   # Numbat calculator runner
+│   ├── PDFViewer.astro      # PDF document viewer
+│   ├── PyodideRunner.astro  # Python runner (Pyodide)
+│   ├── SiteInfo.astro       # Site metadata display
+│   ├── ThemeToggle.astro    # Dark/light theme toggle
+│   ├── ThreeScene.astro     # Three.js scene wrapper
+│   └── VisitorTracker.astro # Analytics tracker
 ├── layouts/
 │   └── BaseLayout.astro
-├── pages/              # Site routes
-│   ├── index.astro
-│   ├── career/         # Career pages
-│   ├── notes/          # Technical notes
-│   ├── coding/         # Coding projects
-│   ├── engineering/    # Engineering projects
-│   └── statistics.astro
-├── content/            # MDX content collections
-│   ├── career/
-│   ├── notes/
-│   ├── coding/
-│   ├── engineering/
+├── pages/                   # Site routes
+│   ├── index.astro          # Home page
+│   ├── about.md
+│   ├── blog.astro
+│   ├── earth-rotation.astro # Earth rotation demo
+│   ├── numbat.astro         # Numbat calculator page
+│   ├── physics-demo.astro   # Physics simulation
+│   ├── python-test.mdx      # Python demo page
+│   ├── statistics.astro     # Analytics dashboard
+│   ├── visitors-table.astro # Visitor data table
+│   ├── career/              # Career pages ([...slug].astro)
+│   ├── coding/              # Coding projects ([...slug].astro)
+│   ├── engineering/         # Engineering projects ([...slug].astro)
+│   ├── notes/               # Technical notes ([slug].astro)
+│   └── projects/            # Project showcases
+├── content/                 # MDX content collections
+│   ├── career/              # 4 entries
+│   ├── coding/              # 2 entries
+│   ├── engineering/         # 3 entries
+│   ├── notes/               # 9 entries
 │   └── content.config.ts
+├── assets/
+│   └── images/
+│       └── projects/
+│           └── voidpad/
 └── utils/
-    ├── remark-wikilinks.mjs
-    └── analytics-helpers.js
+    ├── remark-wikilinks.mjs # Obsidian wikilinks plugin
+    └── analytics-helpers.js # Analytics utilities
 
 public/
-├── career/             # PDF certificates
+├── career/             # PDF certificates & subdirs
+├── favicon.svg
+├── icons/              # PWA icons (192×192, 512×512)
+├── manifest.json       # PWA manifest
 ├── models/             # 3D model files (.glb)
+├── numbat-logo.svg
 ├── pdfs/               # General PDF files
+├── robots.txt
+├── sw.js               # Service worker (PWA)
+├── ut-equation.glb
 └── vendor/             # Third-party scripts
+    ├── OrbitControls.js
+    ├── three.module.min.js
+    └── numbat/
 
 docs/                   # Feature & integration guides
 ├── SETUP.md
@@ -78,6 +106,9 @@ docs/                   # Feature & integration guides
 astro.config.mjs        # Astro configuration
 package.json            # Dependencies
 tsconfig.json           # TypeScript config
+build-info.json         # Build metadata
+stats.js                # Build statistics script
+version.json            # Version tracking
 ```
 
 ## Deployment
