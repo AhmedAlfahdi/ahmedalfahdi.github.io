@@ -58,7 +58,9 @@ import NumbatRunner from '../components/NumbatRunner.astro';
 
   <script>
     (() => {
+      // ── PWA banner disabled for now ──
       const banner = document.getElementById('nb-install-banner');
+      if (banner) { banner.style.display = 'none'; return; }
       const btn = document.getElementById('nb-install-btn');
       const dismiss = document.getElementById('nb-install-dismiss');
       const textEl = document.getElementById('nb-install-text');
@@ -90,23 +92,9 @@ import NumbatRunner from '../components/NumbatRunner.astro';
       const isAndroid = /android/.test(ua.toLowerCase());
       const isSafari = /safari/i.test(ua) && !isChrome && !isFirefox && !isAndroid;
 
-      // Firefox desktop: no PWA install support at all.
-      // Show a permanent banner explaining the limitation.
+      // Firefox desktop: no PWA install support — hide banner entirely
       if (isFirefox && !isAndroid) {
-        textEl.innerHTML = '<strong>Firefox doesn&rsquo;t support app installation</strong><span class="nb-install-sub">Open this page in <strong>Chrome</strong> or <strong>Edge</strong> for one-click install and offline use</span>';
-        btn.textContent = 'Open in Chrome';
-        btn.addEventListener('click', () => {
-          // Copy URL and provide a protocol link — most reliable cross-platform approach
-          const url = window.location.href;
-          navigator.clipboard.writeText(url).catch(() => {});
-          textEl.innerHTML = '<strong>URL copied!</strong><span class="nb-install-sub">Paste it into Chrome or Edge to install</span>';
-          // Try to open via protocol handler
-          window.open('googlechromes://' + url.replace(/^https?:\/\//, ''), '_blank');
-          setTimeout(() => {
-            textEl.innerHTML = '<strong>Firefox doesn&rsquo;t support app installation</strong><span class="nb-install-sub">Open this page in <strong>Chrome</strong> or <strong>Edge</strong> for one-click install and offline use</span>';
-          }, 5000);
-        });
-        dismiss.addEventListener('click', () => { banner.style.display = 'none'; });
+        banner.style.display = 'none';
         return;
       }
 
@@ -129,6 +117,8 @@ import NumbatRunner from '../components/NumbatRunner.astro';
           let hint = '';
           if (isIOS) {
             hint = 'Tap <strong>Share</strong> → <strong>Add to Home Screen</strong> in Safari';
+          } else if (isAndroid && isFirefox) {
+            hint = 'Tap <strong>⋮</strong> → <strong>Install</strong> (or <strong>Add to Home screen</strong>)';
           } else if (isAndroid && isChrome) {
             hint = 'Tap <strong>⋮</strong> → <strong>Install app</strong>';
           } else if (isChrome) {
