@@ -129,7 +129,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </div>
         </div>
 
-        <h2>World Map - Unique Visitors</h2>
+        <h2 style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          World Map - Unique Visitors
+          <span id="map-toggle-group" class="map-toggle-group" style="display: none;">
+            <button id="map-btn-recent" class="map-toggle-btn active">Latest 50</button>
+            <button id="map-btn-all" class="map-toggle-btn">All (<span id="map-btn-all-count">0</span>)</button>
+          </span>
+        </h2>
         <div id="world-map" class="world-map"></div>
 
         <h2>Visitors by Country</h2>
@@ -358,6 +364,41 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     margin-top: 2rem;
   }
 
+  .map-toggle-group {
+    display: inline-flex;
+    gap: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+  }
+
+  .map-toggle-btn {
+    padding: 0.35rem 0.85rem;
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .map-toggle-btn:not(:last-child) {
+    border-right: 1px solid var(--border-strong);
+  }
+
+  .map-toggle-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+
+  .map-toggle-btn.active {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+  }
+
   .world-map {
     margin: 1.5rem 0;
     height: 620px; /* taller for more immersive global view */
@@ -409,41 +450,167 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     z-index: 0;
   }
 
-  /* Map popup: constrain height, fix scrollbar, and ensure readable text */
+  /* ── Map popup redesign ── */
   :global(.world-map .maplibregl-popup-content) {
-    max-height: 340px;
+    max-height: 380px;
     overflow: hidden;
-    padding: 8px 12px;
+    padding: 0;
     background: var(--bg-tertiary);
     color: var(--text-primary);
     border: 1px solid var(--border-strong);
-    border-radius: 6px;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.25);
+    animation: popup-fade-in 0.18s ease-out;
   }
-  :global(.world-map .maplibregl-popup-content > div > div:first-child) {
+  @keyframes popup-fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  :global(.world-map .maplibregl-popup-tip) {
+    border-top-color: var(--border-strong) !important;
+  }
+
+  :global(.popup-body) {
+    display: flex;
+    flex-direction: column;
+    max-height: 380px;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
     color: var(--text-primary);
   }
-  :global(.world-map .maplibregl-popup-content > div) {
-    max-height: 320px;
+
+  :global(.popup-header) {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    background: rgba(0, 0, 0, 0.12);
+    border-bottom: 1px solid var(--border-strong);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  :global(.popup-header-flag) {
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+
+  :global(.popup-count-badge) {
+    margin-left: 0.4rem;
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  :global(.popup-cards) {
     overflow-y: auto;
     overflow-x: hidden;
-    padding-right: 4px;
-    /* Force visible scrollbar */
+    padding: 4px 0;
     scrollbar-width: thin;
-    scrollbar-color: var(--accent-primary, #f5a524) rgba(42, 53, 66, 0.5);
+    scrollbar-color: var(--accent-primary) rgba(42, 53, 66, 0.3);
+    max-height: 320px;
   }
-  :global(.world-map .maplibregl-popup-content > div::-webkit-scrollbar) {
-    width: 8px;
+
+  :global(.popup-cards::-webkit-scrollbar) { width: 6px; }
+  :global(.popup-cards::-webkit-scrollbar-track) { background: rgba(42, 53, 66, 0.2); border-radius: 3px; }
+  :global(.popup-cards::-webkit-scrollbar-thumb) { background: var(--accent-primary); border-radius: 3px; }
+
+  :global(.popup-visitor-card) {
+    padding: 8px 14px 10px;
+    border-bottom: 1px solid rgba(42, 53, 66, 0.25);
+    transition: background 0.15s ease;
+    cursor: default;
   }
-  :global(.world-map .maplibregl-popup-content > div::-webkit-scrollbar-track) {
-    background: rgba(42, 53, 66, 0.5);
-    border-radius: 4px;
+  :global(.popup-visitor-card:hover) {
+    background: rgba(245, 165, 36, 0.06);
   }
-  :global(.world-map .maplibregl-popup-content > div::-webkit-scrollbar-thumb) {
-    background: var(--accent-primary, #f5a524);
-    border-radius: 4px;
+  :global(.popup-visitor-card-last) {
+    border-bottom: none;
   }
-  :global(.world-map .maplibregl-popup-content > div::-webkit-scrollbar-thumb:hover) {
-    background: #e69518;
+
+  :global(.popup-visitor-header) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3px;
+  }
+
+  :global(.popup-ip) {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+  }
+
+  :global(.popup-device-badge) {
+    font-size: 0.85rem;
+    line-height: 1;
+    letter-spacing: 1px;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+
+  :global(.popup-path) {
+    display: block;
+    color: var(--accent-secondary, #62c7ff);
+    text-decoration: none;
+    font-size: 0.75rem;
+    margin-bottom: 3px;
+    word-break: break-all;
+    transition: color 0.15s;
+  }
+  :global(.popup-path:hover) {
+    color: var(--accent-primary);
+    text-decoration: underline;
+  }
+
+  :global(.popup-meta) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.6rem;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    opacity: 0.85;
+  }
+
+  :global(.popup-location) { white-space: nowrap; }
+  :global(.popup-tech) { white-space: nowrap; }
+  :global(.popup-time) {
+    white-space: nowrap;
+    font-style: italic;
+    opacity: 0.75;
+  }
+
+  /* Pinned popup close button — sits inside the header */
+  :global(.popup-close-btn) {
+    margin-left: auto;
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--text-primary);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  :global(.popup-close-btn:hover) {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
   }
   
   .pages-table,
@@ -526,84 +693,144 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     mapLibreCss.crossOrigin = '';
     document.head.appendChild(mapLibreCss);
 
+    // ── Device/browser icon helpers ──
+    const deviceIcon = (dt) => {
+      const t = (dt || '').toLowerCase();
+      if (t === 'mobile')  return '📱';
+      if (t === 'tablet')  return '📋';
+      return '🖥';
+    };
+    const browserIcon = (b) => {
+      const t = (b || '').toLowerCase();
+      if (t === 'chrome')  return '🌐';
+      if (t === 'firefox') return '🦊';
+      if (t === 'safari')  return '🧭';
+      if (t === 'edge')    return '🔷';
+      if (t === 'opera')   return '🔴';
+      return '';
+    };
+    const osIcon = (o) => {
+      const t = (o || '').toLowerCase();
+      if (t.startsWith('windows')) return '⊞';
+      if (t === 'macos')  return '🍎';
+      if (t === 'linux')  return '🐧';
+      if (t === 'android') return '🤖';
+      if (t === 'ios')    return '🍏';
+      return '';
+    };
+
+    // Relative time helper: "2 days ago", "3 months ago", etc.
+    const relativeTime = (ts) => {
+      try {
+        const now = Date.now();
+        const then = new Date(ts).getTime();
+        const diff = now - then;
+        const sec = Math.floor(diff / 1000);
+        if (sec < 60) return 'just now';
+        const min = Math.floor(sec / 60);
+        if (min < 60) return `${min}m ago`;
+        const hr = Math.floor(min / 60);
+        if (hr < 24) return `${hr}h ago`;
+        const days = Math.floor(hr / 24);
+        if (days < 30) return `${days}d ago`;
+        const months = Math.floor(days / 30);
+        if (months < 12) return `${months}mo ago`;
+        return `${Math.floor(months / 12)}y ago`;
+      } catch { return ''; }
+    };
+
     // Build structured popup HTML for a single visitor
     const buildVisitorPopupHtml = (visitor) => {
       if (!visitor) return '';
-
-      const locationBits = [];
-      if (visitor.city) locationBits.push(visitor.city);
-      if (visitor.regionCode) locationBits.push(visitor.regionCode);
-      if (visitor.countryCode) locationBits.push(visitor.countryCode);
+      const locationBits = [visitor.city, visitor.regionCode, visitor.countryCode].filter(Boolean);
       const location = locationBits.join(', ') || 'Unknown';
-
-      const lines = [
-        `<li><strong>Path:</strong> ${visitor.path || '/'}</li>`,
-        `<li><strong>Location:</strong> ${location}</li>`,
-      ];
-
-      if (visitor.deviceType) {
-        lines.push(`<li><strong>Device:</strong> ${visitor.deviceType}</li>`);
-      }
-      if (visitor.browser || visitor.os) {
-        const techParts = [];
-        if (visitor.browser) techParts.push(visitor.browser);
-        if (visitor.os) techParts.push(visitor.os);
-        lines.push(`<li><strong>Tech:</strong> ${techParts.join(' · ')}</li>`);
-      }
-      if (visitor.source || visitor.sourceType) {
-        lines.push(`<li><strong>Source:</strong> ${visitor.source || visitor.sourceType}</li>`);
-      }
-      if (visitor.timestamp) {
-        try {
-          lines.push(`<li><strong>Time:</strong> ${new Date(visitor.timestamp).toLocaleString()}</li>`);
-        } catch {
-          // ignore malformed timestamp
-        }
-      }
+      const tech = [visitor.browser, visitor.os].filter(Boolean);
+      const relTime = visitor.timestamp ? relativeTime(visitor.timestamp) : '';
+      const absTime = visitor.timestamp ? (() => { try { return new Date(visitor.timestamp).toLocaleString(); } catch { return ''; } })() : '';
 
       return `
-        <div style="min-width: 220px; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-primary);">
-          <div style="font-weight: 600; margin-bottom: 0.35rem; color: var(--text-primary);">${visitor.ip}</div>
-          <ul style="padding-left: 1.1rem; margin: 0;">
-            ${lines.join('')}
-          </ul>
-        </div>
-      `;
+        <div class="popup-visitor-card">
+          <div class="popup-visitor-header">
+            <span class="popup-ip">${visitor.ip}</span>
+            <span class="popup-device-badge">${deviceIcon(visitor.deviceType)} ${browserIcon(visitor.browser)} ${osIcon(visitor.os)}</span>
+          </div>
+          <a class="popup-path" href="${visitor.path || '/'}">${visitor.path || '/'}</a>
+          <div class="popup-meta">
+            <span class="popup-location">📍 ${location}</span>
+            <span class="popup-tech">${tech.length ? tech.join(' · ') : ''}</span>
+            <span class="popup-time" title="${absTime}">${relTime}${absTime ? ' — ' + absTime : ''}</span>
+          </div>
+        </div>`;
     };
 
-    // Popup for a location group: "N visitors" header + list of IPs (no custom marker)
+    // Popup for a location group: header + list of visitor cards
     const buildLocationGroupPopupHtml = (visitors, locationLabel) => {
       if (!visitors || visitors.length === 0) return '';
       const count = visitors.length;
+
+      // Sort by timestamp descending (most recent first)
+      const sorted = [...visitors].sort((a, b) => {
+        const ta = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const tb = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return tb - ta;
+      });
+
+      const flag = sorted[0]?.countryCode
+        ? String.fromCodePoint(...[...(sorted[0].countryCode || '')].map(c => 0x1F1E6 + c.toUpperCase().charCodeAt(0) - 65))
+        : '📍';
+
       const header = count === 1
-        ? `<div style="font-weight: 600; margin-bottom: 0.35rem; color: var(--text-primary);">${visitors[0].ip}</div>`
-        : `<div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">${locationLabel || 'Same location'} — ${count} unique visitor${count === 1 ? '' : 's'}</div>`;
-      const blocks = visitors.map((v) => {
+        ? `<div class="popup-header"><span class="popup-header-flag">${flag}</span> ${sorted[0].ip}</div>`
+        : `<div class="popup-header"><span class="popup-header-flag">${flag}</span> ${locationLabel || 'Same location'}<span class="popup-count-badge">${count}</span></div>`;
+
+      const cards = sorted.map((v, i) => {
         const loc = [v.city, v.regionCode, v.countryCode].filter(Boolean).join(', ') || 'Unknown';
-        const meta = [v.path || '/', loc];
-        if (v.deviceType) meta.push(v.deviceType);
-        if (v.browser || v.os) meta.push([v.browser, v.os].filter(Boolean).join(' · '));
-        if (v.timestamp) {
-          try { meta.push(new Date(v.timestamp).toLocaleString()); } catch { /* ignore */ }
-        }
-        return `<div style="margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(42,53,66,0.5);"><span style="font-weight: 600; color: var(--text-primary);">${v.ip}</span><br/><span style="font-size: 0.75rem; color: var(--text-secondary);">${meta.join(' · ')}</span></div>`;
+        const relTime = v.timestamp ? relativeTime(v.timestamp) : '';
+        const absTime = v.timestamp ? (() => { try { return new Date(v.timestamp).toLocaleString(); } catch { return ''; } })() : '';
+        const isLast = i === sorted.length - 1;
+
+        return `
+          <div class="popup-visitor-card${isLast ? ' popup-visitor-card-last' : ''}">
+            <div class="popup-visitor-header">
+              <span class="popup-ip">${v.ip}</span>
+              <span class="popup-device-badge">${deviceIcon(v.deviceType)} ${browserIcon(v.browser)} ${osIcon(v.os)}</span>
+            </div>
+            <a class="popup-path" href="${v.path || '/'}">${v.path || '/'}</a>
+            <div class="popup-meta">
+              <span class="popup-location">📍 ${loc}</span>
+              <span class="popup-time" title="${absTime}">${relTime}</span>
+            </div>
+          </div>`;
       }).join('');
-      return `<div style="min-width: 240px; max-height: 320px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-primary);">${header}${blocks}</div>`;
+
+      return `<div class="popup-body">${header}<div class="popup-cards">${cards}</div></div>`;
     };
 
     // Forward declaration so it can be used in onload callback and later
-    function renderWorldMap(data) {
+    // limit: number of unique visitor entries to use (null/0 = all, default 50)
+    function renderWorldMap(data, limit = 50) {
       if (!mapLibreLoaded || !window.maplibregl) return;
 
       const mapEl = document.getElementById('world-map');
       if (!mapEl) return;
 
-      if (!data || !data.recentVisitors || data.recentVisitors.length === 0) {
+      // Prefer allVisitorLocations (full dataset) over recentVisitors (last 20 only)
+      let mapData = (data.allVisitorLocations && data.allVisitorLocations.length > 0)
+        ? data.allVisitorLocations
+        : data.recentVisitors;
+
+      if (!mapData || mapData.length === 0) {
         mapEl.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:0.9rem;">No visitor location data available yet.</div>';
         return;
       }
 
-      const pointsWithCoords = data.recentVisitors.filter(v =>
+      // Apply limit: slice the most-recent-first list
+      const totalAvailable = mapData.length;
+      if (limit && limit > 0 && limit < mapData.length) {
+        mapData = mapData.slice(0, limit);
+      }
+
+      const pointsWithCoords = mapData.filter(v =>
         typeof v.latitude === 'number' &&
         typeof v.longitude === 'number'
       );
@@ -665,8 +892,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }).setLngLat(lngLat).setHTML(popupHtml);
 
         let popupOpen = false;
+        let popupPinned = false;
         popup.on('open', () => { popupOpen = true; });
-        popup.on('close', () => { popupOpen = false; });
+        popup.on('close', () => { popupOpen = false; popupPinned = false; });
 
         const marker = new window.maplibregl.Marker({ color: '#f5a524' })
           .setLngLat(lngLat)
@@ -677,22 +905,62 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if (markerEl) {
           markerEl.setAttribute('title', tooltip);
           let closeTimeout;
+
           const cancelClose = () => { clearTimeout(closeTimeout); closeTimeout = null; };
           const doClose = () => {
             cancelClose();
-            if (popupOpen) popup.remove();
+            if (popupOpen && !popupPinned) popup.remove();
           };
+
+          // Add close button to pinned popup (inside the header so it doesn't overlap)
+          const addCloseButton = () => {
+            const headerEl = mapInstance.getContainer().querySelector('.popup-header');
+            if (headerEl && !headerEl.querySelector('.popup-close-btn')) {
+              const btn = document.createElement('button');
+              btn.className = 'popup-close-btn';
+              btn.innerHTML = '✕';
+              btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                popupPinned = false;
+                popup.remove();
+              });
+              headerEl.appendChild(btn);
+            }
+          };
+
+          // Hover: open popup
           markerEl.addEventListener('mouseenter', () => {
             cancelClose();
             if (!popupOpen) popup.addTo(mapInstance);
             const popupEl = mapInstance.getContainer().querySelector('.maplibregl-popup');
             if (popupEl) {
               popupEl.addEventListener('mouseenter', cancelClose);
-              popupEl.addEventListener('mouseleave', doClose, { once: true });
+              popupEl.addEventListener('mouseleave', () => {
+                if (!popupPinned) { closeTimeout = setTimeout(doClose, 200); }
+              }, { once: true });
             }
           });
+
+          // Leave marker: close after delay (unless pinned)
           markerEl.addEventListener('mouseleave', () => {
-            closeTimeout = setTimeout(doClose, 150);
+            if (!popupPinned) { closeTimeout = setTimeout(doClose, 250); }
+          });
+
+          // Click: toggle pin
+          markerEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (popupPinned) {
+              // Unpin
+              popupPinned = false;
+              popup.remove();
+            } else {
+              // Pin
+              popupPinned = true;
+              cancelClose();
+              if (!popupOpen) popup.addTo(mapInstance);
+              // Add close button after DOM update
+              setTimeout(addCloseButton, 20);
+            }
           });
         }
         mapMarkers.push(marker);
@@ -701,6 +969,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!bounds.isEmpty()) {
         mapInstance.fitBounds(bounds, { padding: 40, maxZoom: 4 });
       }
+
+      // Click on map background closes any pinned popup
+      mapInstance.off('click', dismissPinnedPopups);
+      mapInstance.on('click', dismissPinnedPopups);
+    }
+
+    // Close all pinned popups (called when clicking map background)
+    function dismissPinnedPopups() {
+      if (!mapInstance) return;
+      mapMarkers.forEach(m => {
+        const popup = m.getPopup();
+        if (popup && popup.isOpen()) {
+          popup.remove();
+        }
+      });
     }
 
     // Load MapLibre GL JS
@@ -710,7 +993,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     mapLibreScript.onload = () => {
       mapLibreLoaded = true;
       if (window.__statsDataForMap) {
-        renderWorldMap(window.__statsDataForMap);
+        renderWorldMap(window.__statsDataForMap, 50);
       }
     };
     document.head.appendChild(mapLibreScript);
@@ -1351,7 +1634,41 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         // World map: store data globally for when MapLibre is ready and render
         window.__statsDataForMap = data;
         if (mapLibreLoaded && window.maplibregl) {
-          renderWorldMap(data);
+          renderWorldMap(data, 50);
+        }
+
+        // Wire up map toggle buttons (Latest 50 / All)
+        const totalLocations = (data.allVisitorLocations && data.allVisitorLocations.length)
+          || (data.recentVisitors && data.recentVisitors.length)
+          || 0;
+        const toggleGroup = document.getElementById('map-toggle-group');
+        const btnRecent = document.getElementById('map-btn-recent');
+        const btnAll = document.getElementById('map-btn-all');
+        const btnAllCount = document.getElementById('map-btn-all-count');
+
+        if (toggleGroup && totalLocations > 50) {
+          toggleGroup.style.display = 'inline-flex';
+          if (btnAllCount) btnAllCount.textContent = totalLocations;
+
+          btnRecent.addEventListener('click', () => {
+            if (btnRecent.classList.contains('active')) return;
+            btnRecent.classList.add('active');
+            btnAll.classList.remove('active');
+            renderWorldMap(data, 50);
+          });
+
+          btnAll.addEventListener('click', () => {
+            if (btnAll.classList.contains('active')) return;
+            btnAll.classList.add('active');
+            btnRecent.classList.remove('active');
+            renderWorldMap(data, 0); // 0 = no limit → show all
+          });
+        } else if (toggleGroup && totalLocations <= 50 && totalLocations > 0) {
+          // Still show the count but only one button (or hide the toggle)
+          toggleGroup.style.display = 'inline-flex';
+          btnRecent.textContent = `All ${totalLocations}`;
+          btnRecent.classList.add('active');
+          btnAll.style.display = 'none';
         }
         
       } catch (error) {
