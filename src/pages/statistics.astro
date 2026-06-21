@@ -133,6 +133,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           World Map - Unique Visitors
           <span id="map-toggle-group" class="map-toggle-group" style="display: none;">
             <button id="map-btn-recent" class="map-toggle-btn active">Latest 50</button>
+            <button id="map-btn-week" class="map-toggle-btn">This Week</button>
             <button id="map-btn-all" class="map-toggle-btn">All (<span id="map-btn-all-count">0</span>)</button>
           </span>
         </h2>
@@ -551,14 +552,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 0.8rem;
   }
 
-  :global(.popup-device-badge) {
-    font-size: 0.85rem;
-    line-height: 1;
-    letter-spacing: 1px;
-    opacity: 0.7;
-    flex-shrink: 0;
-  }
-
   :global(.popup-path) {
     display: block;
     color: var(--accent-secondary, #62c7ff);
@@ -573,21 +566,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     text-decoration: underline;
   }
 
+  :global(.popup-time) {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
   :global(.popup-meta) {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem 0.6rem;
     font-size: 0.7rem;
     color: var(--text-secondary);
     opacity: 0.85;
-  }
-
-  :global(.popup-location) { white-space: nowrap; }
-  :global(.popup-tech) { white-space: nowrap; }
-  :global(.popup-time) {
-    white-space: nowrap;
-    font-style: italic;
-    opacity: 0.75;
   }
 
   /* Pinned popup close button — sits inside the header */
@@ -694,29 +684,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     document.head.appendChild(mapLibreCss);
 
     // ── Device/browser icon helpers ──
-    const deviceIcon = (dt) => {
+    const deviceLabel = (dt) => {
       const t = (dt || '').toLowerCase();
-      if (t === 'mobile')  return '📱';
-      if (t === 'tablet')  return '📋';
-      return '🖥';
+      if (t === 'mobile') return 'Mobile';
+      if (t === 'tablet') return 'Tablet';
+      return 'Desktop';
     };
-    const browserIcon = (b) => {
+    const browserLabel = (b) => {
       const t = (b || '').toLowerCase();
-      if (t === 'chrome')  return '🌐';
-      if (t === 'firefox') return '🦊';
-      if (t === 'safari')  return '🧭';
-      if (t === 'edge')    return '🔷';
-      if (t === 'opera')   return '🔴';
-      return '';
+      if (t === 'chrome')  return 'Chrome';
+      if (t === 'firefox') return 'Firefox';
+      if (t === 'safari')  return 'Safari';
+      if (t === 'edge')    return 'Edge';
+      if (t === 'opera')   return 'Opera';
+      return b || '';
     };
-    const osIcon = (o) => {
+    const osLabel = (o) => {
       const t = (o || '').toLowerCase();
-      if (t.startsWith('windows')) return '⊞';
-      if (t === 'macos')  return '🍎';
-      if (t === 'linux')  return '🐧';
-      if (t === 'android') return '🤖';
-      if (t === 'ios')    return '🍏';
-      return '';
+      if (t.startsWith('windows')) return 'Windows';
+      if (t === 'macos')  return 'macOS';
+      if (t === 'linux')  return 'Linux';
+      if (t === 'android') return 'Android';
+      if (t === 'ios')    return 'iOS';
+      return o || '';
     };
 
     // Relative time helper: "2 days ago", "3 months ago", etc.
@@ -744,7 +734,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!visitor) return '';
       const locationBits = [visitor.city, visitor.regionCode, visitor.countryCode].filter(Boolean);
       const location = locationBits.join(', ') || 'Unknown';
-      const tech = [visitor.browser, visitor.os].filter(Boolean);
+      const tech = [deviceLabel(visitor.deviceType), browserLabel(visitor.browser), osLabel(visitor.os)].filter(Boolean).join(' · ');
       const relTime = visitor.timestamp ? relativeTime(visitor.timestamp) : '';
       const absTime = visitor.timestamp ? (() => { try { return new Date(visitor.timestamp).toLocaleString(); } catch { return ''; } })() : '';
 
@@ -752,14 +742,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <div class="popup-visitor-card">
           <div class="popup-visitor-header">
             <span class="popup-ip">${visitor.ip}</span>
-            <span class="popup-device-badge">${deviceIcon(visitor.deviceType)} ${browserIcon(visitor.browser)} ${osIcon(visitor.os)}</span>
+            <span class="popup-time" title="${absTime}">${relTime}</span>
           </div>
           <a class="popup-path" href="${visitor.path || '/'}">${visitor.path || '/'}</a>
-          <div class="popup-meta">
-            <span class="popup-location">📍 ${location}</span>
-            <span class="popup-tech">${tech.length ? tech.join(' · ') : ''}</span>
-            <span class="popup-time" title="${absTime}">${relTime}${absTime ? ' — ' + absTime : ''}</span>
-          </div>
+          <div class="popup-meta">${location} · ${tech}</div>
         </div>`;
     };
 
@@ -784,22 +770,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         : `<div class="popup-header"><span class="popup-header-flag">${flag}</span> ${locationLabel || 'Same location'}<span class="popup-count-badge">${count}</span></div>`;
 
       const cards = sorted.map((v, i) => {
-        const loc = [v.city, v.regionCode, v.countryCode].filter(Boolean).join(', ') || 'Unknown';
         const relTime = v.timestamp ? relativeTime(v.timestamp) : '';
         const absTime = v.timestamp ? (() => { try { return new Date(v.timestamp).toLocaleString(); } catch { return ''; } })() : '';
+        const tech = [deviceLabel(v.deviceType), browserLabel(v.browser), osLabel(v.os)].filter(Boolean).join(' · ');
         const isLast = i === sorted.length - 1;
 
         return `
           <div class="popup-visitor-card${isLast ? ' popup-visitor-card-last' : ''}">
             <div class="popup-visitor-header">
               <span class="popup-ip">${v.ip}</span>
-              <span class="popup-device-badge">${deviceIcon(v.deviceType)} ${browserIcon(v.browser)} ${osIcon(v.os)}</span>
-            </div>
-            <a class="popup-path" href="${v.path || '/'}">${v.path || '/'}</a>
-            <div class="popup-meta">
-              <span class="popup-location">📍 ${loc}</span>
               <span class="popup-time" title="${absTime}">${relTime}</span>
             </div>
+            <a class="popup-path" href="${v.path || '/'}">${v.path || '/'}</a>
+            <div class="popup-meta">${tech}</div>
           </div>`;
       }).join('');
 
@@ -824,9 +807,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         return;
       }
 
-      // Apply limit: slice the most-recent-first list
+      // Apply limit or time filter
+      // limit: number = slice to N most recent, 'week' = last 7 days only, 0/'all' = no limit
       const totalAvailable = mapData.length;
-      if (limit && limit > 0 && limit < mapData.length) {
+      if (limit === 'week') {
+        const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        mapData = mapData.filter(v => {
+          if (!v.timestamp) return false;
+          try { return new Date(v.timestamp).getTime() >= weekAgo; } catch { return false; }
+        });
+      } else if (limit && limit > 0 && limit < mapData.length) {
         mapData = mapData.slice(0, limit);
       }
 
@@ -1637,37 +1627,58 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           renderWorldMap(data, 50);
         }
 
-        // Wire up map toggle buttons (Latest 50 / All)
+        // Wire up map toggle buttons (Latest 50 / This Week / All)
         const totalLocations = (data.allVisitorLocations && data.allVisitorLocations.length)
           || (data.recentVisitors && data.recentVisitors.length)
           || 0;
+
+        // Count visitors from last 7 days
+        const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        const weekCount = (data.allVisitorLocations || data.recentVisitors || [])
+          .filter(v => { try { return v.timestamp && new Date(v.timestamp).getTime() >= weekAgo; } catch { return false; } })
+          .length;
+
         const toggleGroup = document.getElementById('map-toggle-group');
         const btnRecent = document.getElementById('map-btn-recent');
+        const btnWeek = document.getElementById('map-btn-week');
         const btnAll = document.getElementById('map-btn-all');
         const btnAllCount = document.getElementById('map-btn-all-count');
+
+        const setActiveBtn = (activeBtn) => {
+          [btnRecent, btnWeek, btnAll].forEach(b => b && b.classList.remove('active'));
+          if (activeBtn) activeBtn.classList.add('active');
+        };
 
         if (toggleGroup && totalLocations > 50) {
           toggleGroup.style.display = 'inline-flex';
           if (btnAllCount) btnAllCount.textContent = totalLocations;
+          // Show week count if any
+          if (btnWeek && weekCount > 0) {
+            btnWeek.textContent = `This Week (${weekCount})`;
+          }
 
           btnRecent.addEventListener('click', () => {
             if (btnRecent.classList.contains('active')) return;
-            btnRecent.classList.add('active');
-            btnAll.classList.remove('active');
+            setActiveBtn(btnRecent);
             renderWorldMap(data, 50);
+          });
+
+          btnWeek.addEventListener('click', () => {
+            if (btnWeek.classList.contains('active')) return;
+            setActiveBtn(btnWeek);
+            renderWorldMap(data, 'week');
           });
 
           btnAll.addEventListener('click', () => {
             if (btnAll.classList.contains('active')) return;
-            btnAll.classList.add('active');
-            btnRecent.classList.remove('active');
-            renderWorldMap(data, 0); // 0 = no limit → show all
+            setActiveBtn(btnAll);
+            renderWorldMap(data, 0);
           });
         } else if (toggleGroup && totalLocations <= 50 && totalLocations > 0) {
-          // Still show the count but only one button (or hide the toggle)
           toggleGroup.style.display = 'inline-flex';
           btnRecent.textContent = `All ${totalLocations}`;
           btnRecent.classList.add('active');
+          if (btnWeek) btnWeek.style.display = 'none';
           btnAll.style.display = 'none';
         }
         

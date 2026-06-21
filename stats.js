@@ -17,6 +17,53 @@ function isLocalhost(ip) {
   return false;
 }
 
+// Check if a visitor is a known web crawler / bot
+function isCrawler(visit) {
+  if (!visit) return false;
+
+  // Check user agent for known crawler patterns
+  const ua = (visit.userAgent || '').toLowerCase();
+  if (!ua) return false; // no UA = not necessarily a crawler (could be pixel tracking)
+
+  // Known crawler/bot patterns
+  const crawlerPatterns = [
+    'bot', 'crawler', 'spider', 'scraper', 'scan',
+    'curl', 'wget', 'python-requests', 'python-urllib',
+    'go-http-client', 'java/', 'libwww', 'perl',
+    'php/', 'ruby', 'axios', 'node-fetch', 'got/',
+    'okhttp', 'insomnia', 'postman', 'feed fetcher',
+    'googlebot', 'bingbot', 'baiduspider', 'yandexbot',
+    'duckduckbot', 'slurp', 'facebot', 'twitterbot',
+    'applebot', 'ahrefsbot', 'semrushbot', 'mj12bot',
+    'dotbot', 'rogerbot', 'exabot', 'ia_archiver',
+    'petalbot', 'coccocbot', 'seznambot', 'sogou',
+    'bytespider', 'claudebot', 'anthropic',
+    'gptbot', 'chatgpt', 'openai', 'copilot',
+    'adsbot', 'mediapartners', 'googleother',
+    'lighthouse', 'pagespeed', 'webpagetest',
+    'chrome-lighthouse', 'pingdom', 'uptime',
+    'monitor', 'checker', 'validator', 'analyzer',
+    'nmap', 'masscan', 'zgrab', 'netcraft',
+    'headless', 'phantom', 'selenium', 'puppeteer',
+    'playwright',
+  ];
+
+  for (const pattern of crawlerPatterns) {
+    if (ua.includes(pattern)) return true;
+  }
+
+  // Suspicious: very short user agent (often bots with minimal UA)
+  if (ua.length < 30) {
+    // But allow some legitimate short UAs
+    const legitShort = ['mozilla', 'chrome', 'safari', 'firefox', 'edge', 'opera'];
+    if (!legitShort.some(b => ua.includes(b))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // Check if a traffic source is localhost
 function isLocalhostSource(source) {
   if (!source) return false;
@@ -83,7 +130,13 @@ export default async function handler(req, res) {
     const nonLocalhostVisits = allVisitData.filter(v => v && !isLocalhost(v.ip));
 
     // Filter out exit events for main analytics (keep them for engagement metrics)
-    const pageViews = nonLocalhostVisits.filter(v => !v.eventType || v.eventType !== 'page_exit');
+    const pageViewsRaw = nonLocalhostVisits.filter(v => !v.eventType || v.eventType !== 'page_exit');
+
+    // Filter out known web crawlers / bots
+    const crawlerCount = pageViewsRaw.filter(v => isCrawler(v)).length;
+    const pageViews = pageViewsRaw.filter(v => !isCrawler(v));
+    console.log(`Filtered ${crawlerCount} crawler visits out of ${pageViewsRaw.length} total`);
+
     const exitEvents = nonLocalhostVisits.filter(v => v.eventType === 'page_exit');
 
     // Filter out localhost IPs from unique IPs count
