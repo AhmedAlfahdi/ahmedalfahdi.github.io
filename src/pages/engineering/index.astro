@@ -3,7 +3,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
 const projects = await getCollection('engineering');
-const orion = projects.find(p => p.id === 'orion-project');
+// Sort by date descending
+projects.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const featured = projects.filter(p => p.data.featured);
+const rest = projects.filter(p => !p.data.featured);
 ---
 
 <BaseLayout title="Engineering Projects">
@@ -12,17 +15,28 @@ const orion = projects.find(p => p.id === 'orion-project');
     <p class="intro">In-depth mechanical and aerospace engineering analysis, design studies, and technical investigations.</p>
 
     <div class="grid">
-      {orion && (
-        <a href={`/engineering/${orion.id}`} class="card">
-          <div class="status-badge">{orion.data.status}</div>
-          <h2>{orion.data.title}</h2>
-          <p>{orion.data.description}</p>
+      {featured.map(project => (
+        <a href={`/engineering/${project.id}`} class="card">
+          <div class="status-badge">{project.data.status}</div>
+          <h2>{project.data.title}</h2>
+          <p>{project.data.description}</p>
           <div class="meta">
-            <span class="category">[{orion.data.category}]</span>
-            <time>{orion.data.date.toLocaleDateString()}</time>
+            <span class="category">[{project.data.category}]</span>
+            <time>{project.data.date.toLocaleDateString()}</time>
           </div>
         </a>
-      )}
+      ))}
+      {rest.map(project => (
+        <a href={`/engineering/${project.id}`} class="card">
+          <div class="status-badge">{project.data.status}</div>
+          <h2>{project.data.title}</h2>
+          <p>{project.data.description}</p>
+          <div class="meta">
+            <span class="category">[{project.data.category}]</span>
+            <time>{project.data.date.toLocaleDateString()}</time>
+          </div>
+        </a>
+      ))}
     </div>
 
     <div class="upcoming-section">
