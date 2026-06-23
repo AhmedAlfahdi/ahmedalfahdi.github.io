@@ -100,4 +100,15 @@ const { Content } = await render(project);
     border-top: 1px solid var(--border-light);
     margin: 2.5rem 0;
   }
+  .prose table td:first-child,
+  .prose table th:first-child {
+    width: 1%;
+    white-space: nowrap;
+  }
+  .prose table td:nth-child(3),
+  .prose table th:nth-child(3) {
+    width: 1%;
+    white-space: nowrap;
+    text-align: center;
+  }
 </style>
