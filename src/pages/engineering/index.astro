@@ -5,8 +5,10 @@ import { getCollection } from 'astro:content';
 const projects = await getCollection('engineering');
 // Sort by date descending
 projects.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
-const featured = projects.filter(p => p.data.featured);
-const rest = projects.filter(p => !p.data.featured);
+const inProgress = projects.filter(p => p.data.status === 'In Progress');
+const completed = projects.filter(p => p.data.status !== 'In Progress');
+const featured = completed.filter(p => p.data.featured);
+const rest = completed.filter(p => !p.data.featured);
 ---
 
 <BaseLayout title="Engineering Projects">
@@ -39,6 +41,25 @@ const rest = projects.filter(p => !p.data.featured);
       ))}
     </div>
 
+    {inProgress.length > 0 && (
+    <div class="upcoming-section">
+      <h2>In Progress</h2>
+      <div class="grid">
+        {inProgress.map(project => (
+          <a href={`/engineering/${project.id}`} class="card">
+            <div class="status-badge status-pending">{project.data.status}</div>
+            <h2>{project.data.title}</h2>
+            <p>{project.data.description}</p>
+            <div class="meta">
+              <span class="category">[{project.data.category}]</span>
+              <time>{project.data.date.toLocaleDateString()}</time>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+    )}
+    {inProgress.length === 0 && (
     <div class="upcoming-section">
       <h2>In Progress</h2>
       <div class="grid">
@@ -60,6 +81,7 @@ const rest = projects.filter(p => !p.data.featured);
         </div>
       </div>
     </div>
+    )}
   </div>
 </BaseLayout>
 
