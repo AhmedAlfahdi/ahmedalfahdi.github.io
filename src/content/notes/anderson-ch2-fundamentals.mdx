@@ -1,0 +1,248 @@
+---
+title: "Fundamental Thoughts — Anderson Chapter 2"
+description: "Foundational concepts in aerodynamics: physical quantities, units, the perfect gas law, aerodynamic forces and moments, center of pressure, dimensional analysis, and flow similarity."
+date: 2026-05-12
+tags: ["aerospace", "fundamentals", "flight", "anderson", "fluid-mechanics", "dimensional-analysis"]
+---
+
+# Fundamental Thoughts
+
+*Based on Chapter 2 of* Introduction to Flight *by John D. Anderson, Jr. and Mary L. Bowden (McGraw-Hill, 2021).*
+
+## Introduction
+
+Before diving into aerodynamics proper, Anderson lays the conceptual groundwork. Chapter 2 defines the physical quantities, units, and dimensionless parameters that form the language of flight. It also introduces the four aerodynamic forces and moments, the concept of flow similarity, and the perfect gas law — tools used in every subsequent chapter.
+
+## 1. Fundamental Physical Quantities
+
+All of aerodynamics rests on four base quantities:
+
+| Quantity | SI Unit | Symbol |
+|----------|---------|--------|
+| Mass | kilogram (kg) | $m$ |
+| Length | meter (m) | $l$ |
+| Time | second (s) | $t$ |
+| Temperature | kelvin (K) | $T$ |
+
+From these, all other quantities are derived:
+
+| Derived Quantity | Definition | SI Unit |
+|-----------------|------------|---------|
+| Velocity | $V = \frac{dl}{dt}$ | m/s |
+| Acceleration | $a = \frac{dV}{dt}$ | m/s² |
+| Force | $F = ma$ | N (kg·m/s²) |
+| Pressure | $p = \frac{F}{A}$ | Pa (N/m²) |
+| Density | $\rho = \frac{m}{v}$ | kg/m³ |
+| Energy | $E = F \cdot l$ | J (N·m) |
+
+## 2. The Perfect Gas Law
+
+The relationship between pressure, density, and temperature for a gas:
+
+$$
+p = \rho R T
+$$
+
+Where:
+- $p$ = pressure (Pa)
+- $\rho$ = density (kg/m³)
+- $R$ = specific gas constant — for air, $R = 287$ J/(kg·K)
+- $T$ = temperature (K)
+
+### Why "Perfect" Gas?
+
+A perfect (ideal) gas assumes:
+1. Gas molecules are point masses with zero volume
+2. No intermolecular forces except during elastic collisions
+3. All collisions are perfectly elastic
+
+Air at standard atmospheric conditions behaves very nearly as a perfect gas. Deviations become significant only at extremely high pressures or low temperatures.
+
+### Example: Density at Sea Level
+
+Standard sea-level conditions: $p = 101{,}325$ Pa, $T = 288.16$ K
+
+$$
+\rho = \frac{p}{RT} = \frac{101{,}325}{287 \times 288.16} = 1.225 \text{ kg/m}^3
+$$
+
+## 3. Aerodynamic Forces and Moments
+
+When a body moves through air (or air moves past a body), the integrated effect of pressure and shear stress distributions over the surface produces a **resultant aerodynamic force** $\mathbf{R}$ and a **resultant moment** $\mathbf{M}$.
+
+These are decomposed into components relative to the **free-stream velocity** $\mathbf{V}_\infty$:
+
+### The Four Forces
+
+| Force | Symbol | Direction | Physical Origin |
+|-------|--------|-----------|-----------------|
+| **Lift** | $L$ | Perpendicular to $V_\infty$ | Pressure difference between upper and lower surfaces |
+| **Drag** | $D$ | Parallel to $V_\infty$ (opposing motion) | Pressure drag + skin friction drag |
+| **Normal force** | $N$ | Perpendicular to chord | Pressure distribution normal to surface |
+| **Axial force** | $A$ | Parallel to chord | Pressure + shear along chord direction |
+
+The relationship between the two coordinate systems:
+
+$$
+L = N \cos\alpha - A \sin\alpha
+$$
+$$
+D = N \sin\alpha + A \cos\alpha
+$$
+
+Where $\alpha$ is the **angle of attack** — the angle between the chord line and $V_\infty$.
+
+### The Three Moments
+
+| Moment | Axis | Symbol |
+|--------|------|--------|
+| Pitching moment | Lateral (y) | $M$ |
+| Rolling moment | Longitudinal (x) | $L'$ |
+| Yawing moment | Vertical (z) | $N'$ |
+
+## 4. Center of Pressure
+
+The **center of pressure** (CP) is the point on the airfoil chord where the resultant aerodynamic force effectively acts — i.e., where the pitching moment is zero.
+
+For a given angle of attack:
+
+$$
+x_{cp} = -\frac{M_{LE}}{N}
+$$
+
+Where $M_{LE}$ is the pitching moment about the leading edge and $N$ is the normal force.
+
+**Important:** The center of pressure moves with angle of attack. For a cambered airfoil, it shifts forward as $\alpha$ increases — a complicating factor for stability analysis. This is why the **aerodynamic center** (at approximately quarter-chord, where the moment is constant with $\alpha$) is preferred in practice.
+
+## 5. Non-Dimensional Coefficients
+
+To compare results across different sizes, speeds, and altitudes, forces and moments are normalized into dimensionless coefficients:
+
+### Force Coefficients
+
+$$
+C_L = \frac{L}{q_\infty S} \qquad
+C_D = \frac{D}{q_\infty S} \qquad
+C_N = \frac{N}{q_\infty S} \qquad
+C_A = \frac{A}{q_\infty S}
+$$
+
+### Moment Coefficients
+
+$$
+C_M = \frac{M}{q_\infty S c}
+$$
+
+Where:
+- $q_\infty = \frac{1}{2}\rho_\infty V_\infty^2$ — dynamic pressure
+- $S$ — reference area (usually planform area for wings)
+- $c$ — reference length (usually chord length for airfoils)
+
+### Why Non-Dimensionalize?
+
+A wind-tunnel test on a 1/10 scale model at 50 m/s gives the same $C_L$ as the full-scale aircraft at 150 m/s — provided flow similarity is maintained. This is the foundation of all aerodynamic testing.
+
+## 6. Dimensional Analysis: The Buckingham Pi Theorem
+
+The most powerful tool in Anderson's Chapter 2. Given a physical problem involving $N$ variables and $K$ fundamental dimensions, the Buckingham Pi theorem states:
+
+> The problem can be reduced to a relationship between $N - K$ dimensionless parameters.
+
+### Application to Aerodynamics
+
+For a body in a fluid flow, the aerodynamic force $F$ depends on:
+
+$$
+F = f(\rho_\infty, V_\infty, S, \mu_\infty, a_\infty)
+$$
+
+- 6 variables ($F, \rho_\infty, V_\infty, S, \mu_\infty, a_\infty$)
+- 3 fundamental dimensions (mass, length, time)
+- → $6 - 3 = 3$ dimensionless parameters
+
+The result:
+
+$$
+C_F = f(\text{Re}, M_\infty)
+$$
+
+Two dimensionless parameters govern ALL subsonic aerodynamic flows:
+
+### Reynolds Number
+
+$$
+\text{Re} = \frac{\rho_\infty V_\infty c}{\mu_\infty}
+$$
+
+Ratio of inertial forces to viscous forces. Governs boundary-layer behavior, transition to turbulence, and skin friction.
+
+### Mach Number
+
+$$
+M_\infty = \frac{V_\infty}{a_\infty}
+$$
+
+Ratio of flow velocity to speed of sound. Governs compressibility effects. For $M_\infty < 0.3$, flow can be treated as incompressible.
+
+## 7. Flow Similarity
+
+Two flows are **dynamically similar** if:
+1. They are geometrically similar (same shape, scaled)
+2. They have the same Reynolds number
+3. They have the same Mach number
+
+When dynamically similar, all dimensionless coefficients ($C_L$, $C_D$, $C_M$) are identical — which is why wind-tunnel testing works.
+
+### Practical Challenge
+
+It's often impossible to match both Re and M simultaneously in a wind tunnel. When Re matching is relaxed, corrections (based on empirical data) are applied — one reason flight testing remains necessary.
+
+## 8. Types of Flow
+
+Anderson introduces four flow classifications:
+
+| Regime | Mach Range | Characteristics |
+|--------|-----------|-----------------|
+| Incompressible subsonic | $M < 0.3$ | $\rho \approx$ constant; simplest analysis |
+| Compressible subsonic | $0.3 < M < 1$ | Density changes significant; no shocks |
+| Transonic | $0.8 < M < 1.2$ | Mixed subsonic/supersonic regions; shock waves |
+| Supersonic | $M > 1$ | Shock waves; entirely different flow physics |
+| Hypersonic | $M > 5$ | Extreme heating; chemical dissociation |
+
+## 9. The Speed of Sound
+
+For a perfect gas:
+
+$$
+a = \sqrt{\gamma R T}
+$$
+
+Where:
+- $\gamma = c_p / c_v$ — ratio of specific heats (1.4 for air)
+- $R = 287$ J/(kg·K)
+- $T$ = temperature (K)
+
+At sea level ($T = 288.16$ K):
+
+$$
+a = \sqrt{1.4 \times 287 \times 288.16} = 340.3 \text{ m/s}
+$$
+
+## Key Takeaways
+
+1. **Forces scale with dynamic pressure.** $L = C_L \cdot \frac{1}{2}\rho V^2 S$ is the single most-used equation in aerodynamics.
+
+2. **Re and M are everything.** If you match them, you match the flow physics — regardless of scale, speed, or altitude.
+
+3. **$M = 0.3$ is the compressibility threshold.** Below it, treat air as incompressible. Above it, density changes matter.
+
+4. **The speed of sound only depends on temperature.** Hotter air → faster sound. At 11 km altitude ($T = 216.65$ K), $a \approx 295$ m/s.
+
+5. **Non-dimensional coefficients make wind tunnels work.** A $C_L$ measured on a tiny model in a tunnel is the same $C_L$ on the full aircraft — if Re and M match.
+
+## References
+
+1. Anderson, J.D. and Bowden, M.L. — *Introduction to Flight*, 9th Edition, Chapter 2, McGraw-Hill, 2021
+2. Buckingham, E. — "On Physically Similar Systems; Illustrations of the Use of Dimensional Equations," *Physical Review*, Vol. 4, No. 4, 1914
+3. White, F.M. — *Fluid Mechanics*, 8th Edition, McGraw-Hill, 2016 (for dimensional analysis theory)
+

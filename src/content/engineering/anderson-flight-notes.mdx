@@ -1,0 +1,50 @@
+---
+title: "Anderson's Introduction to Flight — Study Notes"
+description: "A living collection of study notes, derivations, and interactive calculators covering John D. Anderson's Introduction to Flight, chapter by chapter."
+date: 2026-06-23
+status: "In Progress"
+category: "Aerospace"
+featured: true
+---
+
+import PyodideRunner from '../../components/PyodideRunner.astro';
+
+# Anderson's Introduction to Flight — Study Notes
+
+This project is my working notebook for John D. Anderson, Jr. and Mary L. Bowden's *Introduction to Flight* (McGraw-Hill, 2021). Each chapter gets its own deep-dive note with full derivations, interactive calculators, and worked examples. I'm building this as I study — chapters appear here as I complete them.
+
+## Book Structure & Progress
+
+| Chapter | Topic | Status | Notes |
+|---------|-------|--------|-------|
+| [1](/notes/anderson-ch1-pioneers) | The First Aeronautical Engineers | ✅ Complete | Cayley, Lilienthal, Langley, Wright brothers — the incremental breakthroughs that solved lift, propulsion, and control |
+| [2](/notes/anderson-ch2-fundamentals) | Fundamental Thoughts | ✅ Complete | Physical quantities, perfect gas law, aerodynamic forces/moments, center of pressure, dimensional analysis, flow similarity |
+| [3](/notes/anderson-ch3-standard-atmosphere) | The Standard Atmosphere | ✅ Complete | Hydrostatic equation, pressure/density/temperature vs. altitude, geopotential vs. geometric altitude, interactive ISA calculator |
+| 4 | Basic Aerodynamics | ⬜ Planned | — |
+| 5 | Airfoils, Wings, and Other Aerodynamic Shapes | ⬜ Planned | — |
+| 6 | Incompressible Flow over Airfoils | ⬜ Planned | — |
+| 7 | Incompressible Flow over Finite Wings | ⬜ Planned | — |
+| 8 | Three-Dimensional Incompressible Flow | ⬜ Planned | — |
+| 9 | Compressible Flow: Some Preliminary Aspects | ⬜ Planned | — |
+| 10 | Compressible Flow Through Nozzles, Diffusers, and Wind Tunnels | ⬜ Planned | — |
+| 11 | Subsonic Compressible Flow over Airfoils | ⬜ Planned | — |
+| 12 | Linearized Supersonic Flow | ⬜ Planned | — |
+| 13 | Introduction to Numerical Techniques | ⬜ Planned | — |
+| 14 | Elements of Hypersonic Flow | ⬜ Planned | — |
+| 15 | Introduction to the Fundamental Principles and Equations of Viscous Flow | ⬜ Planned | — |
+| 16 | Some Special Cases; Couette and Poiseuille Flows | ⬜ Planned | — |
+| 17 | Introduction to Boundary Layers | ⬜ Planned | — |
+| 18 | Laminar Boundary Layers | ⬜ Planned | — |
+| 19 | Turbulent Boundary Layers | ⬜ Planned | — |
+| 20 | Navier-Stokes Solutions: Some Examples | ⬜ Planned | — |
+| 21 | Elements of Flight Vehicle Design | ⬜ Planned | — |
+
+## Related Notes
+
+- [International Standard Atmosphere (ISA)](/notes/standard-atmosphere) — complementary treatment with a Python-based atmospheric property calculator
+
+## Why This Project?
+
+Anderson's book is the canonical undergraduate aerospace textbook, and working through it thoroughly means understanding every equation, not just skimming. These notes force me to derive everything from scratch, implement the models in code, and explain the physics clearly. The interactive calculators make the theory tangible — you can see exactly how pressure drops with altitude or how viscosity changes with temperature.
+
+If you spot an error or want to discuss a derivation, open an issue on the [site repository](https://github.com/ahmedalfahdi/ahmedalfahdi.github.io).
