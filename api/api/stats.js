@@ -292,7 +292,7 @@ export default async function handler(req, res) {
     res.status(200).json({
       totalViews: pageViews.length,
       distinctIPs: nonLocalhostIPs.length,
-      uniqueVisitors: uniqueVisitorIdsFromFiltered.size,
+      uniqueVisitors: uniqueVisitorIds.length,
       topPage: topPages[0]?.path || '/',
       topPages,
       recentVisitors,
