@@ -10,7 +10,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^6.4.0",
+    "astro": "^7.1.5",
+    "astro-mcp": "^0.4.2",
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
@@ -18,7 +19,7 @@
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
-    "@astrojs/mdx": "^6.0.0",
+    "@astrojs/mdx": "^7.0.5",
     "@types/three": "^0.182.0"
   }
 }
