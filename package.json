@@ -14,13 +14,12 @@
     "astro": "^7.3.5",
     "astro-mcp": "^0.4.2",
     "rehype-katex": "^7.0.1",
-    "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "three": "^0.182.0",
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
-    "@astrojs/mdx": "^7.0.8",
+    "@astrojs/mdx": "^8.0.2",
     "@types/three": "^0.182.0"
   }
 }
